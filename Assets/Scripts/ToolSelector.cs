@@ -9,7 +9,7 @@ public class ToolSelector : MonoBehaviour
     [SerializeField] private List<GameObject> tools;
     [SerializeField] InputActionAsset playerInputActionAsset;
     private InputActionMap _playerInputActionMap;
-    private InputAction _selectToolsInputAciton = null;
+    private InputAction _selectToolsInputAciton;
     // Start is called before the first frame update
     void Start()
     {
