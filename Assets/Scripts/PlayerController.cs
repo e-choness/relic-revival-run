@@ -1,17 +1,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    public InputActionAsset playerInputActionAsset = null;
-    public Vector2 velocity = Vector2.zero;
-    public float jumpHeight = 10.0f;
-    public float gravity = 0.0f;
-    public float jumpVelocity = 20.0f;
-    public float groundHeight = 10.0f;
+    
+    [SerializeField] InputActionAsset playerInputActionAsset = null;
+    [SerializeField] float jumpVelocity = 20.0f;
+
     
     private InputActionMap _playerInputActionMap = null;
     private InputAction _jumpInputAction = null;
@@ -51,16 +50,12 @@ public class PlayerController : MonoBehaviour
 
     }
 
-    private void FixedUpdate()
-    {
-    }
-
     private void OnJumpPerformed(InputAction.CallbackContext context)
     {
-        Vector2 pos = transform.position;
+        
         if (_isGrounded)
         {
-            // _rigidBody.AddForce(Vector2.up * jumpHeight);
+            _rigidBody.AddForce(Vector2.up * jumpVelocity);
             // Debug.Log($"Jump performed! {Vector2.up.ToString()} {jumpHeight.ToString()}");
         }
             
@@ -81,5 +76,13 @@ public class PlayerController : MonoBehaviour
     {
         if(other.gameObject.CompareTag("Ground"))
             _isGrounded = false;
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if(other.gameObject.CompareTag("PickUp"))
+        {
+            other.gameObject.SetActive(false);
+        }
     }
 }
