@@ -14,8 +14,8 @@ public class PlayerController : MonoBehaviour
     
     private InputActionMap _playerInputActionMap = null;
     private InputAction _jumpInputAction = null;
-    private InputAction _selectToolsInputAciton = null;
-    private InputAction _interactInputAction = null;
+    
+    // private InputAction _interactInputAction = null;
     private Rigidbody2D _rigidBody = null;
 
     private bool _isGrounded = true;
@@ -23,16 +23,16 @@ public class PlayerController : MonoBehaviour
     {
         _playerInputActionMap = playerInputActionAsset.FindActionMap("Player");
         _jumpInputAction = _playerInputActionMap.FindAction("Jump");
-        _selectToolsInputAciton = _playerInputActionMap.FindAction("SelectTools");
-        _interactInputAction = _playerInputActionMap.FindAction("Interact");
+        
+        // _interactInputAction = _playerInputActionMap.FindAction("Interact");
         _rigidBody = GetComponent<Rigidbody2D>();
     }
 
     private void OnEnable()
     {
         _jumpInputAction.Enable();
-        _selectToolsInputAciton.Enable();
-        _interactInputAction.Enable();
+        
+        // _interactInputAction.Enable();
 
         _jumpInputAction.performed += OnJumpPerformed;
         _jumpInputAction.canceled += OnJumpCancelled;
@@ -42,8 +42,8 @@ public class PlayerController : MonoBehaviour
     private void OnDisable()
     {
         _jumpInputAction.Disable();
-        _selectToolsInputAciton.Disable();
-        _interactInputAction.Disable();
+        
+        // _interactInputAction.Disable();
         
         _jumpInputAction.performed -= OnJumpPerformed;
         _jumpInputAction.canceled -= OnJumpCancelled;

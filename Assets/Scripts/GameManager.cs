@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] GameObject[] spawnObject;
-    [SerializeField] GameObject[] spawnPoints;
+    [SerializeField] List<GameObject> spawnObject;
+    [SerializeField] List<GameObject> spawnPoints;
     [SerializeField] float timer;
     [SerializeField] float timeBetweenSpawns;
 
