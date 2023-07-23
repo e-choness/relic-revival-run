@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class spawnObjectScript : MonoBehaviour
 {
+    [SerializeField] float spawnSpeed = 10.0f;
+    [SerializeField] float speedMultiplier = 0.05f;
     private Rigidbody2D _rigidbody2D;
     // Start is called before the first frame update
     void Start()
@@ -14,6 +16,12 @@ public class spawnObjectScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        MoveObjectsToLeft();
+    }
+
+    private void MoveObjectsToLeft()
+    {
+        _rigidbody2D.velocity = Vector2.left * (spawnSpeed + speedMultiplier);
         
     }
 }
