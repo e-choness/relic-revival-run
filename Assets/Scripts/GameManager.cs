@@ -9,7 +9,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] float timer;
     [SerializeField] float timeBetweenSpawns;
 
-    // public float speedMultiplier { get; set=>; }
 
     // Start is called before the first frame update
     void Start()

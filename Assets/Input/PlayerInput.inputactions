@@ -24,7 +24,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "SelectTools",
+                    "name": "Switch",
                     "type": "Button",
                     "id": "6d9d5d79-6704-400e-ad5b-05d807c4ecbf",
                     "expectedControlType": "Button",
@@ -237,7 +237,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "SelectTools",
+                    "action": "Switch",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
@@ -248,7 +248,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "SelectTools",
+                    "action": "Switch",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -259,7 +259,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "SelectTools",
+                    "action": "Switch",
                     "isComposite": false,
                     "isPartOfComposite": true
                 }

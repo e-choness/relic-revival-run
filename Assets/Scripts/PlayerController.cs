@@ -56,7 +56,9 @@ public class PlayerController : MonoBehaviour
         if (_isGrounded)
         {
             _rigidBody.AddForce(Vector2.up * jumpVelocity);
-            // Debug.Log($"Jump performed! {Vector2.up.ToString()} {jumpHeight.ToString()}");
+#if UNITY_EDITOR
+            Debug.Log($"Jump performed! {Vector2.up.ToString()} {jumpVelocity.ToString()}");
+#endif
         }
             
     }
@@ -64,7 +66,9 @@ public class PlayerController : MonoBehaviour
     private void OnJumpCancelled(InputAction.CallbackContext context)
     {
         _rigidBody.AddForce(Vector2.zero);
+#if UNITY_EDITOR
         // Debug.Log($"Jump cancelled!");
+#endif
     }
     private void OnCollisionEnter2D(Collision2D other)
     {
@@ -78,11 +82,7 @@ public class PlayerController : MonoBehaviour
             _isGrounded = false;
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        if(other.gameObject.CompareTag("PickUp"))
-        {
-            other.gameObject.SetActive(false);
-        }
-    }
 }
+
+
+

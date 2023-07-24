@@ -24,4 +24,12 @@ public class spawnObjectScript : MonoBehaviour
         _rigidbody2D.velocity = Vector2.left * (spawnSpeed + speedMultiplier);
         
     }
+    
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if(other.gameObject.CompareTag("Player"))
+        {
+            this.gameObject.SetActive(false);
+        }
+    }
 }
