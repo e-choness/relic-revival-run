@@ -38,7 +38,7 @@ public class ToolSelector : MonoBehaviour
         var input_value = (int)context.ReadValue<float>();
         
 #if UNITY_EDITOR
-        Debug.Log($"Tools index: {m_ToolIndex.ToString()}");
+        // Debug.Log($"Tools index: {m_ToolIndex.ToString()}");
 #endif
         tools[m_ToolIndex].SetActive(false);
         
@@ -51,6 +51,7 @@ public class ToolSelector : MonoBehaviour
         }
         
         tools[m_ToolIndex].SetActive(true);
+        
     }
 
     public int GetToolIndex()

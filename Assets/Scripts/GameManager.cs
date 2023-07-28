@@ -32,7 +32,9 @@ public class GameManager : MonoBehaviour
             timer = 0;
             var randPointsIndex = Random.Range(0, 3);
             var randObjectIndex = Random.Range(0, 3);
-            Instantiate(spawnObject[randObjectIndex], spawnPoints[randPointsIndex].transform.position, Quaternion.identity);
+            var spawn = Instantiate(spawnObject[randObjectIndex], spawnPoints[randPointsIndex].transform.position, Quaternion.identity);
+            var spawnComponent = spawn.GetComponent<spawnObjectScript>();
+            spawnComponent.spawnType = randObjectIndex;
         }
     }
 }
