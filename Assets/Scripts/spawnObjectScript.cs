@@ -6,6 +6,7 @@ public class spawnObjectScript : MonoBehaviour
 {
     [SerializeField] float spawnSpeed = 10.0f;
     [SerializeField] float speedMultiplier = 0.05f;
+    public int spawnType;
     private Rigidbody2D _rigidbody2D;
 
     private float _timer = 0.0f;
@@ -35,13 +36,5 @@ public class spawnObjectScript : MonoBehaviour
     
         if (_timer > 5)
             Destroy(gameObject);
-    }
-    
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        if(other.gameObject.CompareTag("Player"))
-        {
-            Destroy(gameObject);
-        }
     }
 }

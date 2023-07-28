@@ -81,6 +81,23 @@ public class PlayerController : MonoBehaviour
         if(other.gameObject.CompareTag("Ground"))
             _isGrounded = false;
     }
+    
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+
+        var toolBox = GetComponentInChildren<ToolSelector>();
+        var toolBoxIndex = toolBox.GetToolIndex();
+        if(other.gameObject.CompareTag("PickUp"))
+        {
+            var spawn = other.gameObject.GetComponent<spawnObjectScript>();
+            var spawnIndex = spawn.spawnType;
+#if UNITY_EDITOR
+            Debug.Log($"toolBox: { toolBoxIndex.ToString()} spawn index: {spawnIndex.ToString()}");
+#endif
+            if(toolBoxIndex == spawnIndex)
+                Destroy(other.gameObject);
+        }
+    }
 
 }
 
