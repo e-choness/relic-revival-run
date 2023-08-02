@@ -15,6 +15,15 @@
                     "initialStateCheck": true
                 },
                 {
+                    "name": "Menu",
+                    "type": "Button",
+                    "id": "2d75693a-12a9-42ac-8fcf-d7c06c2374d0",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Jump",
                     "type": "Button",
                     "id": "97997d14-cfe2-4bd6-bd83-ed515ca5beac",
@@ -163,6 +172,17 @@
                     "action": "Switch",
                     "isComposite": false,
                     "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "24f0382c-e7e8-4527-bfa1-42f647b04d34",
+                    "path": "*/{Back}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Menu",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         },
