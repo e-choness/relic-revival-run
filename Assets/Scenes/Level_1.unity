@@ -209,7 +209,7 @@ GameObject:
   - component: {fileID: 279258042}
   - component: {fileID: 279258041}
   - component: {fileID: 279258040}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Floor
   m_TagString: Ground
   m_Icon: {fileID: 0}
@@ -629,8 +629,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c067d5911b62f2b48b120a386f0a7e6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerInputActionAsset: {fileID: -944628639613478452, guid: 2116b9b382d90e2488dfc9d0a921a919, type: 3}
-  jumpVelocity: 500
+  contactFilter:
+    useTriggers: 0
+    useLayerMask: 1
+    useDepth: 0
+    useOutsideDepth: 0
+    useNormalAngle: 0
+    useOutsideNormalAngle: 0
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 64
+    minDepth: 0
+    maxDepth: 0
+    minNormalAngle: 0
+    maxNormalAngle: 0
+  jumpForce: 20
+  moveSpeed: 10
 --- !u!61 &1261900722
 BoxCollider2D:
   m_ObjectHideFlags: 0
