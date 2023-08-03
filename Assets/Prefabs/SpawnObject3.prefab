@@ -161,5 +161,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: df71906c07ae8b64083afd5cc9666ff8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnSpeed: 10
-  speedMultiplier: 0.05
+  spawnSpeed: 8
+  speedMultiplier: 0.1
+  spawnType: 0
