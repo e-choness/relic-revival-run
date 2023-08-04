@@ -4,16 +4,24 @@ This is the runner prototype for [Game Work Jam](https://itch.io/jam/mini-game-w
 
 ## Progress
 
-- [x] Player input using the new Unity Input System. Has potential to support multiple platforms and reduce the risks of sting overflow;
-- [x] Spawn pick-ups based on random values and heights;
-- [x] A toolbox for player to choose tools from;
-- [x] All tools only interact with respective spawn object types;
+- [x] Player input using the new Unity Input System. Has potential to support multiple platforms and reduce the risks of sting overflow.
+- [x] Spawn pick-ups based on random values and heights.
+- [x] A toolbox for player to choose tools from.
+- [x] All tools only interact with respective spawn object types.
 - [x] FMOD plugin for Unity.
+- [x] UI for Main Menu and In-game pause menu.
+- [x] Background scrolling.
+- [x] Mexio, Chinese and Portugal levels done.
+- [x] Character animation sprites for each level.
 
 ## TODO
 
-- [ ] UI for Main Menu and In-game;
-- [ ] Background scrolling.
+- [ ] In-game tip for tools and restoration activities.
+- [ ] Loading screen.
+- [ ] Blackout transitions for level.
+- [ ] End-game credit.
+- [ ] Bugfixes.
+
 
 ## Studio Jojo Devlog
 
