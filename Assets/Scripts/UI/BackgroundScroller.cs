@@ -46,9 +46,28 @@ namespace UI
             }
             
             // Portugal level waypoints
-            if (index == 3)
+            if (levelIndex == 3)
             {
                 // TODO: add portugal level waypoints
+                waypoints = new List<Vector2>
+                {
+                    new Vector2(22.7f, -10.3f),
+                    new Vector2(-21.0f, -10.3f),
+                    new Vector2(-21.0f, -7.3f),
+                    new Vector2(22.7f, -7.3f),
+                    new Vector2(22.7f, -4.3f),
+                    new Vector2(-21.0f, -4.3f),
+                    new Vector2(-21.0f, -1.3f),
+                    new Vector2(22.7f, -1.3f),
+                    new Vector2(22.7f,  3.5f),
+                    new Vector2(-21.0f, 3.5f),
+                    new Vector2(-21.0f, 8.5f),
+                    new Vector2(22.7f, 8.5f),
+                    new Vector2(22.7f, 14.0f),
+                    new Vector2(-21.0f, 14.0f)
+                };
+
+
             }
             
             index = 0;

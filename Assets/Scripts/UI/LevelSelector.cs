@@ -20,7 +20,7 @@ namespace UI
         public void LoadPortugal()
         {
             // TODO: Load Portugal Level
-            // SceneManager.LoadScene(3);
+            SceneManager.LoadScene(3);
         }
     }
 }
