@@ -4457,7 +4457,7 @@ MonoBehaviour:
     maxDepth: 0
     minNormalAngle: 0
     maxNormalAngle: 0
-  jumpForce: 20
+  jumpForce: 15
   moveSpeed: 10
 --- !u!61 &1261900722
 BoxCollider2D:
@@ -5587,6 +5587,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movingSpeed: 3
+  levelIndex: 1
 --- !u!1 &1837743835
 GameObject:
   m_ObjectHideFlags: 0
