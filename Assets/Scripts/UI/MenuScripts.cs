@@ -12,7 +12,8 @@ namespace UI
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         }
-
+        
+        // The implementation is in player input script
         public void ResumeGame()
         {
             

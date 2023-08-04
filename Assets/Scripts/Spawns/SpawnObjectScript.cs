@@ -1,37 +1,40 @@
 using UnityEngine;
 
-public class SpawnObjectScript : MonoBehaviour
+namespace Spawns
 {
-    [SerializeField] float spawnSpeed = 10.0f;
-    [SerializeField] float speedMultiplier = 0.05f;
-    public int spawnType;
-    private Rigidbody2D rigidbody2D;
-
-    private float timer = 0.0f;
-    // Start is called before the first frame update
-    void Start()
+    public class SpawnObjectScript : MonoBehaviour
     {
-        rigidbody2D = GetComponent<Rigidbody2D>();
-    }
+        [SerializeField] float spawnSpeed = 10.0f;
+        [SerializeField] float speedMultiplier = 0.05f;
+        public int spawnType;
+        private Rigidbody2D rigidbody2D;
 
-    // Update is called once per frame
-    void Update()
-    {
-        MoveObjectsToLeft();
-        DestroySpawns();
-    }
+        private float timer = 0.0f;
+        // Start is called before the first frame update
+        void Start()
+        {
+            rigidbody2D = GetComponent<Rigidbody2D>();
+        }
 
-    private void MoveObjectsToLeft()
-    {
-        rigidbody2D.velocity = Vector2.left * (spawnSpeed + speedMultiplier);
-    }
+        // Update is called once per frame
+        void Update()
+        {
+            MoveObjectsToLeft();
+            DestroySpawns();
+        }
 
-    // A save guard if player miss the spawned object, it will be destroyed after 5 seconds
-    private void DestroySpawns()
-    {
-        timer += Time.deltaTime;
+        private void MoveObjectsToLeft()
+        {
+            rigidbody2D.velocity = Vector2.left * (spawnSpeed + speedMultiplier);
+        }
+
+        // A save guard if player miss the spawned object, it will be destroyed after 5 seconds
+        private void DestroySpawns()
+        {
+            timer += Time.deltaTime;
     
-        if (timer > 5)
-            Destroy(gameObject);
+            if (timer > 10)
+                Destroy(gameObject);
+        }
     }
 }
