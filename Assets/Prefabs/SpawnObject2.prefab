@@ -163,4 +163,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnSpeed: 3
   speedMultiplier: 0.1
-  spawnType: 0
+  spawnType: 1
