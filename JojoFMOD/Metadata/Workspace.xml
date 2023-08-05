@@ -2,31 +2,31 @@
 <objects serializationModel="Studio.02.02.00">
 	<object class="Workspace" id="{7f1d372b-6a6c-49a9-a74f-8719b653089d}">
 		<relationship name="masterEventFolder">
-			<destination>{fd8d6521-ded7-4b12-a8ad-78836d39f135}</destination>
+			<destination>{4b128b90-09b5-482d-841e-52b206066fe3}</destination>
 		</relationship>
 		<relationship name="masterTagFolder">
-			<destination>{2f6dabe7-c773-4571-81f5-026094526d30}</destination>
+			<destination>{3e7703d2-02dc-4b90-b4f5-0468e4aa51d7}</destination>
 		</relationship>
 		<relationship name="masterEffectPresetFolder">
-			<destination>{8e224880-3204-4112-801d-89793884f9f2}</destination>
+			<destination>{a9213ac2-d54d-4bb2-b781-71fd0e3ac225}</destination>
 		</relationship>
 		<relationship name="masterParameterPresetFolder">
-			<destination>{bfdb4716-43d5-437e-92ce-cc62b1e23751}</destination>
+			<destination>{d8ef3e58-5400-48de-82ac-cee8f06de455}</destination>
 		</relationship>
 		<relationship name="masterBankFolder">
-			<destination>{25d345f7-2c1b-4190-b31c-cff6a8b30094}</destination>
+			<destination>{8f441aca-5ae2-404b-8cb5-140dd8927189}</destination>
 		</relationship>
 		<relationship name="masterSandboxFolder">
-			<destination>{5d8e3a97-6cbf-4424-a581-b6fc2392f699}</destination>
+			<destination>{4b2e2bf9-f561-4f1d-8e06-2c41670dddea}</destination>
 		</relationship>
 		<relationship name="masterAssetFolder">
-			<destination>{8c8d54e8-150c-43b5-8933-88aafc9be20f}</destination>
+			<destination>{da06b3e6-1892-4ea1-942b-d8472576bfd5}</destination>
 		</relationship>
 		<relationship name="mixer">
-			<destination>{d13aeb97-9e6a-46f0-8964-cbfd35b6d655}</destination>
+			<destination>{36b3303f-e086-4b7c-a4c9-06da6b1aa7c2}</destination>
 		</relationship>
 		<relationship name="profilerSessionFolder">
-			<destination>{3dd1975a-794a-4219-babb-8347781cf5a8}</destination>
+			<destination>{556d5d13-1333-4036-82f9-6ad0bfd36195}</destination>
 		</relationship>
 		<relationship name="platforms">
 			<destination>{12dfe7f1-2cff-443e-b195-ca7421655c1e}</destination>

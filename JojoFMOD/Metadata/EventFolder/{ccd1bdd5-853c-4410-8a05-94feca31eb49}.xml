@@ -8,7 +8,7 @@
 			<value>FOLEY</value>
 		</property>
 		<relationship name="folder">
-			<destination>{fd8d6521-ded7-4b12-a8ad-78836d39f135}</destination>
+			<destination>{4b128b90-09b5-482d-841e-52b206066fe3}</destination>
 		</relationship>
 	</object>
 </objects>

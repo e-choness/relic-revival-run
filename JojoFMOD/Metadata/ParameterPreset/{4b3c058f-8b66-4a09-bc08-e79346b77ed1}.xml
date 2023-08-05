@@ -5,7 +5,7 @@
 			<value>ToolSet</value>
 		</property>
 		<relationship name="folder">
-			<destination>{bfdb4716-43d5-437e-92ce-cc62b1e23751}</destination>
+			<destination>{d8ef3e58-5400-48de-82ac-cee8f06de455}</destination>
 		</relationship>
 		<relationship name="parameter">
 			<destination>{1f4c4d7a-b57d-4875-974f-99b75321d641}</destination>
@@ -16,14 +16,13 @@
 			<value>2</value>
 		</property>
 		<property name="maximum">
-			<value>6</value>
+			<value>5</value>
 		</property>
 		<property name="enumerationLabels">
 			<value>Brush</value>
 			<value>Camera</value>
 			<value>Ultralight</value>
 			<value>BugSpray</value>
-			<value>ToolSwitch</value>
 			<value>Idle</value>
 		</property>
 		<property name="initialValue">
