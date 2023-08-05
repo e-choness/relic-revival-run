@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="EncodableAsset" id="{3bfd434d-48d9-45d9-a936-682421d863d5}">
+		<property name="assetPath">
+			<value>FOLEY/UltralightBeam/</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{8c8d54e8-150c-43b5-8933-88aafc9be20f}</destination>
+		</relationship>
+	</object>
+</objects>

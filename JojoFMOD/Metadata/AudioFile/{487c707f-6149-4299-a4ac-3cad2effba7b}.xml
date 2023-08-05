@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="AudioFile" id="{487c707f-6149-4299-a4ac-3cad2effba7b}">
+		<property name="assetPath">
+			<value>FOLEY/UltralightBeam/03MAGMisc_Cartoon, Anime, Game Spell Texture Buzz Beams 01_LouieSound_HHS.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>1</value>
+		</property>
+		<property name="length">
+			<value>0.93975056689342407</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{8c8d54e8-150c-43b5-8933-88aafc9be20f}</destination>
+		</relationship>
+	</object>
+</objects>
