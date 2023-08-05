@@ -12,12 +12,7 @@ namespace Player
 
         private int toolIndex;
 
-        [Header("FMODStuff")]
-        public FMODUnity.EventReference toolSelectorSound;
-        public FMOD.Studio.EventInstance toolSelectorSoundInstance;
-        FMOD.Studio.PARAMETER_ID toolSelectorParamId;  
-        string toolParamID = "ToolSet";
-        public int toolSetValue;
+        
 
 
 
@@ -38,7 +33,7 @@ namespace Player
         {
             playerInput.Disable();
             playerInput.Player.Switch.performed -= HandleSelectTools;
-            PlayToolSound();
+            //PlayToolSound();
         }
 
         private void HandleSelectTools(InputAction.CallbackContext callback)
@@ -61,28 +56,7 @@ namespace Player
             return toolIndex;
         } 
 
-        public void PlayToolSound(){
-
-            //0= Brush, 1 = Camera, Ultralight = 2, Bug Spray = 3, Tool Switch = 4, Idle = 5
-
-            toolSetValue = toolIndex; 
-            toolSelectorSoundInstance = FMODUnity.RuntimeManager.CreateInstance(toolSelectorSound);
-            toolSelectorSoundInstance = setParameterByID(toolParamID, toolSetValue);
-            toolSelectorSoundInstance.start(); 
-
-        }
-
-       
-    
-
-        void InitializeFMOD(){
-
-            FMOD.Studio.EventDescription toolSwitchEventDescrip = FMODUnity.RuntimeManager.GetEventDescription(toolSelectorSound);
-            FMOD.Studio.PARAMETER_DESCRIPTION toolswitchParameterDescription;
-            toolSwitchEventDescrip.getParameterDescriptionByName(toolParamID, out toolswitchParameterDescription);
-
-            toolSelectorParamId = toolswitchParameterDescription.id;
-        }
+        
 
 
     }

@@ -18,6 +18,13 @@ namespace Player
         private static readonly int MovingState = Animator.StringToHash("MovingState");
         private bool IsGrounded => rigidBody.IsTouching(contactFilter);
 
+        [Header("FMODStuff")]
+        public FMODUnity.EventReference toolSelectorSound;
+        public FMOD.Studio.EventInstance toolSelectorSoundInstance;
+        FMOD.Studio.PARAMETER_ID toolSelectorParamId;  
+        string toolParamID = "ToolSet";
+        //public int toolSetValue;
+
         enum MovementState
         {
             Running,
@@ -133,15 +140,46 @@ namespace Player
         {
             var toolBox = GetComponentInChildren<ToolSelector>();
             var toolBoxIndex = toolBox.GetToolIndex();
+
             if(other.gameObject.CompareTag("PickUp"))
             {
+                
                 var spawn = other.gameObject.GetComponent<SpawnObjectScript>();
                 var spawnIndex = spawn.spawnType;
-                if(toolBoxIndex == spawnIndex)
-                    Destroy(other.gameObject);
+
+                if(toolBoxIndex == spawnIndex){
+
+                    PlayToolSound(toolBoxIndex);
+                    //Destroy(other.gameObject);
+                    other.gameObject.SetActive(false);
+                }
+            
             }
         }
+
+        public void PlayToolSound(int toolBoxIndex){
+
+            //0= Brush, 1 = Camera, Ultralight = 2, Bug Spray = 3, Tool Switch = 4, Idle = 5
+
+            var toolSetValue = toolBoxIndex;
+            toolSelectorSoundInstance = FMODUnity.RuntimeManager.CreateInstance(toolSelectorSound);
+            toolSelectorSoundInstance.setParameterByID(toolSelectorParamId, toolSetValue);
+            toolSelectorSoundInstance.start(); 
+
+        }
+
+       
+
+        void InitializeFMOD(){
+
+            FMOD.Studio.EventDescription toolSwitchEventDescrip = FMODUnity.RuntimeManager.GetEventDescription(toolSelectorSound);
+            FMOD.Studio.PARAMETER_DESCRIPTION toolswitchParameterDescription;
+            toolSwitchEventDescrip.getParameterDescriptionByName(toolParamID, out toolswitchParameterDescription);
+            toolSelectorParamId = toolswitchParameterDescription.id;
+        }
     }
+
+    
 }
 
 
