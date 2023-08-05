@@ -28,6 +28,11 @@ namespace UI
         {
             SceneManager.LoadScene(0);
         }
+
+        public void OpenCredits()
+        {
+            SceneManager.LoadScene(7);
+        }
     }
 }
 
