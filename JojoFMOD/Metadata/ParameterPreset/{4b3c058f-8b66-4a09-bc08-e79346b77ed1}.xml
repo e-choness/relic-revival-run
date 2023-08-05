@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="ParameterPreset" id="{4b3c058f-8b66-4a09-bc08-e79346b77ed1}">
+		<property name="name">
+			<value>ToolSet</value>
+		</property>
+		<relationship name="folder">
+			<destination>{bfdb4716-43d5-437e-92ce-cc62b1e23751}</destination>
+		</relationship>
+		<relationship name="parameter">
+			<destination>{1f4c4d7a-b57d-4875-974f-99b75321d641}</destination>
+		</relationship>
+	</object>
+	<object class="GameParameter" id="{1f4c4d7a-b57d-4875-974f-99b75321d641}">
+		<property name="parameterType">
+			<value>2</value>
+		</property>
+		<property name="maximum">
+			<value>6</value>
+		</property>
+		<property name="enumerationLabels">
+			<value>Brush</value>
+			<value>Camera</value>
+			<value>Ultralight</value>
+			<value>BugSpray</value>
+			<value>ToolSwitch</value>
+			<value>Idle</value>
+		</property>
+		<property name="initialValue">
+			<value>0</value>
+		</property>
+	</object>
+</objects>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="EncodableAsset" id="{67505e32-ec36-41d6-af92-2653fd795e75}">
+		<property name="assetPath">
+			<value>FOLEY/Brush/</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{8c8d54e8-150c-43b5-8933-88aafc9be20f}</destination>
+		</relationship>
+	</object>
+</objects>
