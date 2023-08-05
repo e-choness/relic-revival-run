@@ -59,7 +59,7 @@ namespace Player
         public int GetToolIndex()
         {
             return toolIndex;
-        }
+        } 
 
         public void PlayToolSound(){
 
@@ -68,18 +68,21 @@ namespace Player
             toolSetValue = toolIndex; 
             toolSelectorSoundInstance = FMODUnity.RuntimeManager.CreateInstance(toolSelectorSound);
             toolSelectorSoundInstance = setParameterByID(toolParamID, toolSetValue);
-            toolSelectorSoundInstance.start();
+            toolSelectorSoundInstance.start(); 
 
         }
 
-        // void InitializeFMOD(){
+       
+    
 
-        //     FMOD.Studio.EventDescription toolSwitchEventDescrip = FMODUnity.RuntimeManager.GetEventDescription(toolSelectorSound);
-        //     FMOD.Studio.PARAMETER_DESCRIPTION toolswitchParameterDescription;
-        //     toolSwitchEventDescrip.getParameterDescriptionByName(toolParam, out toolswitchParameterDescription);
+        void InitializeFMOD(){
 
-        //     toolSelectorParamId = toolswitchParameterDescription.id;
-        // }
+            FMOD.Studio.EventDescription toolSwitchEventDescrip = FMODUnity.RuntimeManager.GetEventDescription(toolSelectorSound);
+            FMOD.Studio.PARAMETER_DESCRIPTION toolswitchParameterDescription;
+            toolSwitchEventDescrip.getParameterDescriptionByName(toolParamID, out toolswitchParameterDescription);
+
+            toolSelectorParamId = toolswitchParameterDescription.id;
+        }
 
 
     }
