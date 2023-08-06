@@ -586,6 +586,8 @@ MonoBehaviour:
   - Master
   Banks:
   - AMBIENCE
+  - Desktop/AMBIENCE
+  - Desktop/FOLEY
   - FOLEY
   - MasterBank
   BanksToLoad: []

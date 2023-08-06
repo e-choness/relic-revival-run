@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="AudioFile" id="{832e9926-8dff-4bf8-af03-52a64d32f086}">
+		<property name="assetPath">
+			<value>UI/DSGNMisc_Ui Click 02_MIGUELNEVES_JOJO01.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>1</value>
+		</property>
+		<property name="length">
+			<value>0.62428571428571433</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{da06b3e6-1892-4ea1-942b-d8472576bfd5}</destination>
+		</relationship>
+	</object>
+</objects>
