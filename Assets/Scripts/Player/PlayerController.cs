@@ -18,6 +18,10 @@ namespace Player
         private static readonly int MovingState = Animator.StringToHash("MovingState");
         private bool IsGrounded => rigidBody.IsTouching(contactFilter);
 
+        [Header("FMOD")]
+        public FMODUnity.EventReference characterJump;
+        public FMOD.Studio.EventInstance characterJumpInstance;
+
         enum MovementState
         {
             Running,
@@ -45,6 +49,7 @@ namespace Player
             playerInput.Player.Enable();
             pauseMenuUI.SetActive(false);
             isPaused = false;
+            
         }
 
         private void OnDisable()
@@ -81,6 +86,10 @@ namespace Player
             if (IsGrounded)
             {
                 rigidBody.velocity = new Vector2(rigidBody.velocity.x, jumpForce);
+                characterJumpInstance = FMODUnity.RuntimeManager.CreateInstance(characterJump);
+                characterJumpInstance.start();
+                characterJumpInstance.release();
+                Debug.Log("Jump SOund is Playing");
             }
         }
 

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="AudioFile" id="{ad948ba2-5d9c-4024-8b4b-bd9b407f2a5c}">
+		<property name="assetPath">
+			<value>ASSETS/CHARACTER/MOVEHmn_Character Jump 01_MIGUELNEVES_JOJO03.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>1</value>
+		</property>
+		<property name="length">
+			<value>0.27068027210884354</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{8c8d54e8-150c-43b5-8933-88aafc9be20f}</destination>
+		</relationship>
+	</object>
+</objects>

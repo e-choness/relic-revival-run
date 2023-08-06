@@ -130,6 +130,9 @@
 	</object>
 	<object class="MixerBusPanner" id="{8b927d3a-4dac-49a6-b993-f42609d3256e}" />
 	<object class="EventSound" id="{21262fcf-ffdb-42cf-8a5e-9cd9fa60db48}">
+		<property name="isCutoff">
+			<value>true</value>
+		</property>
 		<relationship name="event">
 			<destination>{0ae5cde9-194e-40af-820b-8bc4ccc04ab2}</destination>
 		</relationship>
@@ -149,6 +152,9 @@
 		</relationship>
 	</object>
 	<object class="EventSound" id="{fadc1bc3-5899-42a2-bf95-7d5bb968390b}">
+		<property name="isCutoff">
+			<value>true</value>
+		</property>
 		<property name="start">
 			<value>1</value>
 		</property>
@@ -171,6 +177,9 @@
 		</relationship>
 	</object>
 	<object class="EventSound" id="{045e6a6e-652b-4571-bf8c-3bb55490968b}">
+		<property name="isCutoff">
+			<value>true</value>
+		</property>
 		<property name="start">
 			<value>2</value>
 		</property>
@@ -193,6 +202,9 @@
 		</relationship>
 	</object>
 	<object class="EventSound" id="{28716dd2-67cd-4793-9aa9-06af9f208d64}">
+		<property name="isCutoff">
+			<value>true</value>
+		</property>
 		<property name="start">
 			<value>3</value>
 		</property>

@@ -783,6 +783,13 @@ MonoBehaviour:
     maxNormalAngle: 0
   jumpForce: 15
   moveSpeed: 10
+  characterJump:
+    Guid:
+      Data1: 957304276
+      Data2: 1322904370
+      Data3: -1424656486
+      Data4: 1130151908
+    Path: event:/CHARACTER/Jump
 --- !u!61 &1261900722
 BoxCollider2D:
   m_ObjectHideFlags: 0
