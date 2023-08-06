@@ -587,6 +587,7 @@ MonoBehaviour:
   Banks:
   - AMBIENCE
   - FOLEY
+  - MUSIC
   BanksToLoad: []
   LiveUpdatePort: 9264
   EnableMemoryTracking: 0
