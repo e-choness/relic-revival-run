@@ -4681,6 +4681,13 @@ MonoBehaviour:
     maxNormalAngle: 0
   jumpForce: 15
   moveSpeed: 10
+  characterJump:
+    Guid:
+      Data1: 957304276
+      Data2: 1322904370
+      Data3: -1424656486
+      Data4: 1130151908
+    Path: event:/CHARACTER/Jump
 --- !u!61 &1261900722
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -5773,6 +5780,13 @@ MonoBehaviour:
   - {fileID: 1681133958}
   - {fileID: 1848855386}
   - {fileID: 230049867}
+  toolswitchEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
 --- !u!1 &1681133958 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6785619635703248790, guid: b2d0acdcfd0f6904db5b13662d67c9c7, type: 3}
