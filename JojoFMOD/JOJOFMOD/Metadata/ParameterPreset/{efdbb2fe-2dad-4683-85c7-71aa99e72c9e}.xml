@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="ParameterPreset" id="{efdbb2fe-2dad-4683-85c7-71aa99e72c9e}">
+		<property name="name">
+			<value>MexicanLevel</value>
+		</property>
+		<relationship name="folder">
+			<destination>{bfdb4716-43d5-437e-92ce-cc62b1e23751}</destination>
+		</relationship>
+		<relationship name="parameter">
+			<destination>{c5977c07-e092-41e6-b3f7-432cef8a3c02}</destination>
+		</relationship>
+	</object>
+	<object class="GameParameter" id="{c5977c07-e092-41e6-b3f7-432cef8a3c02}">
+		<property name="initialValue">
+			<value>0</value>
+		</property>
+	</object>
+</objects>
