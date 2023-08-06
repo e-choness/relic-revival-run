@@ -10,6 +10,7 @@ namespace UI
         [SerializeField] private float movingSpeed;
         [SerializeField] private int levelIndex;
         private int index;
+        private bool isFinished;
 
         // private enum Level
         // {
@@ -21,6 +22,7 @@ namespace UI
         // Start is called before the first frame update
         void Start()
         {
+            isFinished = false;
             // Mexico Level waypoints
             if (levelIndex == 1)
             {
@@ -88,13 +90,19 @@ namespace UI
                 index++;
                 if (index >= waypoints.Count)
                 {
-                    GoToNextLevel();
+                    isFinished = true;
+                    // GoToNextLevel();
                 }
             }
             if(index < waypoints.Count)
                 transform.position = Vector2.MoveTowards(transform.position,
                     waypoints[index],
                     movingSpeed * Time.deltaTime);
+        }
+
+        public bool CheckFinished()
+        {
+            return isFinished;
         }
 
         private void GoToNextLevel()

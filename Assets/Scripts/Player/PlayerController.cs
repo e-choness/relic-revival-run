@@ -14,9 +14,11 @@ namespace Player
         [SerializeField] private float jumpForce = 20.0f;
         [SerializeField] private float moveSpeed = 1.0f;
         private Vector2 moveVector;
+        private int scoreCount;
         private bool isPaused;
         private static readonly int MovingState = Animator.StringToHash("MovingState");
         private bool IsGrounded => rigidBody.IsTouching(contactFilter);
+        
 
         [Header("FMOD")]
         public FMODUnity.EventReference characterJump;
@@ -32,6 +34,7 @@ namespace Player
         {
             playerInput = new PlayerInput();
             Time.timeScale = 1.0f;
+            scoreCount = 0;
             playerInput.Player.Jump.performed += context => OnJumpPerformed();
             playerInput.Player.Jump.canceled += context => OnJumpCanceled();
             playerInput.Player.Move.performed += context => moveVector = context.ReadValue<Vector2>();
@@ -146,9 +149,17 @@ namespace Player
             {
                 var spawn = other.gameObject.GetComponent<SpawnObjectScript>();
                 var spawnIndex = spawn.spawnType;
-                if(toolBoxIndex == spawnIndex)
+                if (toolBoxIndex == spawnIndex)
+                {
+                    scoreCount += 1;
                     Destroy(other.gameObject);
+                }
             }
+        }
+
+        public int GetScore()
+        {
+            return scoreCount;
         }
     }
 }
