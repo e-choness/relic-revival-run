@@ -46,7 +46,7 @@ public class GameManager : MonoBehaviour
         // speedMultiplier += Time.deltaTime * 0.1f;
         timer += Time.deltaTime;
 
-        if (timer > timeBetweenSpawns)
+        if (timer > timeBetweenSpawns && !backgroundScrollerScript.CheckFinished())
         {
             timer = 0;
             spawnCount += 1;
@@ -71,7 +71,7 @@ public class GameManager : MonoBehaviour
     {
         if (backgroundScrollerScript.CheckFinished())
         {
-            Time.timeScale = 0.0f;
+            // Time.timeScale = 0.0f;
             endScoreText.text = $"You have restored {Math.Round(score,2).ToString()}% of the relic!";
             endMenu.SetActive(true);
         }
