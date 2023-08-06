@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="ParameterPreset" id="{8794d19d-7dab-476c-9944-018baa50a589}">
+		<property name="name">
+			<value>ChineseAmb</value>
+		</property>
+		<relationship name="folder">
+			<destination>{bfdb4716-43d5-437e-92ce-cc62b1e23751}</destination>
+		</relationship>
+		<relationship name="parameter">
+			<destination>{9cfa449e-fc5b-4190-8712-a2e07f019a8d}</destination>
+		</relationship>
+	</object>
+	<object class="GameParameter" id="{9cfa449e-fc5b-4190-8712-a2e07f019a8d}">
+		<property name="initialValue">
+			<value>0</value>
+		</property>
+	</object>
+</objects>
