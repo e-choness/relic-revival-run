@@ -135,6 +135,7 @@ GameObject:
   - component: {fileID: 35002566}
   - component: {fileID: 35002565}
   - component: {fileID: 35002564}
+  - component: {fileID: 35002568}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -228,6 +229,37 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &35002568
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 35002563}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6610d2e704f1648819acc8d7460285, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CollisionTag: 
+  EventReference:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  Event: 
+  PlayEvent: 0
+  StopEvent: 0
+  AllowFadeout: 1
+  TriggerOnce: 0
+  Preload: 0
+  AllowNonRigidbodyDoppler: 0
+  Params: []
+  OverrideAttenuation: 0
+  OverrideMinDistance: -1
+  OverrideMaxDistance: -1
 --- !u!1 &51801605
 GameObject:
   m_ObjectHideFlags: 0
@@ -1493,6 +1525,8 @@ GameObject:
   - component: {fileID: 538479271}
   - component: {fileID: 538479274}
   - component: {fileID: 538479275}
+  - component: {fileID: 538479276}
+  - component: {fileID: 538479277}
   m_Layer: 5
   m_Name: Button_Mexico
   m_TagString: Untagged
@@ -1565,9 +1599,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 538479275}
-        m_TargetAssemblyTypeName: FMODUnity.StudioEventEmitter, FMODUnity
-        m_MethodName: Play
+      - m_Target: {fileID: 2005329772}
+        m_TargetAssemblyTypeName: UI.LevelSelector, Assembly-CSharp
+        m_MethodName: LoadMexico
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1577,13 +1611,13 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 2005329772}
+      - m_Target: {fileID: 11500000, guid: 97f8612342af84f27889956b14acaaf8, type: 3}
         m_TargetAssemblyTypeName: UI.LevelSelector, Assembly-CSharp
-        m_MethodName: LoadMexico
+        m_MethodName: 
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgumentAssemblyTypeName: 
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -1673,6 +1707,70 @@ MonoBehaviour:
   OverrideAttenuation: 0
   OverrideMinDistance: 1
   OverrideMaxDistance: 20
+--- !u!114 &538479276
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 538479269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97f8612342af84f27889956b14acaaf8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hoverAmb:
+    Guid:
+      Data1: 252650425
+      Data2: 1267863399
+      Data3: 475824825
+      Data4: -145633089
+    Path: event:/AMBIENCE/Mexican_Amb
+--- !u!114 &538479277
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 538479269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates:
+  - eventID: 0
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 538479276}
+          m_TargetAssemblyTypeName: AmbienceHoveringFMOD, Assembly-CSharp
+          m_MethodName: OnMouseEnter
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventID: 1
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 538479276}
+          m_TargetAssemblyTypeName: AmbienceHoveringFMOD, Assembly-CSharp
+          m_MethodName: OnMouseExit
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!1 &557801493
 GameObject:
   m_ObjectHideFlags: 0
@@ -2091,6 +2189,7 @@ GameObject:
   - component: {fileID: 585465039}
   - component: {fileID: 585465041}
   - component: {fileID: 585465040}
+  - component: {fileID: 585465042}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -2217,6 +2316,39 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 585465038}
   m_CullTransparentMesh: 1
+--- !u!114 &585465042
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 585465038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6610d2e704f1648819acc8d7460285, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CollisionTag: 
+  EventReference:
+    Guid:
+      Data1: -1942897206
+      Data2: 1089741166
+      Data3: 1076648376
+      Data4: -666382379
+    Path: event:/AMBIENCE/Portugal_Amb
+  Event: 
+  PlayEvent: 13
+  StopEvent: 14
+  AllowFadeout: 1
+  TriggerOnce: 0
+  Preload: 0
+  AllowNonRigidbodyDoppler: 0
+  Params:
+  - Name: Portugal
+    Value: 0.62
+  OverrideAttenuation: 0
+  OverrideMinDistance: 1
+  OverrideMaxDistance: 20
 --- !u!1 &601535273
 GameObject:
   m_ObjectHideFlags: 0
@@ -2835,6 +2967,8 @@ GameObject:
   - component: {fileID: 1037067427}
   - component: {fileID: 1037067426}
   - component: {fileID: 1037067430}
+  - component: {fileID: 1037067431}
+  - component: {fileID: 1037067432}
   m_Layer: 5
   m_Name: Button_China
   m_TagString: Untagged
@@ -3015,6 +3149,70 @@ MonoBehaviour:
   OverrideAttenuation: 0
   OverrideMinDistance: 1
   OverrideMaxDistance: 20
+--- !u!114 &1037067431
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1037067424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97f8612342af84f27889956b14acaaf8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hoverAmb:
+    Guid:
+      Data1: -758654191
+      Data2: 1333393157
+      Data3: 251852935
+      Data4: -235948832
+    Path: event:/AMBIENCE/Chinese_AMB
+--- !u!114 &1037067432
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1037067424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates:
+  - eventID: 0
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1037067431}
+          m_TargetAssemblyTypeName: AmbienceHoveringFMOD, Assembly-CSharp
+          m_MethodName: OnMouseEnter
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventID: 1
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1037067431}
+          m_TargetAssemblyTypeName: AmbienceHoveringFMOD, Assembly-CSharp
+          m_MethodName: OnMouseExit
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!1 &1157480303
 GameObject:
   m_ObjectHideFlags: 0
@@ -3372,6 +3570,7 @@ GameObject:
   - component: {fileID: 1245456481}
   - component: {fileID: 1245456480}
   - component: {fileID: 1245456479}
+  - component: {fileID: 1245456482}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -3386,7 +3585,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1245456478}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &1245456480
 Camera:
   m_ObjectHideFlags: 0
@@ -3453,6 +3652,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1245456482
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1245456478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86c6556701af9e04380698b89f691b6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attenuationObject: {fileID: 0}
 --- !u!1 &1262352253
 GameObject:
   m_ObjectHideFlags: 0
@@ -4037,7 +4249,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1557587315
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4531,6 +4743,8 @@ GameObject:
   - component: {fileID: 1714150150}
   - component: {fileID: 1714150149}
   - component: {fileID: 1714150153}
+  - component: {fileID: 1714150154}
+  - component: {fileID: 1714150155}
   m_Layer: 5
   m_Name: Button_Portugal
   m_TagString: Untagged
@@ -4618,9 +4832,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1714150153}
-        m_TargetAssemblyTypeName: FMODUnity.StudioEventEmitter, FMODUnity
-        m_MethodName: Play
+      - m_Target: {fileID: 2005329772}
+        m_TargetAssemblyTypeName: UI.LevelSelector, Assembly-CSharp
+        m_MethodName: LoadPortugal
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4630,9 +4844,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 2005329772}
-        m_TargetAssemblyTypeName: UI.LevelSelector, Assembly-CSharp
-        m_MethodName: LoadPortugal
+      - m_Target: {fileID: 1714150153}
+        m_TargetAssemblyTypeName: FMODUnity.StudioEventEmitter, FMODUnity
+        m_MethodName: Play
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4711,6 +4925,70 @@ MonoBehaviour:
   OverrideAttenuation: 0
   OverrideMinDistance: 1
   OverrideMaxDistance: 20
+--- !u!114 &1714150154
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1714150147}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97f8612342af84f27889956b14acaaf8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hoverAmb:
+    Guid:
+      Data1: -1942897206
+      Data2: 1089741166
+      Data3: 1076648376
+      Data4: -666382379
+    Path: event:/AMBIENCE/Portugal_Amb
+--- !u!114 &1714150155
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1714150147}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates:
+  - eventID: 0
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1714150154}
+          m_TargetAssemblyTypeName: AmbienceHoveringFMOD, Assembly-CSharp
+          m_MethodName: OnMouseEnter
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 1
+  - eventID: 1
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1714150154}
+          m_TargetAssemblyTypeName: AmbienceHoveringFMOD, Assembly-CSharp
+          m_MethodName: OnMouseExit
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 1
 --- !u!1 &1734046817
 GameObject:
   m_ObjectHideFlags: 0
@@ -4721,6 +4999,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1734046818}
   - component: {fileID: 1734046819}
+  - component: {fileID: 1734046820}
   m_Layer: 5
   m_Name: MainMenu
   m_TagString: Untagged
@@ -4756,6 +5035,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0b16ae053971f4418c2905f852c8aec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1734046820
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1734046817}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86c6556701af9e04380698b89f691b6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attenuationObject: {fileID: 0}
 --- !u!1 &1749301227
 GameObject:
   m_ObjectHideFlags: 0
@@ -5363,7 +5655,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2005329769
 RectTransform:
   m_ObjectHideFlags: 0

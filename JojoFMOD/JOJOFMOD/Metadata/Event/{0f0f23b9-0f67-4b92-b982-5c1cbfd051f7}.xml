@@ -87,7 +87,11 @@
 			<destination>{0819d8b3-2a3f-495b-af3f-c6e14de4ad3d}</destination>
 		</relationship>
 	</object>
-	<object class="Timeline" id="{fdbd5204-28da-44c4-aeb9-a81a13beacd4}" />
+	<object class="Timeline" id="{fdbd5204-28da-44c4-aeb9-a81a13beacd4}">
+		<property name="isProxyEnabled">
+			<value>false</value>
+		</property>
+	</object>
 	<object class="ParameterProxy" id="{9758892e-f053-42ae-bce7-a46ff7b25f71}">
 		<relationship name="modules">
 			<destination>{bb21bcd3-e4e9-44a8-a371-1e04182cc754}</destination>
@@ -116,9 +120,15 @@
 	</object>
 	<object class="MixerBusPanner" id="{d8bdc927-aa60-4891-a3ff-74257a55d1a1}" />
 	<object class="MultiSound" id="{bb21bcd3-e4e9-44a8-a371-1e04182cc754}">
+		<property name="startOffset">
+			<value>15</value>
+		</property>
 		<property name="looping">
 			<value>true</value>
 		</property>
+		<relationship name="modulators">
+			<destination>{bd55b345-b3fa-4147-a205-e89837929efb}</destination>
+		</relationship>
 		<relationship name="sounds">
 			<destination>{440894b1-b7d4-4092-9e02-c5098d353d82}</destination>
 			<destination>{8de05ad2-ba6a-47c2-8fff-564b41e4f98d}</destination>
@@ -170,9 +180,15 @@
 		</relationship>
 	</object>
 	<object class="SingleSound" id="{0b241bcd-6b88-4a41-8cfa-827e595f1608}">
+		<property name="startOffset">
+			<value>15</value>
+		</property>
 		<property name="looping">
 			<value>true</value>
 		</property>
+		<relationship name="modulators">
+			<destination>{8e4d43a3-6ecc-4df9-897d-5d9553b81d8c}</destination>
+		</relationship>
 		<relationship name="audioFile">
 			<destination>{761f5293-2946-405f-8de8-fa2eb399cb3c}</destination>
 		</relationship>
@@ -204,6 +220,14 @@
 	</object>
 	<object class="MixerBusPanner" id="{4a3e0ba2-6881-4887-b53e-e13f83fb08e8}" />
 	<object class="MixerBusFader" id="{fd266efe-34cc-4614-a429-8235b67164d3}" />
+	<object class="RandomizerModulator" id="{bd55b345-b3fa-4147-a205-e89837929efb}">
+		<property name="nameOfPropertyBeingModulated">
+			<value>startOffset</value>
+		</property>
+		<property name="amount">
+			<value>100</value>
+		</property>
+	</object>
 	<object class="SingleSound" id="{440894b1-b7d4-4092-9e02-c5098d353d82}">
 		<relationship name="audioFile">
 			<destination>{5ee3047a-823d-44fb-82be-ce8058767ad5}</destination>
@@ -243,6 +267,14 @@
 		</property>
 		<property name="surroundPanExtent">
 			<value>147.402374</value>
+		</property>
+	</object>
+	<object class="RandomizerModulator" id="{8e4d43a3-6ecc-4df9-897d-5d9553b81d8c}">
+		<property name="nameOfPropertyBeingModulated">
+			<value>startOffset</value>
+		</property>
+		<property name="amount">
+			<value>100</value>
 		</property>
 	</object>
 	<object class="RandomizerModulator" id="{10ec9ca9-ea60-43ff-b87a-36cf2ca4c5da}">
