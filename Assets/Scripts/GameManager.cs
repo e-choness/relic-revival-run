@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using Player;
 using Spawns;
+using TMPro;
 using UI;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour
 {
@@ -13,7 +15,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] float timeBetweenSpawns;
     [SerializeField] private GameObject playerController;
     [SerializeField] private GameObject backgroundScroller;
-
+    [SerializeField] private GameObject endMenu;
+    [SerializeField] private TextMeshProUGUI endScoreText;
     private PlayerController playerControllerScript;
     private BackgroundScroller backgroundScrollerScript;
     private float score; 
@@ -26,6 +29,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         spawnCount = 0;
+        endMenu.SetActive(false);
         playerControllerScript = playerController.GetComponent<PlayerController>();
         backgroundScrollerScript = backgroundScroller.GetComponent<BackgroundScroller>();
     }
@@ -57,10 +61,10 @@ public class GameManager : MonoBehaviour
     private void CalculateScore()
     {
         scoreCount = playerControllerScript.GetScore();
-        score = (float)scoreCount / (float)spawnCount;
-        #if UNITY_EDITOR
-        Debug.Log(message: score.ToString());
-        #endif
+        score = ((float)scoreCount / spawnCount) * 100;
+        // #if UNITY_EDITOR
+        // Debug.Log(message: score.ToString());
+        // #endif
     }
 
     private void GoToNextLevel()
@@ -68,7 +72,8 @@ public class GameManager : MonoBehaviour
         if (backgroundScrollerScript.CheckFinished())
         {
             Time.timeScale = 0.0f;
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+            endScoreText.text = $"You have restored {Math.Round(score,2).ToString()}% of the relic!";
+            endMenu.SetActive(true);
         }
         
     }

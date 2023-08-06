@@ -92,7 +92,9 @@ namespace Player
                 characterJumpInstance = FMODUnity.RuntimeManager.CreateInstance(characterJump);
                 characterJumpInstance.start();
                 characterJumpInstance.release();
-                Debug.Log("Jump SOund is Playing");
+                // #if UNITY_EDITOR
+                // Debug.Log("Jump Sound is Playing");
+                // #endif
             }
         }
 
