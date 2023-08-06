@@ -920,7 +920,9 @@ MonoBehaviour:
   - {fileID: 1337284527}
   - {fileID: 1722663271}
   timer: 0
-  timeBetweenSpawns: 2
+  timeBetweenSpawns: 1.4
+  playerController: {fileID: 1261900717}
+  backgroundScroller: {fileID: 1822891153}
 --- !u!4 &1529352792
 Transform:
   m_ObjectHideFlags: 0
