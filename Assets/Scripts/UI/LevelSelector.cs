@@ -14,13 +14,13 @@ namespace UI
         public void LoadChina()
         {
             // TODO: Load China Level
-            SceneManager.LoadScene(2);
+            SceneManager.LoadScene(3);
         }
 
         public void LoadPortugal()
         {
             // TODO: Load Portugal Level
-            SceneManager.LoadScene(3);
+            SceneManager.LoadScene(5);
         }
     }
 }
