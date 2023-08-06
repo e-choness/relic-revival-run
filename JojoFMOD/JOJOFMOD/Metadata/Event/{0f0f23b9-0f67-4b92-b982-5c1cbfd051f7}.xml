@@ -58,7 +58,7 @@
 			<destination>{d8bdc927-aa60-4891-a3ff-74257a55d1a1}</destination>
 		</relationship>
 		<relationship name="output">
-			<destination>{f907d95e-95d7-469b-a545-970406a576e1}</destination>
+			<destination>{b6f30364-9bc7-41ba-a9e1-a6c9c7053efe}</destination>
 		</relationship>
 	</object>
 	<object class="EventAutomatableProperties" id="{f80362da-8ebd-496e-abd8-d2d7a7210732}" />
@@ -139,6 +139,9 @@
 		</relationship>
 	</object>
 	<object class="SoundScatterer" id="{81af9e41-6655-4dda-987c-2cbacc91ba3e}">
+		<property name="isCutoff">
+			<value>true</value>
+		</property>
 		<property name="minimumTimeBetweenSounds">
 			<value>1500</value>
 		</property>
