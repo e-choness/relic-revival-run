@@ -540,6 +540,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1077643173888822067, guid: bbe9d78b7df83234d9d3d8b4a32906f3, type: 3}
+      propertyPath: m_text
+      value: Relic Revival Run
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2960,7 +2964,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Restroation Runner
+  m_text: Relic Revival Run
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 31a0e8e6efb3253448dd14c891c8a08f, type: 2}
   m_sharedMaterial: {fileID: -3818724087165095415, guid: 31a0e8e6efb3253448dd14c891c8a08f, type: 2}
