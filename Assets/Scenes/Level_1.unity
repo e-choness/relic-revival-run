@@ -1372,6 +1372,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1077643173888822067, guid: bbe9d78b7df83234d9d3d8b4a32906f3, type: 3}
+      propertyPath: m_text
+      value: Relic Revival Run
+      objectReference: {fileID: 0}
+    - target: {fileID: 1077643173888822067, guid: bbe9d78b7df83234d9d3d8b4a32906f3, type: 3}
+      propertyPath: m_fontColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1077643173888822067, guid: bbe9d78b7df83234d9d3d8b4a32906f3, type: 3}
+      propertyPath: m_fontColor.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1077643173888822067, guid: bbe9d78b7df83234d9d3d8b4a32906f3, type: 3}
+      propertyPath: m_fontColor.r
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1385,6 +1401,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1770606725049941565, guid: 1f5d58d651e6d8c4c807c609594cf24c, type: 3}
+      propertyPath: m_text
+      value: Relic Revival Run
+      objectReference: {fileID: 0}
+    - target: {fileID: 1770606725049941565, guid: 1f5d58d651e6d8c4c807c609594cf24c, type: 3}
+      propertyPath: m_fontColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1770606725049941565, guid: 1f5d58d651e6d8c4c807c609594cf24c, type: 3}
+      propertyPath: m_fontColor.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1770606725049941565, guid: 1f5d58d651e6d8c4c807c609594cf24c, type: 3}
+      propertyPath: m_fontColor.r
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4330837778569524657, guid: 1f5d58d651e6d8c4c807c609594cf24c, type: 3}
       propertyPath: m_RootOrder
       value: 6
@@ -1429,6 +1461,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6526460998445429959, guid: 1f5d58d651e6d8c4c807c609594cf24c, type: 3}
+      propertyPath: m_fontColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6526460998445429959, guid: 1f5d58d651e6d8c4c807c609594cf24c, type: 3}
+      propertyPath: m_fontColor.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6526460998445429959, guid: 1f5d58d651e6d8c4c807c609594cf24c, type: 3}
+      propertyPath: m_fontColor.r
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8040418433640791809, guid: 1f5d58d651e6d8c4c807c609594cf24c, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -1436,6 +1480,18 @@ PrefabInstance:
     - target: {fileID: 8820157693470781717, guid: 1f5d58d651e6d8c4c807c609594cf24c, type: 3}
       propertyPath: m_Name
       value: PauseMenu
+      objectReference: {fileID: 0}
+    - target: {fileID: 8896889630667346185, guid: 1f5d58d651e6d8c4c807c609594cf24c, type: 3}
+      propertyPath: m_fontColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8896889630667346185, guid: 1f5d58d651e6d8c4c807c609594cf24c, type: 3}
+      propertyPath: m_fontColor.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8896889630667346185, guid: 1f5d58d651e6d8c4c807c609594cf24c, type: 3}
+      propertyPath: m_fontColor.r
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
