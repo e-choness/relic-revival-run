@@ -80,6 +80,9 @@
 		</relationship>
 	</object>
 	<object class="GroupTrack" id="{f4737be9-cd25-4ee3-abb1-8e0f61a87565}">
+		<relationship name="modules">
+			<destination>{f5a9eeca-5818-46ec-87f7-4f6dd4d7389e}</destination>
+		</relationship>
 		<relationship name="mixerGroup">
 			<destination>{49da9383-e558-4e9f-86ac-120c76939157}</destination>
 		</relationship>
@@ -93,6 +96,7 @@
 		<relationship name="modules">
 			<destination>{ca25e9bf-83cb-4c43-91e0-6b061f4c1247}</destination>
 			<destination>{a2e7bd8b-fb97-4467-863f-06fb7229bb38}</destination>
+			<destination>{f5a9eeca-5818-46ec-87f7-4f6dd4d7389e}</destination>
 		</relationship>
 		<relationship name="preset">
 			<destination>{f6df4296-b4fd-41e2-90bb-f1a2a2a63c78}</destination>
@@ -177,10 +181,24 @@
 			<destination>{09e546e6-e2b3-46d1-af5d-fe8e743c49ee}</destination>
 		</relationship>
 	</object>
-	<object class="EventMixerGroup" id="{49da9383-e558-4e9f-86ac-120c76939157}">
-		<property name="volume">
-			<value>-4.5</value>
+	<object class="SingleSound" id="{f5a9eeca-5818-46ec-87f7-4f6dd4d7389e}">
+		<property name="startOffset">
+			<value>15</value>
 		</property>
+		<property name="volume">
+			<value>3</value>
+		</property>
+		<property name="looping">
+			<value>true</value>
+		</property>
+		<relationship name="modulators">
+			<destination>{c9d950ad-c9b5-4982-9e09-5b770ef8b84b}</destination>
+		</relationship>
+		<relationship name="audioFile">
+			<destination>{bfba1ce8-e5f4-4af4-8227-fc2414c2e393}</destination>
+		</relationship>
+	</object>
+	<object class="EventMixerGroup" id="{49da9383-e558-4e9f-86ac-120c76939157}">
 		<property name="name">
 			<value>Audio 3</value>
 		</property>
@@ -236,6 +254,14 @@
 	<object class="MixerBusPanner" id="{a73b1219-6120-4bb8-b5a2-d549e3d98fa9}">
 		<property name="surroundPanExtent">
 			<value>105.382027</value>
+		</property>
+	</object>
+	<object class="RandomizerModulator" id="{c9d950ad-c9b5-4982-9e09-5b770ef8b84b}">
+		<property name="nameOfPropertyBeingModulated">
+			<value>startOffset</value>
+		</property>
+		<property name="amount">
+			<value>100</value>
 		</property>
 	</object>
 	<object class="MixerBusEffectChain" id="{6a20bf2b-c070-4f1b-a19c-0a4fcf36d4cc}">
