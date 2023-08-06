@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 7896981040111860502}
   - component: {fileID: 5918768526705994306}
   - component: {fileID: 5761680274888414084}
+  - component: {fileID: -7201366830903977786}
   m_Layer: 0
   m_Name: SpawnObject2
   m_TagString: PickUp
@@ -164,3 +165,34 @@ MonoBehaviour:
   spawnSpeed: 3
   speedMultiplier: 0.1
   spawnType: 1
+--- !u!114 &-7201366830903977786
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2126894631566517955}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6610d2e704f1648819acc8d7460285, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CollisionTag: 
+  EventReference:
+    Guid:
+      Data1: 1606953559
+      Data2: 1331689675
+      Data3: 685031333
+      Data4: 313946232
+    Path: event:/FOLEY/Camera
+  Event: 
+  PlayEvent: 2
+  StopEvent: 0
+  AllowFadeout: 1
+  TriggerOnce: 0
+  Preload: 0
+  AllowNonRigidbodyDoppler: 0
+  Params: []
+  OverrideAttenuation: 0
+  OverrideMinDistance: 1
+  OverrideMaxDistance: 20

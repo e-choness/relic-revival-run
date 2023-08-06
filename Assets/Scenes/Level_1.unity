@@ -217,6 +217,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2158736111654565071, guid: 0574357dd119f89458a8b3092462be67, type: 3}
+      propertyPath: m_TagString
+      value: Untagged
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -515,6 +519,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1937253208191474216, guid: cdc25e166c67d2548b4dbb2a87afaf90, type: 3}
+      propertyPath: m_TagString
+      value: Untagged
+      objectReference: {fileID: 0}
     - target: {fileID: 3339330582154919265, guid: cdc25e166c67d2548b4dbb2a87afaf90, type: 3}
       propertyPath: m_RootOrder
       value: -1
@@ -670,6 +678,7 @@ GameObject:
   - component: {fileID: 1261900721}
   - component: {fileID: 1261900724}
   - component: {fileID: 1261900725}
+  - component: {fileID: 1261900726}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -879,6 +888,39 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f86081715164ae4d9159c3136c80b62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1261900726
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1261900717}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6610d2e704f1648819acc8d7460285, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CollisionTag: 
+  EventReference:
+    Guid:
+      Data1: 252650425
+      Data2: 1267863399
+      Data3: 475824825
+      Data4: -145633089
+    Path: event:/AMBIENCE/Mexican_Amb
+  Event: 
+  PlayEvent: 1
+  StopEvent: 2
+  AllowFadeout: 1
+  TriggerOnce: 0
+  Preload: 0
+  AllowNonRigidbodyDoppler: 0
+  Params:
+  - Name: MexicanLevel
+    Value: 0
+  OverrideAttenuation: 0
+  OverrideMinDistance: 1
+  OverrideMaxDistance: 20
 --- !u!1 &1337284527
 GameObject:
   m_ObjectHideFlags: 0
@@ -969,6 +1011,10 @@ PrefabInstance:
     - target: {fileID: 6785619635703248790, guid: b2d0acdcfd0f6904db5b13662d67c9c7, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6785619635703248790, guid: b2d0acdcfd0f6904db5b13662d67c9c7, type: 3}
+      propertyPath: m_TagString
+      value: Untagged
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1085,13 +1131,13 @@ MonoBehaviour:
   - {fileID: 1681133958}
   - {fileID: 1848855386}
   - {fileID: 230049867}
-  toolSelectorSound:
+  toolswitchEvent:
     Guid:
-      Data1: -10065125
-      Data2: 1291470604
-      Data3: -796244289
-      Data4: -2080867204
-    Path: event:/AMBIENCE/AMB_MexicanLevel
+      Data1: -1569616538
+      Data2: 1228451582
+      Data3: 766580387
+      Data4: -1907437841
+    Path: event:/FOLEY/Tool_Switch
 --- !u!1 &1681133958 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6785619635703248790, guid: b2d0acdcfd0f6904db5b13662d67c9c7, type: 3}

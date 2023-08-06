@@ -9,6 +9,8 @@ namespace Player
     
         [SerializeField] private List<GameObject> tools;
         private PlayerInput playerInput;
+        public FMODUnity.EventReference toolswitchEvent;
+        public FMOD.Studio.EventInstance toolswitchInstance;
 
         private int toolIndex;
         // Start is called before the first frame update
@@ -16,12 +18,18 @@ namespace Player
         private void Awake()
         {
             playerInput = new PlayerInput();
+            
         }
+
+          
+        
 
         private void OnEnable()
         {
             playerInput.Enable();
             playerInput.Player.Switch.performed += HandleSelectTools;
+            toolswitchInstance = FMODUnity.RuntimeManager.CreateInstance(toolswitchEvent);
+            
         }
 
         private void OnDisable()
@@ -42,6 +50,7 @@ namespace Player
             {
                 toolIndex += tools.Count;
             }
+            toolswitchInstance.start();
             tools[toolIndex].SetActive(true);
         }
 

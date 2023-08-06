@@ -129,7 +129,7 @@ namespace Player
             }
         }
 
-        private void OnTriggerEnter2D(Collider2D other)
+        public void OnTriggerEnter2D(Collider2D other)
         {
             var toolBox = GetComponentInChildren<ToolSelector>();
             var toolBoxIndex = toolBox.GetToolIndex();
