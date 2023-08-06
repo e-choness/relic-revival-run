@@ -85,15 +85,17 @@ namespace UI
 
         private void MoveBackground()
         {
+            if (index >= waypoints.Count)
+            {
+                isFinished = true;
+                return;
+                // GoToNextLevel();
+            }
             if (Vector2.Distance(waypoints[index], transform.position) < 0.1f)
             {
-                index++;
-                if (index >= waypoints.Count)
-                {
-                    isFinished = true;
-                    // GoToNextLevel();
-                }
+                index++; 
             }
+            
             if(index < waypoints.Count)
                 transform.position = Vector2.MoveTowards(transform.position,
                     waypoints[index],
