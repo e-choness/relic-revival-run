@@ -705,7 +705,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Temple of the Feathered Serpent Teotihuacan
+  m_text: "Teotihuac\xE1n "
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 31a0e8e6efb3253448dd14c891c8a08f, type: 2}
   m_sharedMaterial: {fileID: -3818724087165095415, guid: 31a0e8e6efb3253448dd14c891c8a08f, type: 2}
