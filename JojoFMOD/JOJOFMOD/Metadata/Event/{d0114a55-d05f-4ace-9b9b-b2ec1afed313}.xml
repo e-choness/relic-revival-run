@@ -244,7 +244,7 @@
 	</object>
 	<object class="TransitionDestinationSound" id="{1d9e99b2-6559-432d-9908-44062488cc9d}">
 		<property name="length">
-			<value>10</value>
+			<value>5</value>
 		</property>
 		<relationship name="fadeInCurve">
 			<destination>{c6e805d7-8456-4af2-a4ae-c2c70c653d35}</destination>
@@ -427,6 +427,9 @@
 		</property>
 		<property name="triggerProbabilityEnabled">
 			<value>true</value>
+		</property>
+		<property name="quantizationInterval">
+			<value>1</value>
 		</property>
 		<relationship name="timeline">
 			<destination>{e5fd77c1-cbd6-470d-b232-103093f0c83f}</destination>

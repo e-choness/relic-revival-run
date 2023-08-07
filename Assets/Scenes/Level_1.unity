@@ -207,7 +207,7 @@ MonoBehaviour:
   - Target: {fileID: 1238632840}
     Params:
     - Name: Portugal
-      Value: 0
+      Value: 0.372
   TriggerEvent: 5
 --- !u!61 &154891671
 BoxCollider2D:
