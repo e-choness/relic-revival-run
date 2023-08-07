@@ -207,7 +207,7 @@ MonoBehaviour:
   - Target: {fileID: 1238632840}
     Params:
     - Name: Portugal
-      Value: 0.403
+      Value: 0
   TriggerEvent: 5
 --- !u!61 &154891671
 BoxCollider2D:
@@ -726,10 +726,10 @@ MonoBehaviour:
   CollisionTag: 
   EventReference:
     Guid:
-      Data1: 2087893003
-      Data2: 1338276434
-      Data3: -825628007
-      Data4: -823606305
+      Data1: -289814349
+      Data2: 1218436977
+      Data3: 1970792627
+      Data4: 1291032436
     Path: event:/MUSIC/mexico_music
   Event: 
   PlayEvent: 1

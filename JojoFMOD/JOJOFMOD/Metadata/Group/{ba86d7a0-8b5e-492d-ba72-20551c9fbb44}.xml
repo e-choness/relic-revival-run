@@ -24,10 +24,10 @@
 	<object class="MixerBusFader" id="{e7837ad1-4708-4ced-8eac-bf054d0cc113}" />
 	<object class="CompressorEffect" id="{bbf25a02-4ad6-4b25-a5a5-91d3f56a6f40}">
 		<property name="threshold">
-			<value>-28.5</value>
+			<value>-19.5</value>
 		</property>
 		<property name="ratio">
-			<value>4</value>
+			<value>3.10000014</value>
 		</property>
 		<property name="attackTime">
 			<value>9.40000057</value>
