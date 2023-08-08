@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="AudioFile" id="{f301ebca-5cec-4b89-b880-916c2d8fc0e9}">
+		<property name="assetPath">
+			<value>ASSETS/the-medieval-banquet.mp3</value>
+		</property>
+		<property name="isStreaming">
+			<value>true</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>112.22204081632653</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{8c8d54e8-150c-43b5-8933-88aafc9be20f}</destination>
+		</relationship>
+	</object>
+</objects>
