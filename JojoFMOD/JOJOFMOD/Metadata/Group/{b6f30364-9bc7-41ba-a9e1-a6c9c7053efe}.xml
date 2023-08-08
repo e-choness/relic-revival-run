@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <objects serializationModel="Studio.02.02.00">
 	<object class="MixerGroup" id="{b6f30364-9bc7-41ba-a9e1-a6c9c7053efe}">
+		<property name="volume">
+			<value>-2</value>
+		</property>
 		<property name="name">
 			<value>Ambience</value>
 		</property>
@@ -24,7 +27,7 @@
 	<object class="MixerBusFader" id="{3c8f427f-0158-4dd6-a3f6-752847f84089}" />
 	<object class="CompressorEffect" id="{782265c8-1a9c-43e6-84d9-03c17e161916}">
 		<property name="threshold">
-			<value>-7</value>
+			<value>-15.5</value>
 		</property>
 		<relationship name="sidechains">
 			<destination>{c4a967c0-6f38-4162-b03b-c28f517cdb5c}</destination>
