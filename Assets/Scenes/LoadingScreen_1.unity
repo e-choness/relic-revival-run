@@ -1066,11 +1066,15 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: The Temple of the Feathered Serpent in Teotihuacan, Mexico, is an ancient
-    Mesoamerican pyramid adorned with intricate stone carvings of serpents, warriors,
-    and deities. It served as a prominent religious and ceremonial site in the ancient
-    city, reflecting the importance of serpent symbolism in Teotihuacan's cosmology
-    and belief system.
+  m_text: "The Place of the Gods was sacred for the Aztecs, but it was built much
+    before them. Little is known about this enigmatic city\u2019s origins, but it
+    flourished between the years 100 BC and 550 and housed as many as 100,000 inhabitants.
+    The Aztecs dedicated one of its buildings to the god Quetzalcoatl, \u201CThe
+    Feathered Serpent\u201D. The restoration of this pyramid\u2019s stone reliefs
+    starts with photographic documentation of its present state. Fortunately there
+    have been no robberies so all known pieces of the wall are present. Stone must
+    be treated to consolidate strata, fallen and broken parts must be stitched together.
+    Color must be restored too."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: f221e476a00fc85408bf26d1b18ec530, type: 2}
   m_sharedMaterial: {fileID: -7042779281905000770, guid: f221e476a00fc85408bf26d1b18ec530, type: 2}
@@ -1097,7 +1101,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 29.2
+  m_fontSize: 21.7
   m_fontSizeBase: 27
   m_fontWeight: 400
   m_enableAutoSizing: 1
