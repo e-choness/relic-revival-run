@@ -5129,7 +5129,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!95 &1261900724
 Animator:
   serializedVersion: 5
@@ -5677,7 +5677,7 @@ MonoBehaviour:
   - {fileID: 1337284527}
   - {fileID: 1722663271}
   timer: 0
-  timeBetweenSpawns: 1.8
+  timeBetweenSpawns: 1.5
   playerController: {fileID: 1261900717}
   backgroundScroller: {fileID: 849496646}
   endMenu: {fileID: 196960401}
