@@ -118,7 +118,7 @@
 	</object>
 	<object class="EventMixerMaster" id="{48f59e75-a460-4852-a83f-81221731382a}">
 		<property name="volume">
-			<value>1.5</value>
+			<value>2.5</value>
 		</property>
 		<relationship name="effectChain">
 			<destination>{2fee405b-9809-4fdb-8b09-5357fb1ebdab}</destination>
@@ -139,6 +139,9 @@
 	<object class="EventSound" id="{21262fcf-ffdb-42cf-8a5e-9cd9fa60db48}">
 		<property name="isCutoff">
 			<value>true</value>
+		</property>
+		<property name="volume">
+			<value>2.5</value>
 		</property>
 		<relationship name="event">
 			<destination>{0ae5cde9-194e-40af-820b-8bc4ccc04ab2}</destination>
@@ -190,6 +193,9 @@
 		<property name="start">
 			<value>2</value>
 		</property>
+		<property name="volume">
+			<value>3</value>
+		</property>
 		<relationship name="event">
 			<destination>{a73f33aa-5f09-436c-8d39-ca6d28306eaa}</destination>
 		</relationship>
@@ -213,6 +219,9 @@
 			<value>true</value>
 		</property>
 		<property name="start">
+			<value>3</value>
+		</property>
+		<property name="volume">
 			<value>3</value>
 		</property>
 		<relationship name="event">
