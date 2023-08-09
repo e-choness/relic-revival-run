@@ -6,7 +6,7 @@ This is a relic restoration runner game for [Game Work Jam](https://itch.io/jam/
 
 You can find our game here:
 
-[![Relic Revival Run](Assets\UI\Comic\comic17.jpg)](https://paoowo.itch.io/relic-revival-run)
+[![Relic Revival Run](Assets/UI/Comic/comic17.jpg)](https://paoowo.itch.io/relic-revival-run)
 
 *Please don't forget to play, comment and vote!*
 
@@ -55,4 +55,4 @@ A 2D platformer runner where you could play as an art restorer who run and perfo
   
 ## Credits
 
-![Credits](Assets\UI\images\team01.png)
+![Credits](Assets/UI/images/team01.png)
