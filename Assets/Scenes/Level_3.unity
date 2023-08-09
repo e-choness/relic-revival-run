@@ -1186,7 +1186,7 @@ MonoBehaviour:
   AllowNonRigidbodyDoppler: 0
   Params:
   - Name: Portugal
-    Value: 0
+    Value: 0.2
   OverrideAttenuation: 0
   OverrideMinDistance: 1
   OverrideMaxDistance: 20
@@ -1453,7 +1453,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1200080409}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -16.3, y: -12.1, z: -0.22140007}
+  m_LocalPosition: {x: 6, y: 11.3, z: -0.22140007}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1477,7 +1477,7 @@ MonoBehaviour:
   - Target: {fileID: 724934685}
     Params:
     - Name: Portugal
-      Value: 0.861
+      Value: 0.449
   TriggerEvent: 5
 --- !u!61 &1200080413
 BoxCollider2D:
@@ -1954,7 +1954,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1570604777}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 16.9, y: -16.8, z: -0.22140007}
+  m_LocalPosition: {x: -18.1, y: -4.5, z: -0.22140007}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1978,7 +1978,7 @@ MonoBehaviour:
   - Target: {fileID: 724934685}
     Params:
     - Name: Portugal
-      Value: 0.487
+      Value: 0.763
   TriggerEvent: 5
 --- !u!61 &1570604780
 BoxCollider2D:
@@ -2023,7 +2023,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 10, y: 5}
+  m_Size: {x: 10, y: 15}
   m_EdgeRadius: 0
 --- !u!1 &1627308486
 GameObject:
