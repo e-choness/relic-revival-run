@@ -13,6 +13,7 @@ namespace Player
         [SerializeField] private ContactFilter2D contactFilter;
         [SerializeField] private float jumpForce = 20.0f;
         [SerializeField] private float moveSpeed = 1.0f;
+        [SerializeField] Transform toolbox;
         private Vector2 moveVector;
         private int scoreCount;
         private bool isPaused;
@@ -113,10 +114,14 @@ namespace Player
             else if (moveVector.x > 0)
             {
                 spriteRenderer.flipX = false;
+                toolbox.localScale = new Vector3(2.25f, 1.75f, 1);
+                toolbox.localPosition = new Vector3(1f, -0.1f, 0);
             }
             else
             {
                 spriteRenderer.flipX = true;
+                toolbox.localScale = new Vector3(-2.25f, 1.75f, 1);
+                toolbox.localPosition = new Vector3(-1f, -0.1f, 0);
             }
             if (IsGrounded)
                 UpdateAnimation(MovementState.Running);
