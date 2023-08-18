@@ -453,7 +453,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 279258039}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.06, y: -4.97, z: 0}
+  m_LocalPosition: {x: -0.06, y: -4.925, z: 0}
   m_LocalScale: {x: 20.897755, y: 0.9122, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -512,6 +512,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1445872717865607109, guid: 4429ecc398d50f44daa254f528a98051, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3208891953563289534, guid: 4429ecc398d50f44daa254f528a98051, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4463770889183995346, guid: 4429ecc398d50f44daa254f528a98051, type: 3}
       propertyPath: m_Name
       value: TipMenu
@@ -519,6 +527,10 @@ PrefabInstance:
     - target: {fileID: 4463770889183995346, guid: 4429ecc398d50f44daa254f528a98051, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5100952838736617014, guid: 4429ecc398d50f44daa254f528a98051, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6594989838775710457, guid: 4429ecc398d50f44daa254f528a98051, type: 3}
       propertyPath: m_UiScaleMode
@@ -581,6 +593,7 @@ GameObject:
   - component: {fileID: 519420031}
   - component: {fileID: 519420029}
   - component: {fileID: 519420033}
+  - component: {fileID: 519420034}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -675,6 +688,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attenuationObject: {fileID: 0}
+--- !u!114 &519420034
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a01eacacbb4164546b2ecfd44902a93d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CamOffset: {x: 0, y: -2, z: -10}
 --- !u!1 &590673044
 GameObject:
   m_ObjectHideFlags: 0
@@ -1263,6 +1289,7 @@ MonoBehaviour:
   backgroundScroller: {fileID: 1822891153}
   endMenu: {fileID: 8820157693351689574}
   endScoreText: {fileID: 1071868884}
+  flipSpawnPoint: 0
 --- !u!4 &1529352792
 Transform:
   m_ObjectHideFlags: 0

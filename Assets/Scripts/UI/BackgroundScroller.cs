@@ -11,6 +11,7 @@ namespace UI
         [SerializeField] private int levelIndex;
         private int index;
         private bool isFinished;
+        GameManager gM;
 
         // private enum Level
         // {
@@ -22,6 +23,7 @@ namespace UI
         // Start is called before the first frame update
         void Start()
         {
+            gM = FindObjectOfType<GameManager>();
             isFinished = false;
             // Mexico Level waypoints
             if (levelIndex == 1)
@@ -81,6 +83,19 @@ namespace UI
         void Update()
         {
             MoveBackground();
+            FlipDirection();
+        }
+
+        void FlipDirection()
+        {
+            if(waypoints[index].x > transform.position.x)
+            {
+                gM.flipSpawnPoint = true;
+            }
+            else
+            {
+                gM.flipSpawnPoint = false;
+            }
         }
 
         private void MoveBackground()

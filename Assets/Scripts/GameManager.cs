@@ -23,7 +23,7 @@ public class GameManager : MonoBehaviour
     private int spawnCount;
     private int scoreCount;
 
-    
+    public bool flipSpawnPoint = true;
     // private bool isFinished;
 
     private void Start()
@@ -53,6 +53,11 @@ public class GameManager : MonoBehaviour
             var randPointsIndex = Random.Range(0, 3);
             var randObjectIndex = Random.Range(0, spawnObject.Count);
             var spawn = Instantiate(spawnObject[randObjectIndex], spawnPoints[randPointsIndex].transform.position, Quaternion.identity);
+            if (flipSpawnPoint)
+            {
+                Debug.Log("Flips");
+                spawn.transform.position = new Vector3(spawn.transform.position.x * -1, spawn.transform.position.y, spawn.transform.position.z);
+            }
             var spawnComponent = spawn.GetComponent<SpawnObjectScript>();
             spawnComponent.spawnType = randObjectIndex;
         }
