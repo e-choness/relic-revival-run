@@ -1,6 +1,8 @@
+using Player;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static Player.PlayerController;
 
 namespace UI
 {
@@ -12,6 +14,7 @@ namespace UI
         private int index;
         private bool isFinished;
         GameManager gM;
+        PlayerController pC;
 
         // private enum Level
         // {
@@ -24,6 +27,7 @@ namespace UI
         void Start()
         {
             gM = FindObjectOfType<GameManager>();
+            pC = FindObjectOfType<PlayerController>();
             isFinished = false;
             // Mexico Level waypoints
             if (levelIndex == 1)
@@ -84,6 +88,7 @@ namespace UI
         {
             MoveBackground();
             FlipDirection();
+            CheckFalling();
         }
 
         void FlipDirection()
@@ -95,6 +100,15 @@ namespace UI
             else
             {
                 gM.flipSpawnPoint = false;
+            }
+        }
+
+        void CheckFalling()
+        {
+            if (waypoints[index].y > transform.position.y+2f)
+            {
+                pC.UpdateAnimation(MovementState.Falling);
+                Debug.Log("Falling");
             }
         }
 

@@ -25,7 +25,7 @@ namespace Player
         public FMODUnity.EventReference characterJump;
         public FMOD.Studio.EventInstance characterJumpInstance;
 
-        enum MovementState
+        public enum MovementState
         {
             Running,
             Jumping,
@@ -132,7 +132,7 @@ namespace Player
                 UpdateAnimation(rigidBody.velocity.y > 0.1f ? MovementState.Jumping : MovementState.Falling);
         }
 
-        private void UpdateAnimation(MovementState state)
+        public void UpdateAnimation(MovementState state)
         {
             switch (state)
             {

@@ -55,7 +55,6 @@ public class GameManager : MonoBehaviour
             var spawn = Instantiate(spawnObject[randObjectIndex], spawnPoints[randPointsIndex].transform.position, Quaternion.identity);
             if (flipSpawnPoint)
             {
-                Debug.Log("Flips");
                 spawn.transform.position = new Vector3(spawn.transform.position.x * -1, spawn.transform.position.y, spawn.transform.position.z);
             }
             var spawnComponent = spawn.GetComponent<SpawnObjectScript>();
