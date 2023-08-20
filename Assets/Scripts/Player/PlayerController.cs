@@ -13,6 +13,7 @@ namespace Player
         [SerializeField] private ContactFilter2D contactFilter;
         [SerializeField] private float jumpForce = 20.0f;
         [SerializeField] private float moveSpeed = 1.0f;
+        [SerializeField] Transform toolbox;
         private Vector2 moveVector;
         private int scoreCount;
         private bool isPaused;
@@ -24,7 +25,7 @@ namespace Player
         public FMODUnity.EventReference characterJump;
         public FMOD.Studio.EventInstance characterJumpInstance;
 
-        enum MovementState
+        public enum MovementState
         {
             Running,
             Jumping,
@@ -113,10 +114,14 @@ namespace Player
             else if (moveVector.x > 0)
             {
                 spriteRenderer.flipX = false;
+                toolbox.localScale = new Vector3(2.25f, 1.75f, 1);
+                toolbox.localPosition = new Vector3(1f, -0.1f, 0);
             }
             else
             {
                 spriteRenderer.flipX = true;
+                toolbox.localScale = new Vector3(-2.25f, 1.75f, 1);
+                toolbox.localPosition = new Vector3(-1f, -0.1f, 0);
             }
             if (IsGrounded)
                 UpdateAnimation(MovementState.Running);
@@ -127,7 +132,7 @@ namespace Player
                 UpdateAnimation(rigidBody.velocity.y > 0.1f ? MovementState.Jumping : MovementState.Falling);
         }
 
-        private void UpdateAnimation(MovementState state)
+        public void UpdateAnimation(MovementState state)
         {
             switch (state)
             {

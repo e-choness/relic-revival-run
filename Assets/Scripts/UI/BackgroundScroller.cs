@@ -1,6 +1,8 @@
+using Player;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static Player.PlayerController;
 
 namespace UI
 {
@@ -11,6 +13,8 @@ namespace UI
         [SerializeField] private int levelIndex;
         private int index;
         private bool isFinished;
+        GameManager gM;
+        PlayerController pC;
 
         // private enum Level
         // {
@@ -22,6 +26,8 @@ namespace UI
         // Start is called before the first frame update
         void Start()
         {
+            gM = FindObjectOfType<GameManager>();
+            pC = FindObjectOfType<PlayerController>();
             isFinished = false;
             // Mexico Level waypoints
             if (levelIndex == 1)
@@ -81,6 +87,28 @@ namespace UI
         void Update()
         {
             MoveBackground();
+            FlipDirection();
+            CheckFalling();
+        }
+
+        void FlipDirection()
+        {
+            if(waypoints[index].x > transform.position.x)
+            {
+                gM.flipSpawnPoint = true;
+            }
+            else
+            {
+                gM.flipSpawnPoint = false;
+            }
+        }
+
+        void CheckFalling()
+        {
+            if (waypoints[index].y > transform.position.y+2f)
+            {
+                pC.UpdateAnimation(MovementState.Falling);
+            }
         }
 
         private void MoveBackground()
