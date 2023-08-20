@@ -164,6 +164,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnSpeed: 3
   speedMultiplier: 0.1
+  Effect: {fileID: 1773547707902929406, guid: 367ca6e409972db4c96c55a455a0098b, type: 3}
   spawnType: 1
 --- !u!114 &-7201366830903977786
 MonoBehaviour:

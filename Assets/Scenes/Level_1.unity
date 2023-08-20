@@ -1353,6 +1353,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: edcdcf7672afa1c43b14cf92c50678bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  toolSpritesActivated: {fileID: 0}
   tools:
   - {fileID: 1237476617}
   - {fileID: 1819815645}

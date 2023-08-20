@@ -6,6 +6,7 @@ namespace Spawns
     {
         [SerializeField] float spawnSpeed = 10.0f;
         [SerializeField] float speedMultiplier = 0.05f;
+        [SerializeField] GameObject Effect;
         public int spawnType;
         private Rigidbody2D rigidbody2D;
         GameManager gM;
@@ -34,9 +35,16 @@ namespace Spawns
         private void DestroySpawns()
         {
             timer += Time.deltaTime;
-    
             if (timer > 10)
                 Destroy(gameObject);
+        }
+
+        private void OnDestroy()
+        {
+            if (Effect != null)
+            {
+                Instantiate(Effect, transform.position, Quaternion.identity);
+            }
         }
     }
 }

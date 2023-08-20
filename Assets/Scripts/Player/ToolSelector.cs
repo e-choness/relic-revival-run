@@ -6,7 +6,8 @@ namespace Player
 {
     public class ToolSelector : MonoBehaviour
     {
-    
+
+        [SerializeField] Sprite toolSpritesActivated;
         [SerializeField] private List<GameObject> tools;
         private PlayerInput playerInput;
         public FMODUnity.EventReference toolswitchEvent;

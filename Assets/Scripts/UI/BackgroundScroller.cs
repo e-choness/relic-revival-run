@@ -108,7 +108,6 @@ namespace UI
             if (waypoints[index].y > transform.position.y+2f)
             {
                 pC.UpdateAnimation(MovementState.Falling);
-                Debug.Log("Falling");
             }
         }
 
