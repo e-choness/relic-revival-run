@@ -1312,6 +1312,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
+    - target: {fileID: 8612402983325073099, guid: 1f5d58d651e6d8c4c807c609594cf24c, type: 3}
+      propertyPath: m_MatchWidthOrHeight
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8768905930111737552, guid: 1f5d58d651e6d8c4c807c609594cf24c, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0.5
@@ -1819,6 +1823,7 @@ MonoBehaviour:
     maxNormalAngle: 0
   jumpForce: 18
   moveSpeed: 10
+  toolbox: {fileID: 0}
   characterJump:
     Guid:
       Data1: 957304276
@@ -2426,6 +2431,7 @@ MonoBehaviour:
   backgroundScroller: {fileID: 648359111}
   endMenu: {fileID: 1831312146}
   endScoreText: {fileID: 1831312147}
+  flipSpawnPoint: 1
 --- !u!4 &1529352792
 Transform:
   m_ObjectHideFlags: 0
@@ -2662,6 +2668,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: edcdcf7672afa1c43b14cf92c50678bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  toolSpritesActivated: {fileID: 0}
   tools:
   - {fileID: 215219352}
   - {fileID: 1307323174}
@@ -2788,6 +2795,10 @@ PrefabInstance:
     - target: {fileID: 4564227434745247102, guid: bbe9d78b7df83234d9d3d8b4a32906f3, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5111220822106851299, guid: bbe9d78b7df83234d9d3d8b4a32906f3, type: 3}
+      propertyPath: m_MatchWidthOrHeight
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2960,6 +2971,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6594989838775710457, guid: 4429ecc398d50f44daa254f528a98051, type: 3}
       propertyPath: m_UiScaleMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6594989838775710457, guid: 4429ecc398d50f44daa254f528a98051, type: 3}
+      propertyPath: m_MatchWidthOrHeight
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6594989838775710457, guid: 4429ecc398d50f44daa254f528a98051, type: 3}
