@@ -5,6 +5,7 @@ import { difficultyFor, type Difficulty } from '../systems/difficulty';
 import { RunState } from '../systems/runState';
 import { DAMAGE_SIZE, damageTexture, drawArtifact, drawSkyline, toolTexture } from '../ui/art';
 import { addAvatar, type AvatarView } from '../ui/avatar';
+import { showFieldGuide } from '../ui/fieldGuide';
 import { AudioDirector } from '../audio/AudioDirector';
 import { FONT_DISPLAY, HEIGHT, INK, PAPER, PAPER_CSS, REDUCED_MOTION, WIDTH, button, card, hex, label } from '../ui/theme';
 
@@ -18,6 +19,9 @@ const CAMERA_COOLDOWN = 3;
 const ARTIFACT_W = 230;
 const ARTIFACT_H = 140;
 const AVATAR_HEIGHT = 150;
+/** How far ahead (px) the tool hint looks for the next damage. */
+const HINT_RANGE = 560;
+const ASSIST_KEY = 'relic-revival-run:assist';
 const PLAYER_HITBOX = { w: 64, h: 120 };
 
 interface SpotInfo {
@@ -59,6 +63,11 @@ export class RunScene extends Phaser.Scene {
   private uvCooldown = 0;
   private cameraCooldown = 0;
   private paused = false;
+  /** Field guide is open: the run waits. */
+  private briefing = false;
+  /** Pulse the slot of the tool needed for the next damage (pause menu toggle, remembered). */
+  private assist = readAssist();
+  private hintRing!: Phaser.GameObjects.Graphics;
   private ended = false;
   private seen = new Set<DamageId>();
   private audio = AudioDirector.get();
@@ -92,7 +101,7 @@ export class RunScene extends Phaser.Scene {
     this.layers = [];
     this.toolSlots = [];
     this.elapsed = this.spawnTimer = this.uvCooldown = this.cameraCooldown = this.extraJumps = 0;
-    this.paused = this.ended = false;
+    this.paused = this.ended = this.briefing = false;
     this.pauseLayer = undefined;
     this.seen = new Set();
   }
@@ -109,7 +118,13 @@ export class RunScene extends Phaser.Scene {
     this.physics.add.overlap(this.player, this.spots, (_p, s) => this.onTouch(s as Spot));
     this.createHud();
     this.bindInput();
-    this.toastText(`${this.culture.name}: restore the ${this.culture.artifact.toLowerCase()}!`, 2500);
+    this.briefing = true;
+    this.physics.pause();
+    showFieldGuide(this, this.culture, 'Start run', () => {
+      this.briefing = false;
+      this.physics.resume();
+      this.toastText(`${this.culture.name}: restore the ${this.culture.artifact.toLowerCase()}!`, 2500);
+    });
   }
 
   // ---------- world ----------
@@ -152,7 +167,7 @@ export class RunScene extends Phaser.Scene {
   }
 
   private jump() {
-    if (this.paused || this.ended) return;
+    if (this.paused || this.briefing || this.ended) return;
     const body = this.player.body;
     if (body.blocked.down) {
       body.setVelocityY(JUMP_V);
@@ -201,13 +216,14 @@ export class RunScene extends Phaser.Scene {
       this.audio.sfx('wrong');
       if (!REDUCED_MOTION) this.cameras.main.shake(140, 0.006);
       spot.setTint(0xc0392b);
+      this.flashSlot(this.tools.indexOf(DAMAGES[info.damage].treatedBy));
       this.tweens.add({ targets: spot, alpha: 0, duration: 400, onComplete: () => spot.destroy() });
     }
     this.refreshHud();
   }
 
   private useUV() {
-    if (this.paused || this.ended || this.uvCooldown > 0) return;
+    if (this.paused || this.briefing || this.ended || this.uvCooldown > 0) return;
     this.uvCooldown = UV_COOLDOWN;
     this.audio.sfx('uv');
     const flash = this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, 0x8e44ff, 0).setDepth(8);
@@ -222,7 +238,7 @@ export class RunScene extends Phaser.Scene {
   }
 
   private useCamera() {
-    if (this.paused || this.ended || this.cameraCooldown > 0) return;
+    if (this.paused || this.briefing || this.ended || this.cameraCooldown > 0) return;
     this.cameraCooldown = CAMERA_COOLDOWN;
     this.audio.sfx('camera');
     if (!REDUCED_MOTION) this.cameras.main.flash(120, 255, 255, 240);
@@ -241,7 +257,7 @@ export class RunScene extends Phaser.Scene {
   // ---------- loop ----------
 
   update(_t: number, deltaMs: number) {
-    if (this.paused || this.ended) return;
+    if (this.paused || this.briefing || this.ended) return;
     const dt = deltaMs / 1000;
     this.elapsed += dt;
     this.uvCooldown = Math.max(0, this.uvCooldown - dt);
@@ -271,6 +287,7 @@ export class RunScene extends Phaser.Scene {
 
     this.animatePlayer(dt);
     this.drawTimeBar();
+    this.drawToolHint();
     this.uvButton.setAlpha(this.uvCooldown > 0 ? 0.45 : 1);
     this.cameraButton.setAlpha(this.cameraCooldown > 0 ? 0.45 : 1);
 
@@ -323,7 +340,7 @@ export class RunScene extends Phaser.Scene {
     for (let i = 0; i < 40; i++) this.artifactGrime.fillStyle(0x3d2f1f, 0.6).fillCircle(rng.between(0, ARTIFACT_W), rng.between(0, ARTIFACT_H), rng.between(3, 12));
     this.artifactCracks = this.add.graphics().setPosition(ax, ay).setDepth(10);
 
-    this.toolName = label(this, WIDTH / 2, HEIGHT - 112, '', 26, { color: PAPER_CSS, stroke: '#2b1d2e', strokeThickness: 6 }).setDepth(10);
+    this.toolName = label(this, WIDTH / 2, HEIGHT - 142, '', 26, { color: PAPER_CSS, stroke: '#2b1d2e', strokeThickness: 6 }).setDepth(10);
     const spacing = 92, start = WIDTH / 2 - ((this.tools.length - 1) * spacing) / 2;
     this.tools.forEach((tool, i) => {
       const c = this.add.container(start + i * spacing, HEIGHT - 52).setDepth(10);
@@ -336,6 +353,8 @@ export class RunScene extends Phaser.Scene {
         this.selectTool(i);
       });
       this.toolSlots.push(c);
+      const treats = this.culture.damages.filter((d) => DAMAGES[d].treatedBy === tool);
+      treats.forEach((d, k) => this.add.image(c.x + (k - (treats.length - 1) / 2) * 26, HEIGHT - 106, damageTexture(d)).setDisplaySize(26, 26).setDepth(10));
     });
 
     this.uvButton = this.actionButton(WIDTH - 150, HEIGHT - 52, 'prop-uv', 'U', () => this.useUV());
@@ -343,6 +362,7 @@ export class RunScene extends Phaser.Scene {
     if (!this.culture.damages.some((d) => DAMAGES[d].hiddenUntilUV)) this.uvButton.setVisible(false);
 
     this.toast = label(this, WIDTH / 2, 170, '', 28, { color: PAPER_CSS, stroke: '#2b1d2e', strokeThickness: 7 }).setDepth(11).setAlpha(0);
+    this.hintRing = this.add.graphics().setDepth(11);
     this.selectTool(0);
     this.refreshHud();
   }
@@ -360,7 +380,7 @@ export class RunScene extends Phaser.Scene {
   }
 
   private selectTool(i: number) {
-    if (this.paused || this.ended) return;
+    if (this.paused || this.briefing || this.ended) return;
     const next = Phaser.Math.Wrap(i, 0, this.tools.length);
     if (next !== this.toolIndex) this.audio.sfx('switch');
     this.toolIndex = next;
@@ -373,6 +393,30 @@ export class RunScene extends Phaser.Scene {
       this.tweens.add({ targets: c, y: HEIGHT - 52 - (on ? 12 : 0), scale: on ? 1.1 : 1, duration: 100 });
     });
     this.toolName.setText(TOOLS[this.tools[this.toolIndex]].name);
+  }
+
+  /** Pulse the slot of the tool the next visible damage needs. */
+  private drawToolHint() {
+    const g = this.hintRing.clear();
+    if (!this.assist) return;
+    let next: Spot | undefined;
+    for (const s of this.activeSpots()) {
+      const info = s.getData('info') as SpotInfo;
+      if (info.done || s.alpha < 1 || s.x < PLAYER_X - 30 || s.x > PLAYER_X + HINT_RANGE) continue;
+      if (!next || s.x < next.x) next = s;
+    }
+    if (!next) return;
+    const slot = this.toolSlots[this.tools.indexOf(DAMAGES[(next.getData('info') as SpotInfo).damage].treatedBy)];
+    const pulse = 0.75 + 0.25 * Math.sin(this.time.now / 110);
+    // Ink under gold so the ring reads on every culture's palette.
+    g.lineStyle(10, INK, pulse).strokeRoundedRect(slot.x - 52, slot.y - 50, 100, 100, 22);
+    g.lineStyle(5, 0xf2c14e, pulse).strokeRoundedRect(slot.x - 52, slot.y - 50, 100, 100, 22);
+  }
+
+  private flashSlot(i: number) {
+    const slot = this.toolSlots[i];
+    if (!slot) return;
+    this.tweens.add({ targets: slot, scale: 1.35, duration: 120, yoyo: true, repeat: 1 });
   }
 
   private refreshHud() {
@@ -418,6 +462,7 @@ export class RunScene extends Phaser.Scene {
   private bindInput() {
     const kb = this.input.keyboard!;
     kb.on('keydown', (e: KeyboardEvent) => {
+      if (this.briefing) return;
       if (['Space', 'ArrowUp', 'KeyW'].includes(e.code)) this.jump();
       else if (e.code === 'KeyQ') this.selectTool(this.toolIndex - 1);
       else if (e.code === 'KeyE') this.selectTool(this.toolIndex + 1);
@@ -431,16 +476,17 @@ export class RunScene extends Phaser.Scene {
     });
     this.input.on('wheel', (_p: unknown, _o: unknown, _dx: number, dy: number) => this.selectTool(this.toolIndex + Math.sign(dy)));
     this.input.on('pointerdown', (_p: Phaser.Input.Pointer, over: Phaser.GameObjects.GameObject[]) => {
-      if (over.length === 0) this.jump();
+      if (over.length === 0 && !this.briefing) this.jump();
     });
     // Standard gamepad mapping: A jump, X camera, Y UV, LB/RB cycle tools, Start pause.
     this.input.gamepad?.on('down', (_pad: Phaser.Input.Gamepad.Gamepad, b: Phaser.Input.Gamepad.Button) => {
+      if (this.briefing) return;
       ({ 0: () => this.jump(), 2: () => this.useCamera(), 3: () => this.useUV(), 4: () => this.selectTool(this.toolIndex - 1), 5: () => this.selectTool(this.toolIndex + 1), 9: () => this.togglePause() } as Record<number, () => void>)[b.index]?.();
     });
   }
 
   private togglePause() {
-    if (this.ended) return;
+    if (this.ended || this.briefing) return;
     this.paused = !this.paused;
     if (this.paused) {
       this.physics.pause();
@@ -449,16 +495,27 @@ export class RunScene extends Phaser.Scene {
       this.anims.pauseAll();
       const c = this.add.container(0, 0).setDepth(20);
       c.add(this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, INK, 0.6));
-      c.add(card(this, WIDTH / 2, HEIGHT / 2, 420, 420));
-      c.add(label(this, WIDTH / 2, HEIGHT / 2 - 150, 'Paused', 44, { fontFamily: FONT_DISPLAY }));
-      c.add(button(this, WIDTH / 2, HEIGHT / 2 - 60, 'Resume', () => this.togglePause()));
+      c.add(card(this, WIDTH / 2, HEIGHT / 2, 440, 560));
+      c.add(label(this, WIDTH / 2, HEIGHT / 2 - 225, 'Paused', 44, { fontFamily: FONT_DISPLAY }));
+      c.add(button(this, WIDTH / 2, HEIGHT / 2 - 145, 'Resume', () => this.togglePause(), 300));
+      c.add(button(this, WIDTH / 2, HEIGHT / 2 - 60, 'Field guide', () => {
+        c.setVisible(false);
+        showFieldGuide(this, this.culture, 'Back', () => c.setVisible(true));
+      }, 300));
+      const hintLabel = () => `Tool hints: ${this.assist ? 'on' : 'off'}`;
+      const hints = button(this, WIDTH / 2, HEIGHT / 2 + 25, hintLabel(), () => {
+        this.assist = !this.assist;
+        writeAssist(this.assist);
+        (hints.getAt(1) as Phaser.GameObjects.Text).setText(hintLabel());
+      }, 300);
+      c.add(hints);
       const soundLabel = () => `Sound: ${this.audio.muted ? 'off' : 'on'} (M)`;
-      const sound = button(this, WIDTH / 2, HEIGHT / 2 + 25, soundLabel(), () => {
+      const sound = button(this, WIDTH / 2, HEIGHT / 2 + 110, soundLabel(), () => {
         this.audio.toggleMute();
         (sound.getAt(1) as Phaser.GameObjects.Text).setText(soundLabel());
-      });
+      }, 300);
       c.add(sound);
-      c.add(button(this, WIDTH / 2, HEIGHT / 2 + 110, 'World map', () => this.scene.start('WorldMap')));
+      c.add(button(this, WIDTH / 2, HEIGHT / 2 + 195, 'World map', () => this.scene.start('WorldMap'), 300));
       this.pauseLayer = c;
     } else {
       this.physics.resume();
@@ -474,4 +531,20 @@ function mix(a: number, b: number, t: number) {
   const ca = Phaser.Display.Color.IntegerToColor(a), cb = Phaser.Display.Color.IntegerToColor(b);
   const c = Phaser.Display.Color.Interpolate.ColorWithColor(ca, cb, 100, t * 100);
   return Phaser.Display.Color.GetColor(c.r, c.g, c.b);
+}
+
+function readAssist() {
+  try {
+    return localStorage.getItem(ASSIST_KEY) !== '0';
+  } catch {
+    return true;
+  }
+}
+
+function writeAssist(on: boolean) {
+  try {
+    localStorage.setItem(ASSIST_KEY, on ? '1' : '0');
+  } catch {
+    /* ignore */
+  }
 }
