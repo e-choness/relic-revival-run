@@ -6,6 +6,8 @@ import { RunState } from '../systems/runState';
 import { DAMAGE_SIZE, damageTexture, drawArtifact, drawSkyline, toolTexture } from '../ui/art';
 import { addAvatar, type AvatarView } from '../ui/avatar';
 import { showFieldGuide } from '../ui/fieldGuide';
+import { showControlsMenu } from '../ui/controlsMenu';
+import { actionFor, loadBindings, type Action } from '../systems/controls';
 import { AudioDirector } from '../audio/AudioDirector';
 import { FONT_DISPLAY, HEIGHT, INK, PAPER, PAPER_CSS, REDUCED_MOTION, WIDTH, button, card, hex, label } from '../ui/theme';
 
@@ -65,6 +67,8 @@ export class RunScene extends Phaser.Scene {
   private paused = false;
   /** Field guide is open: the run waits. */
   private briefing = false;
+  /** A pause sub-menu (field guide, controls) owns the keyboard. */
+  private subMenu = false;
   /** Pulse the slot of the tool needed for the next damage (pause menu toggle, remembered). */
   private assist = readAssist();
   private hintRing!: Phaser.GameObjects.Graphics;
@@ -101,7 +105,7 @@ export class RunScene extends Phaser.Scene {
     this.layers = [];
     this.toolSlots = [];
     this.elapsed = this.spawnTimer = this.uvCooldown = this.cameraCooldown = this.extraJumps = 0;
-    this.paused = this.ended = this.briefing = false;
+    this.paused = this.ended = this.briefing = this.subMenu = false;
     this.pauseLayer = undefined;
     this.seen = new Set();
   }
@@ -462,13 +466,18 @@ export class RunScene extends Phaser.Scene {
   private bindInput() {
     const kb = this.input.keyboard!;
     kb.on('keydown', (e: KeyboardEvent) => {
-      if (this.briefing) return;
-      if (['Space', 'ArrowUp', 'KeyW'].includes(e.code)) this.jump();
-      else if (e.code === 'KeyQ') this.selectTool(this.toolIndex - 1);
-      else if (e.code === 'KeyE') this.selectTool(this.toolIndex + 1);
-      else if (e.code === 'KeyU') this.useUV();
-      else if (e.code === 'KeyC') this.useCamera();
-      else if (e.code === 'Escape' || e.code === 'KeyP') this.togglePause();
+      if (this.briefing || this.subMenu) return;
+      const actions: Record<Action, () => void> = {
+        jump: () => this.jump(),
+        prevTool: () => this.selectTool(this.toolIndex - 1),
+        nextTool: () => this.selectTool(this.toolIndex + 1),
+        uv: () => this.useUV(),
+        camera: () => this.useCamera(),
+        pause: () => this.togglePause(),
+      };
+      // Read each time so changes made in the Controls menu apply immediately.
+      const action = actionFor(loadBindings(), e.code);
+      if (action) actions[action]();
       else if (/^Digit[1-9]$/.test(e.code)) {
         const i = Number(e.code.slice(5)) - 1;
         if (i < this.tools.length) this.selectTool(i);
@@ -495,27 +504,33 @@ export class RunScene extends Phaser.Scene {
       this.anims.pauseAll();
       const c = this.add.container(0, 0).setDepth(20);
       c.add(this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, INK, 0.6));
-      c.add(card(this, WIDTH / 2, HEIGHT / 2, 440, 560));
-      c.add(label(this, WIDTH / 2, HEIGHT / 2 - 225, 'Paused', 44, { fontFamily: FONT_DISPLAY }));
-      c.add(button(this, WIDTH / 2, HEIGHT / 2 - 145, 'Resume', () => this.togglePause(), 300));
-      c.add(button(this, WIDTH / 2, HEIGHT / 2 - 60, 'Field guide', () => {
+      c.add(card(this, WIDTH / 2, HEIGHT / 2, 440, 650));
+      c.add(label(this, WIDTH / 2, HEIGHT / 2 - 270, 'Paused', 44, { fontFamily: FONT_DISPLAY }));
+      c.add(button(this, WIDTH / 2, HEIGHT / 2 - 190, 'Resume', () => this.togglePause(), 300));
+      const subMenu = (open: (done: () => void) => void) => {
         c.setVisible(false);
-        showFieldGuide(this, this.culture, 'Back', () => c.setVisible(true));
-      }, 300));
+        this.subMenu = true;
+        open(() => {
+          this.subMenu = false;
+          c.setVisible(true);
+        });
+      };
+      c.add(button(this, WIDTH / 2, HEIGHT / 2 - 107, 'Field guide', () => subMenu((done) => showFieldGuide(this, this.culture, 'Back', done)), 300));
+      c.add(button(this, WIDTH / 2, HEIGHT / 2 - 24, 'Controls', () => subMenu((done) => showControlsMenu(this, done)), 300));
       const hintLabel = () => `Tool hints: ${this.assist ? 'on' : 'off'}`;
-      const hints = button(this, WIDTH / 2, HEIGHT / 2 + 25, hintLabel(), () => {
+      const hints = button(this, WIDTH / 2, HEIGHT / 2 + 59, hintLabel(), () => {
         this.assist = !this.assist;
         writeAssist(this.assist);
         (hints.getAt(1) as Phaser.GameObjects.Text).setText(hintLabel());
       }, 300);
       c.add(hints);
       const soundLabel = () => `Sound: ${this.audio.muted ? 'off' : 'on'} (M)`;
-      const sound = button(this, WIDTH / 2, HEIGHT / 2 + 110, soundLabel(), () => {
+      const sound = button(this, WIDTH / 2, HEIGHT / 2 + 142, soundLabel(), () => {
         this.audio.toggleMute();
         (sound.getAt(1) as Phaser.GameObjects.Text).setText(soundLabel());
       }, 300);
       c.add(sound);
-      c.add(button(this, WIDTH / 2, HEIGHT / 2 + 195, 'World map', () => this.scene.start('WorldMap'), 300));
+      c.add(button(this, WIDTH / 2, HEIGHT / 2 + 225, 'World map', () => this.scene.start('WorldMap'), 300));
       this.pauseLayer = c;
     } else {
       this.physics.resume();

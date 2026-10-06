@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { CULTURES } from '../data/cultures';
+import { keysLabel, loadBindings } from '../systems/controls';
 import { drawSkyline } from '../ui/art';
 import { AudioDirector } from '../audio/AudioDirector';
 import { MENU_PROFILE } from '../audio/music';
@@ -31,8 +32,9 @@ export class TitleScene extends Phaser.Scene {
     // The whole restorer team runs past, one per culture.
     this.parade = CULTURES.map((c, i) => ({ view: addAvatar(this, c, 0, 560, 120, 'run'), x: -120 - i * PARADE_GAP }));
 
+    const keys = loadBindings();
     button(this, WIDTH / 2, 380, 'Play', () => this.scene.start('WorldMap'), 260);
-    label(this, WIDTH / 2, 650, 'Jump: Space / tap   ·   Tools: 1–8, Q/E, wheel   ·   UV: U   ·   Camera: C   ·   Mute: M', 22, { color: PAPER_CSS });
+    label(this, WIDTH / 2, 650, `Jump: ${keysLabel(keys, 'jump')} / tap   ·   Tools: 1–8, ${keysLabel(keys, 'prevTool')}/${keysLabel(keys, 'nextTool')}, wheel   ·   UV: ${keysLabel(keys, 'uv')}   ·   Camera: ${keysLabel(keys, 'camera')}   ·   Mute: M`, 22, { color: PAPER_CSS });
   }
 
   update(_t: number, deltaMs: number) {
