@@ -16,6 +16,24 @@ export interface SoundProfile {
   perc: Perc;
   /** Sustained tonic + fifth (tanpura, bagpipe-like drones). 0–1. */
   drone: number;
+  /** Open (CC0) instrument samples from public/assets/audio/manifest.json; the synth timbres above are the fallback. */
+  samples?: { lead: string; low?: string; high?: string };
+}
+
+/** One pitched sample in the audio manifest. */
+export interface PitchedSample {
+  midi: number;
+  file: string;
+}
+
+/** Instruments whose samples are held notes (wind, bowed): cut them at the note's end instead of letting them ring. */
+export const SUSTAINED = new Set(['altoRecorder', 'sopranoRecorder', 'tenorRecorder', 'bowedPsaltery']);
+
+/** The sample closest in pitch, and the playback rate that tunes it to `midi` (microtones included). */
+export function nearestSample<T extends PitchedSample>(samples: T[], midi: number): { sample: T; rate: number } | null {
+  let best: T | null = null;
+  for (const s of samples) if (!best || Math.abs(s.midi - midi) < Math.abs(best.midi - midi)) best = s;
+  return best && { sample: best, rate: Math.pow(2, (midi - best.midi) / 12) };
 }
 
 export const midiToFreq = (m: number) => 440 * Math.pow(2, (m - 69) / 12);
@@ -99,4 +117,4 @@ export function mix(intensity: number, integrity: number) {
 }
 
 /** Menus: a gentle music-box loop. */
-export const MENU_PROFILE: SoundProfile = { root: 62, scale: [0, 2, 4, 7, 9], tempo: 84, lead: 'mallet', perc: 'none', drone: 0 };
+export const MENU_PROFILE: SoundProfile = { root: 62, scale: [0, 2, 4, 7, 9], tempo: 84, lead: 'mallet', perc: 'none', drone: 0, samples: { lead: 'vibraphone' } };

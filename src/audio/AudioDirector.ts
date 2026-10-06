@@ -1,6 +1,7 @@
-import { PATTERNS, degreeToMidi, midiToFreq, mix, phrase, seedFrom, type Note, type Perc, type SoundProfile, type Timbre } from './music';
+import { PATTERNS, SUSTAINED, degreeToMidi, midiToFreq, mix, nearestSample, phrase, seedFrom, type Note, type Perc, type PitchedSample, type SoundProfile, type Timbre } from './music';
 
-// PLACEHOLDER soundtrack and effects, synthesized with Web Audio until recorded stems exist.
+// Soundtrack and effects. Music is composed at runtime from each culture's scales and rhythms and played on
+// open (CC0) instrument samples (public/assets/audio, see CREDITS.md); synthesized voices are the fallback.
 // Music is a layered, beat-scheduled loop (bass, percussion, lead, drone, tension) whose mix follows play:
 // the combo builds percussion and melody density, low artifact integrity brings in a tense pulse.
 
@@ -12,6 +13,12 @@ const STEPS_PER_PHRASE = 16;
 /** Phrase order per 4-phrase cycle: statement, repeat, answer, return. */
 const FORM = [0, 0, 1, 2];
 const MUTE_KEY = 'relic-revival-run:muted';
+const AUDIO_DIR = 'assets/audio/';
+
+interface Manifest {
+  melodic: Record<string, PitchedSample[]>;
+  perc: Record<string, string>;
+}
 
 type Layer = 'bass' | 'perc' | 'lead' | 'drone' | 'tension';
 
@@ -37,6 +44,11 @@ export class AudioDirector {
   private timer?: ReturnType<typeof setInterval>;
   private sustained: OscillatorNode[] = [];
   private intensity = 0;
+  private manifest?: Promise<Manifest | null>;
+  private manifestData: Manifest | null = null;
+  /** Decoded samples by file; filled in the background, so early notes may use the synth. */
+  private buffers = new Map<string, AudioBuffer>();
+  private requested = new Set<string>();
   private integrity = 1;
 
   /** Create/resume the audio context. Browsers only allow this from a user gesture. */
@@ -53,7 +65,10 @@ export class AudioDirector {
       const data = this.noise.getChannelData(0);
       for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
       // A profile requested before the first gesture starts now.
-      if (this.profile) this.start();
+      if (this.profile) {
+        this.loadSamples(this.profile);
+        this.start();
+      }
     }
     if (this.ctx.state === 'suspended') void this.ctx.resume();
   }
@@ -77,7 +92,34 @@ export class AudioDirector {
     this.profileKey = key;
     const seed = seedFrom(key);
     this.phrases = [0, 1, 2].map((i) => phrase(seed + i * 7919, STEPS_PER_PHRASE, profile.scale.length + 2));
-    if (this.ctx) this.start();
+    if (this.ctx) {
+      this.loadSamples(profile);
+      this.start();
+    }
+  }
+
+  /** Fetch and decode the samples this profile uses (once each). */
+  private loadSamples(p: SoundProfile) {
+    const ctx = this.ctx;
+    if (!ctx || !p.samples) return;
+    this.manifest ??= fetch(`${AUDIO_DIR}manifest.json`)
+      .then((r) => (r.ok ? (r.json() as Promise<Manifest>) : null))
+      .catch(() => null);
+    void this.manifest.then((m) => {
+      if (!m) return;
+      this.manifestData = m;
+      const { lead, low, high } = p.samples!;
+      const files = [...(m.melodic[lead] ?? []).map((x) => x.file), ...[low, high].flatMap((k) => (k && m.perc[k] ? [m.perc[k]] : []))];
+      for (const file of files) {
+        if (this.requested.has(file)) continue;
+        this.requested.add(file);
+        fetch(AUDIO_DIR + file)
+          .then((r) => r.arrayBuffer())
+          .then((b) => ctx.decodeAudioData(b))
+          .then((buf) => this.buffers.set(file, buf))
+          .catch(() => this.requested.delete(file));
+      }
+    });
   }
 
   stop() {
@@ -109,7 +151,8 @@ export class AudioDirector {
     if (!ctx || this.muted) return;
     const t = ctx.currentTime + 0.005;
     const p = this.profile;
-    const scaleNote = (deg: number, octave = 1) => midiToFreq(degreeToMidi(p ?? DEFAULT_SFX_PROFILE, deg) + 12 * octave);
+    const scaleMidi = (deg: number, octave = 1) => degreeToMidi(p ?? DEFAULT_SFX_PROFILE, deg) + 12 * octave;
+    const scaleNote = (deg: number, octave = 1) => midiToFreq(scaleMidi(deg, octave));
     switch (name) {
       case 'jump':
         return this.sweep('sine', 300, 640, t, 0.16, 0.25);
@@ -120,7 +163,7 @@ export class AudioDirector {
       case 'restore': {
         // A short rising figure in the culture's own scale and instrument, nudged onto the beat when close.
         const start = this.quantize(t);
-        [0, 2, 4].forEach((d, i) => this.voice(p?.lead ?? 'mallet', scaleNote(d), start + i * 0.07, 0.25, this.sfxBus, 0.5));
+        [0, 2, 4].forEach((d, i) => this.leadNote(scaleMidi(d), start + i * 0.07, 0.25, this.sfxBus, 0.6));
         return;
       }
       case 'wrong':
@@ -135,7 +178,7 @@ export class AudioDirector {
         this.noiseHit(t, 0.06, 0.35, 'highpass', 3000);
         return this.voice('mallet', 2400, t + 0.05, 0.03, this.sfxBus, 0.12);
       case 'win':
-        [0, 1, 2, 3, 4, 5].forEach((d, i) => this.voice(p?.lead ?? 'mallet', scaleNote(d), t + i * 0.09, 0.4, this.sfxBus, 0.45));
+        [0, 1, 2, 3, 4, 5].forEach((d, i) => this.leadNote(scaleMidi(d), t + i * 0.09, 0.4, this.sfxBus, 0.55));
         return;
       case 'fail':
         [2, 1, 0].forEach((d, i) => this.voice('bowed', scaleNote(d, 0), t + i * 0.22, 0.4, this.sfxBus, 0.35));
@@ -212,7 +255,7 @@ export class AudioDirector {
     let at = 0;
     for (const n of ph) {
       if (at === pos && n.degree !== null && Math.random() < m.density)
-        this.voice(p.lead, midiToFreq(degreeToMidi(p, n.degree)), t, n.steps * this.stepDur * 0.95, this.layers.lead, 0.5);
+        this.leadNote(degreeToMidi(p, n.degree), t, n.steps * this.stepDur * 0.95, this.layers.lead, 0.6);
       at += n.steps;
       if (at > pos) break;
     }
@@ -225,6 +268,29 @@ export class AudioDirector {
   }
 
   // ---------- voices ----------
+
+  /** A melody note on the culture's sampled instrument, or its synth stand-in until samples load. */
+  private leadNote(midi: number, t: number, dur: number, out: AudioNode, vel: number) {
+    const inst = this.profile?.samples?.lead;
+    const loaded = inst ? (this.manifestData?.melodic[inst] ?? []).filter((x) => this.buffers.has(x.file)) : [];
+    const hit = nearestSample(loaded, midi);
+    if (hit && inst) return this.sample(this.buffers.get(hit.sample.file)!, t, hit.rate, vel, out, SUSTAINED.has(inst) ? dur : undefined);
+    this.voice(this.profile?.lead ?? 'mallet', midiToFreq(midi), t, dur, out, vel);
+  }
+
+  /** Play a one-shot; held instruments are cut with a short release at `holdFor`. */
+  private sample(buf: AudioBuffer, t: number, rate: number, vel: number, out: AudioNode, holdFor?: number) {
+    const ctx = this.ctx!, src = ctx.createBufferSource(), g = gain(ctx, vel, out);
+    src.buffer = buf;
+    src.playbackRate.value = rate;
+    src.connect(g);
+    src.start(t);
+    if (holdFor === undefined) return;
+    const end = t + Math.max(0.12, holdFor);
+    g.gain.setValueAtTime(vel, end);
+    g.gain.linearRampToValueAtTime(0, end + 0.12);
+    src.stop(end + 0.15);
+  }
 
   private voice(kind: Timbre | 'bass', freq: number, t: number, dur: number, out: AudioNode, vel: number) {
     const ctx = this.ctx!;
@@ -299,6 +365,9 @@ export class AudioDirector {
 
   private drum(kind: Exclude<Perc, 'none'>, part: 'low' | 'high', t: number, vel: number) {
     const out = this.layers.perc;
+    const key = part === 'low' ? this.profile?.samples?.low : this.profile?.samples?.high;
+    const buf = key ? this.buffers.get(this.manifestData?.perc[key] ?? '') : undefined;
+    if (buf) return this.sample(buf, t, 1, vel * 0.85, out);
     if (part === 'low') {
       if (kind === 'gong') return [1, 2.4, 3.9].forEach((r, i) => this.ring(220 * r, t, 1.2 / (i + 1), vel * 0.25 / (i + 1), out));
       const [from, to, len, level] = kind === 'taiko' ? [95, 42, 0.8, 1] : kind === 'hand' ? [180, 70, 0.3, 0.8] : [130, 60, 0.22, 0.6];

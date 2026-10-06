@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MENU_PROFILE, PATTERNS, degreeToMidi, midiToFreq, mix, phrase, rng, seedFrom } from '../src/audio/music';
+import { MENU_PROFILE, PATTERNS, degreeToMidi, midiToFreq, mix, nearestSample, phrase, rng, seedFrom } from '../src/audio/music';
 import { CULTURES } from '../src/data/cultures';
 
 describe('music theory helpers', () => {
@@ -62,5 +62,34 @@ describe('culture sound profiles', () => {
       expect(c.sound.tempo).toBeGreaterThan(50);
       if (c.sound.perc !== 'none') expect(PATTERNS[c.sound.perc].low).toHaveLength(8);
     }
+  });
+});
+
+describe('sampled instruments', () => {
+  const samples = [{ midi: 60, file: 'a' }, { midi: 67, file: 'b' }, { midi: 72, file: 'c' }];
+
+  it('picks the closest sample and tunes it', () => {
+    const hit = nearestSample(samples, 62)!;
+    expect(hit.sample.file).toBe('a');
+    expect(hit.rate).toBeCloseTo(Math.pow(2, 2 / 12));
+  });
+
+  it('handles microtones', () => {
+    expect(nearestSample(samples, 67.5)!.rate).toBeCloseTo(Math.pow(2, 0.5 / 12));
+  });
+
+  it('returns null when nothing is loaded', () => {
+    expect(nearestSample([], 60)).toBeNull();
+  });
+
+  it('every culture names instruments that exist in the audio manifest', async () => {
+    const { readFileSync } = await import('node:fs');
+    const m = JSON.parse(readFileSync('public/assets/audio/manifest.json', 'utf8'));
+    for (const c of CULTURES) {
+      const s = c.sound.samples!;
+      expect(m.melodic[s.lead]?.length).toBeGreaterThan(2);
+      for (const k of [s.low, s.high]) if (k) expect(m.perc[k]).toBeTruthy();
+    }
+    expect(m.melodic[MENU_PROFILE.samples!.lead]).toBeTruthy();
   });
 });
