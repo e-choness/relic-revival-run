@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { CULTURES } from '../data/cultures';
 import { isUnlocked, loadSave } from '../systems/save';
+import { AudioDirector } from '../audio/AudioDirector';
+import { MENU_PROFILE } from '../audio/music';
 import { addAvatar, type AvatarView } from '../ui/avatar';
 import { FONT_DISPLAY, HEIGHT, INK, PAPER_CSS, WIDTH, button, card, hex, label, stars } from '../ui/theme';
 
@@ -12,6 +14,7 @@ export class WorldMapScene extends Phaser.Scene {
   }
 
   create() {
+    AudioDirector.get().play(MENU_PROFILE, 'menu');
     this.avatars = [];
     const save = loadSave();
     this.add.graphics().fillGradientStyle(0x3b2a4a, 0x3b2a4a, 0x1d1424, 0x1d1424, 1).fillRect(0, 0, WIDTH, HEIGHT);

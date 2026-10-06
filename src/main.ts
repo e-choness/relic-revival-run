@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { AudioDirector } from './audio/AudioDirector';
 import { BootScene } from './scenes/BootScene';
 import { ResultsScene } from './scenes/ResultsScene';
 import { RunScene } from './scenes/RunScene';
@@ -18,3 +19,12 @@ const game = new Phaser.Game({
 
 // Dev-only handle for playtest scripts (e.g. fast-forwarding a run); stripped from production builds.
 if (import.meta.env.DEV) (window as unknown as { game: Phaser.Game }).game = game;
+
+// Audio may only start after a user gesture; M mutes anywhere.
+const audio = AudioDirector.get();
+const unlock = () => audio.unlock();
+window.addEventListener('pointerdown', unlock);
+window.addEventListener('keydown', (e) => {
+  unlock();
+  if (e.code === 'KeyM') audio.toggleMute();
+});

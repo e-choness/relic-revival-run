@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { CULTURES } from '../data/cultures';
 import { drawSkyline } from '../ui/art';
+import { AudioDirector } from '../audio/AudioDirector';
+import { MENU_PROFILE } from '../audio/music';
 import { addAvatar, type AvatarView } from '../ui/avatar';
 import { FONT_DISPLAY, HEIGHT, PAPER_CSS, WIDTH, button, hex, label } from '../ui/theme';
 
@@ -15,6 +17,7 @@ export class TitleScene extends Phaser.Scene {
   }
 
   create() {
+    AudioDirector.get().play(MENU_PROFILE, 'menu');
     const mexico = CULTURES[0];
     const bg = this.add.graphics();
     bg.fillGradientStyle(hex(mexico.palette.sky), hex(mexico.palette.sky), 0xe9a15b, 0xe9a15b, 1).fillRect(0, 0, WIDTH, HEIGHT);
@@ -29,7 +32,7 @@ export class TitleScene extends Phaser.Scene {
     this.parade = CULTURES.map((c, i) => ({ view: addAvatar(this, c, 0, 560, 120, 'run'), x: -120 - i * PARADE_GAP }));
 
     button(this, WIDTH / 2, 380, 'Play', () => this.scene.start('WorldMap'), 260);
-    label(this, WIDTH / 2, 650, 'Jump: Space / tap   ·   Tools: 1–8, Q/E, wheel   ·   UV: U   ·   Camera: C', 22, { color: PAPER_CSS });
+    label(this, WIDTH / 2, 650, 'Jump: Space / tap   ·   Tools: 1–8, Q/E, wheel   ·   UV: U   ·   Camera: C   ·   Mute: M', 22, { color: PAPER_CSS });
   }
 
   update(_t: number, deltaMs: number) {

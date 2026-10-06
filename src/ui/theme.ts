@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { AudioDirector } from '../audio/AudioDirector';
 
 // Procedural "ink on paper" look echoing the jam's hand-drawn art; to be replaced by a designed UI later.
 export const FONT_DISPLAY = 'Borel, cursive';
@@ -9,6 +10,8 @@ export const PAPER = 0xfff6e6;
 export const PAPER_CSS = '#fff6e6';
 export const WIDTH = 1280;
 export const HEIGHT = 720;
+/** Respect the OS setting: no camera shake or screen flashes. */
+export const REDUCED_MOTION = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export function hex(css: string): number {
   return Phaser.Display.Color.HexStringToColor(css).color;
@@ -48,6 +51,7 @@ export function button(scene: Phaser.Scene, x: number, y: number, text: string, 
   c.on('pointerout', () => scene.tweens.add({ targets: c, scale: 1, duration: 90 }));
   c.on('pointerdown', (_p: Phaser.Input.Pointer, _x: number, _y: number, e: Phaser.Types.Input.EventData) => {
     e.stopPropagation();
+    AudioDirector.get().sfx('click');
     onClick();
   });
   return c;

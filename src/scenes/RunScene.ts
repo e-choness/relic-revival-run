@@ -5,7 +5,8 @@ import { difficultyFor, type Difficulty } from '../systems/difficulty';
 import { RunState } from '../systems/runState';
 import { DAMAGE_SIZE, damageTexture, drawArtifact, drawSkyline, toolTexture } from '../ui/art';
 import { addAvatar, type AvatarView } from '../ui/avatar';
-import { FONT_DISPLAY, HEIGHT, INK, PAPER, PAPER_CSS, WIDTH, button, card, hex, label } from '../ui/theme';
+import { AudioDirector } from '../audio/AudioDirector';
+import { FONT_DISPLAY, HEIGHT, INK, PAPER, PAPER_CSS, REDUCED_MOTION, WIDTH, button, card, hex, label } from '../ui/theme';
 
 const GROUND_Y = 620;
 const PLAYER_X = 240;
@@ -60,6 +61,7 @@ export class RunScene extends Phaser.Scene {
   private paused = false;
   private ended = false;
   private seen = new Set<DamageId>();
+  private audio = AudioDirector.get();
 
   // HUD
   private toolSlots: Phaser.GameObjects.Container[] = [];
@@ -96,6 +98,10 @@ export class RunScene extends Phaser.Scene {
   }
 
   create() {
+    this.audio.play(this.culture.sound, this.culture.id);
+    this.audio.setIntensity(0);
+    this.audio.setIntegrity(1);
+    this.audio.duck(false);
     this.createBackground();
     this.createPlayer();
     this.physics.add.collider(this.player, this.floor);
@@ -150,9 +156,11 @@ export class RunScene extends Phaser.Scene {
     const body = this.player.body;
     if (body.blocked.down) {
       body.setVelocityY(JUMP_V);
+      this.audio.sfx('jump');
       this.extraJumps = this.diff.lanes > 3 ? 1 : 0;
     } else if (this.extraJumps > 0) {
       body.setVelocityY(DOUBLE_JUMP_V);
+      this.audio.sfx('jump');
       this.extraJumps--;
     }
   }
@@ -183,13 +191,15 @@ export class RunScene extends Phaser.Scene {
     info.badge?.destroy();
     spot.body.enable = false;
     if (outcome === 'restored') {
+      this.audio.sfx('restore');
       this.floatText(spot.x, spot.y - 40, info.documented ? 'Restored! +docs' : 'Restored!', '#2a9d8f');
       this.tweens.add({ targets: spot, scale: spot.scale * 1.6, alpha: 0, duration: 260, onComplete: () => spot.destroy() });
     } else {
       const need = TOOLS[DAMAGES[info.damage].treatedBy].name;
       this.floatText(spot.x, spot.y - 40, 'Wrong tool!', '#c0392b');
       this.toastText(`${DAMAGES[info.damage].name} needs the ${need}`, 2000);
-      this.cameras.main.shake(140, 0.006);
+      this.audio.sfx('wrong');
+      if (!REDUCED_MOTION) this.cameras.main.shake(140, 0.006);
       spot.setTint(0xc0392b);
       this.tweens.add({ targets: spot, alpha: 0, duration: 400, onComplete: () => spot.destroy() });
     }
@@ -199,6 +209,7 @@ export class RunScene extends Phaser.Scene {
   private useUV() {
     if (this.paused || this.ended || this.uvCooldown > 0) return;
     this.uvCooldown = UV_COOLDOWN;
+    this.audio.sfx('uv');
     const flash = this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, 0x8e44ff, 0).setDepth(8);
     this.tweens.add({ targets: flash, fillAlpha: 0.3, duration: 150, yoyo: true, onComplete: () => flash.destroy() });
     for (const s of this.activeSpots()) {
@@ -213,7 +224,8 @@ export class RunScene extends Phaser.Scene {
   private useCamera() {
     if (this.paused || this.ended || this.cameraCooldown > 0) return;
     this.cameraCooldown = CAMERA_COOLDOWN;
-    this.cameras.main.flash(120, 255, 255, 240);
+    this.audio.sfx('camera');
+    if (!REDUCED_MOTION) this.cameras.main.flash(120, 255, 255, 240);
     for (const s of this.activeSpots()) {
       const info = s.getData('info') as SpotInfo;
       if (info.done || info.documented || s.x > WIDTH || s.alpha < 1) continue;
@@ -249,6 +261,7 @@ export class RunScene extends Phaser.Scene {
       if (s.x < -DAMAGE_SIZE) {
         if (!info.done) {
           this.state.miss();
+          this.audio.sfx('miss');
           this.refreshHud();
         }
         info.badge?.destroy();
@@ -274,6 +287,8 @@ export class RunScene extends Phaser.Scene {
   private finish() {
     this.ended = true;
     this.physics.pause();
+    this.audio.setIntensity(0);
+    this.audio.sfx(this.state.stars > 0 ? 'win' : 'fail');
     const result: RunResult = {
       index: this.index,
       score: this.state.score,
@@ -346,7 +361,9 @@ export class RunScene extends Phaser.Scene {
 
   private selectTool(i: number) {
     if (this.paused || this.ended) return;
-    this.toolIndex = Phaser.Math.Wrap(i, 0, this.tools.length);
+    const next = Phaser.Math.Wrap(i, 0, this.tools.length);
+    if (next !== this.toolIndex) this.audio.sfx('switch');
+    this.toolIndex = next;
     this.toolSlots.forEach((c, k) => {
       const on = k === this.toolIndex;
       const bg = c.getAt(0) as Phaser.GameObjects.Graphics;
@@ -359,6 +376,8 @@ export class RunScene extends Phaser.Scene {
   }
 
   private refreshHud() {
+    this.audio.setIntensity(this.state.combo);
+    this.audio.setIntegrity(this.state.integrity);
     this.scoreText.setText(String(this.state.score));
     this.comboText.setText(this.state.combo > 1 ? `Combo ×${this.state.combo}` : '');
     const g = this.integrityBar.clear();
@@ -425,17 +444,25 @@ export class RunScene extends Phaser.Scene {
     this.paused = !this.paused;
     if (this.paused) {
       this.physics.pause();
+      this.audio.duck(true);
       this.tweens.pauseAll();
       this.anims.pauseAll();
       const c = this.add.container(0, 0).setDepth(20);
       c.add(this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, INK, 0.6));
-      c.add(card(this, WIDTH / 2, HEIGHT / 2, 420, 340));
-      c.add(label(this, WIDTH / 2, HEIGHT / 2 - 110, 'Paused', 44, { fontFamily: FONT_DISPLAY }));
-      c.add(button(this, WIDTH / 2, HEIGHT / 2 - 10, 'Resume', () => this.togglePause()));
-      c.add(button(this, WIDTH / 2, HEIGHT / 2 + 80, 'World map', () => this.scene.start('WorldMap')));
+      c.add(card(this, WIDTH / 2, HEIGHT / 2, 420, 420));
+      c.add(label(this, WIDTH / 2, HEIGHT / 2 - 150, 'Paused', 44, { fontFamily: FONT_DISPLAY }));
+      c.add(button(this, WIDTH / 2, HEIGHT / 2 - 60, 'Resume', () => this.togglePause()));
+      const soundLabel = () => `Sound: ${this.audio.muted ? 'off' : 'on'} (M)`;
+      const sound = button(this, WIDTH / 2, HEIGHT / 2 + 25, soundLabel(), () => {
+        this.audio.toggleMute();
+        (sound.getAt(1) as Phaser.GameObjects.Text).setText(soundLabel());
+      });
+      c.add(sound);
+      c.add(button(this, WIDTH / 2, HEIGHT / 2 + 110, 'World map', () => this.scene.start('WorldMap')));
       this.pauseLayer = c;
     } else {
       this.physics.resume();
+      this.audio.duck(false);
       this.tweens.resumeAll();
       this.anims.resumeAll();
       this.pauseLayer?.destroy();
