@@ -4,6 +4,7 @@ import { CULTURES, type Culture } from '../data/cultures';
 import { difficultyFor, type Difficulty } from '../systems/difficulty';
 import { RunState } from '../systems/runState';
 import { DAMAGE_SIZE, damageTexture, drawArtifact, drawSkyline, toolTexture } from '../ui/art';
+import { addAvatar, type AvatarView } from '../ui/avatar';
 import { FONT_DISPLAY, HEIGHT, INK, PAPER, PAPER_CSS, WIDTH, button, card, hex, label } from '../ui/theme';
 
 const GROUND_Y = 620;
@@ -15,6 +16,8 @@ const UV_COOLDOWN = 4;
 const CAMERA_COOLDOWN = 3;
 const ARTIFACT_W = 230;
 const ARTIFACT_H = 140;
+const AVATAR_HEIGHT = 150;
+const PLAYER_HITBOX = { w: 64, h: 120 };
 
 interface SpotInfo {
   damage: DamageId;
@@ -45,6 +48,7 @@ export class RunScene extends Phaser.Scene {
   private tools: ToolId[] = [];
   private toolIndex = 0;
   private player!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+  private avatar!: AvatarView;
   private spots!: Phaser.Physics.Arcade.Group;
   private floor!: Phaser.GameObjects.Rectangle;
   private layers: { sprite: Phaser.GameObjects.TileSprite; factor: number }[] = [];
@@ -134,11 +138,11 @@ export class RunScene extends Phaser.Scene {
   }
 
   private createPlayer() {
-    const s = this.culture.avatar.sprite;
-    this.player = this.physics.add.sprite(PLAYER_X, GROUND_Y - 120, s ? `${s}-run-1` : 'avatar-placeholder');
-    this.player.setScale(s ? 0.55 : 0.7).setDepth(5);
-    this.player.body.setSize(this.player.width * 0.55, this.player.height * 0.85);
-    if (s) this.player.play(`${s}-run`);
+    // Invisible physics body with the same hitbox for every avatar; the visible avatar follows it.
+    this.player = this.physics.add.sprite(PLAYER_X, GROUND_Y - 120, 'avatar-placeholder').setVisible(false);
+    this.player.body.setSize(PLAYER_HITBOX.w, PLAYER_HITBOX.h);
+    this.avatar = addAvatar(this, this.culture, PLAYER_X, GROUND_Y, AVATAR_HEIGHT, 'run');
+    this.avatar.object.setDepth(5);
   }
 
   private jump() {
@@ -252,7 +256,7 @@ export class RunScene extends Phaser.Scene {
       }
     }
 
-    this.animatePlayer();
+    this.animatePlayer(dt);
     this.drawTimeBar();
     this.uvButton.setAlpha(this.uvCooldown > 0 ? 0.45 : 1);
     this.cameraButton.setAlpha(this.cameraCooldown > 0 ? 0.45 : 1);
@@ -260,12 +264,11 @@ export class RunScene extends Phaser.Scene {
     if (this.state.failed || (!running && this.spots.countActive() === 0)) this.finish();
   }
 
-  private animatePlayer() {
-    const s = this.culture.avatar.sprite;
-    if (!s) return;
+  private animatePlayer(dt: number) {
     const body = this.player.body;
-    const anim = body.blocked.down ? 'run' : body.velocity.y < 0 ? 'jump' : 'fall';
-    this.player.play(`${s}-${anim}`, true);
+    this.avatar.setAnim(body.blocked.down ? 'run' : body.velocity.y < 0 ? 'jump' : 'fall');
+    this.avatar.setFeet(this.player.x, body.bottom);
+    this.avatar.tick(dt);
   }
 
   private finish() {

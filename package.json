@@ -12,7 +12,8 @@
     "build": "tsc --noEmit && vite build",
     "test": "vitest run",
     "package:itch": "npm run build && node scripts/zip-itch.mjs",
-    "package:win": "npm run build && electron-builder --win portable nsis"
+    "package:win": "npm run build && electron-builder --win portable nsis",
+    "placeholders": "tsx tools/placeholders/generate.ts"
   },
   "dependencies": {
     "perfect-freehand": "^1.2.3",
@@ -22,6 +23,7 @@
   "devDependencies": {
     "electron": "^38.0.0",
     "electron-builder": "^26.0.0",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.0",
     "vite": "^7.1.0",
     "vitest": "^3.2.0"

@@ -1,4 +1,9 @@
-import type { AvatarDoc, PartId, Vec } from './types';
+import type { PartId, Vec } from './types';
+
+/** Anything with part pivots and parents: an AvatarDoc in the workshop, rig.json in the game. */
+export interface RigLike {
+  parts: { id: PartId; parent?: PartId | null; pivot: Vec }[];
+}
 
 // Cut-out rig: one drawn pose, animated by moving and rotating parts around their pivots.
 
@@ -76,7 +81,7 @@ function local(pivot: Vec, pose: Partial<PartPose> = {}): Mat {
 }
 
 /** World matrix per part, composing each part's transform with its parent chain. */
-export function worldMatrices(doc: AvatarDoc, pose: Pose): Record<PartId, Mat> {
+export function worldMatrices(doc: RigLike, pose: Pose): Record<PartId, Mat> {
   const byId = new Map(doc.parts.map((p) => [p.id, p]));
   const out = {} as Record<PartId, Mat>;
   const resolve = (id: PartId): Mat => {
@@ -89,7 +94,7 @@ export function worldMatrices(doc: AvatarDoc, pose: Pose): Record<PartId, Mat> {
   return out;
 }
 
-export function svgTransforms(doc: AvatarDoc, pose: Pose): Partial<Record<PartId, string>> {
+export function svgTransforms(doc: RigLike, pose: Pose): Partial<Record<PartId, string>> {
   const m = worldMatrices(doc, pose);
   return Object.fromEntries(Object.entries(m).map(([id, v]) => [id, `matrix(${v.map((n) => n.toFixed(4)).join(' ')})`]));
 }

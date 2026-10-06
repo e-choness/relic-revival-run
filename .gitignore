@@ -13,3 +13,4 @@ coverage/
 /legacy/[Bb]uild*/
 CLAUDE.md
 .claude/
+docs/

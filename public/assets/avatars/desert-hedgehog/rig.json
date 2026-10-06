@@ -1,0 +1,126 @@
+{
+  "id": "desert-hedgehog",
+  "size": 1000,
+  "scale": 0.35,
+  "order": [
+    "earBack",
+    "tail",
+    "legBack",
+    "armBack",
+    "body",
+    "legFront",
+    "earFront",
+    "head",
+    "armFront"
+  ],
+  "parts": [
+    {
+      "id": "earBack",
+      "parent": "head",
+      "pivot": {
+        "x": 486,
+        "y": 205
+      },
+      "x": 410,
+      "y": 116,
+      "w": 144,
+      "h": 132
+    },
+    {
+      "id": "tail",
+      "parent": "body",
+      "pivot": {
+        "x": 422,
+        "y": 690
+      },
+      "x": 352,
+      "y": 642,
+      "w": 112,
+      "h": 96
+    },
+    {
+      "id": "legBack",
+      "parent": "body",
+      "pivot": {
+        "x": 484,
+        "y": 756
+      },
+      "x": 425,
+      "y": 723,
+      "w": 141,
+      "h": 228
+    },
+    {
+      "id": "armBack",
+      "parent": "body",
+      "pivot": {
+        "x": 440,
+        "y": 556
+      },
+      "x": 333,
+      "y": 518,
+      "w": 141,
+      "h": 179
+    },
+    {
+      "id": "body",
+      "parent": null,
+      "pivot": {
+        "x": 520,
+        "y": 650
+      },
+      "x": 374,
+      "y": 481,
+      "w": 302,
+      "h": 315
+    },
+    {
+      "id": "legFront",
+      "parent": "body",
+      "pivot": {
+        "x": 552,
+        "y": 756
+      },
+      "x": 494,
+      "y": 723,
+      "w": 142,
+      "h": 228
+    },
+    {
+      "id": "earFront",
+      "parent": "head",
+      "pivot": {
+        "x": 628,
+        "y": 205
+      },
+      "x": 556,
+      "y": 112,
+      "w": 144,
+      "h": 132
+    },
+    {
+      "id": "head",
+      "parent": "body",
+      "pivot": {
+        "x": 540,
+        "y": 510
+      },
+      "x": 307,
+      "y": 76,
+      "w": 545,
+      "h": 451
+    },
+    {
+      "id": "armFront",
+      "parent": "body",
+      "pivot": {
+        "x": 610,
+        "y": 556
+      },
+      "x": 573,
+      "y": 518,
+      "w": 168,
+      "h": 181
+    }
+  ]
+}

@@ -86,7 +86,8 @@ function render() {
     drawOverlay();
     drawPanels();
     try {
-      localStorage.setItem(`workshop:${doc.id}`, JSON.stringify(doc));
+      // Only unsaved edits are cached; an untouched doc must never shadow the file on disk.
+      if (dirty) localStorage.setItem(`workshop:${doc.id}`, JSON.stringify(doc));
     } catch {
       /* ignore */
     }
@@ -124,6 +125,8 @@ function drawOverlay() {
   });
 }
 
+let lastJamFrame = -1;
+
 // Animation: only the part transforms change per frame, the styled paths are reused.
 function animate(time: number) {
   if (mode !== 'edit') {
@@ -133,13 +136,17 @@ function animate(time: number) {
   }
   // Jam reference cycles at the same cadence as the rig.
   const frame = Math.floor((time / 1000) * DEFAULT_RUN.cadence * 8) % 8;
-  $<HTMLImageElement>('#jamFrame').src = `/assets/avatars/axolotl/run_0${frame + 1}.png`;
+  if (frame !== lastJamFrame) {
+    lastJamFrame = frame;
+    $<HTMLImageElement>('#jamFrame').src = `/assets/avatars/axolotl/run_0${frame + 1}.png`;
+  }
   requestAnimationFrame(animate);
 }
 
 // ---------- panels ----------
 
 function drawPanels() {
+  $<HTMLInputElement>('#placeholderBox').checked = !!doc.placeholder;
   const parts = $('#parts');
   parts.innerHTML = '';
   for (const t of PART_TEMPLATE) {
@@ -516,12 +523,14 @@ async function load(id: string) {
   undo.length = 0;
   dirty = !!cached && JSON.stringify(cached) !== JSON.stringify(saved);
   if (dirty) status('Restored unsaved work from this browser (Save to keep it)');
+  else if (doc.placeholder) status('PLACEHOLDER: a generated base to redraw over. Untick "placeholder" once it is your drawing.');
   selectPart('head');
 }
 
 async function save() {
   const res = await fetch('/__workshop/save', { method: 'POST', body: JSON.stringify(doc) });
   dirty = !res.ok;
+  if (res.ok) localStorage.removeItem(`workshop:${doc.id}`);
   status(res.ok ? `Saved avatars/${doc.id}.avatar.json` : 'Save failed');
 }
 
@@ -580,10 +589,17 @@ $('#newBtn').onclick = async () => {
   selectPart('head');
 };
 $('#saveBtn').onclick = save;
+$<HTMLInputElement>('#placeholderBox').onchange = (e) => {
+  snapshot();
+  doc.placeholder = (e.target as HTMLInputElement).checked || undefined;
+  render();
+};
 $('#exportBtn').onclick = exportParts;
 document.querySelectorAll<HTMLElement>('#tools button').forEach((b) => (b.onclick = () => setTool(b.dataset.tool as Tool)));
 document.querySelectorAll<HTMLElement>('#modes button').forEach((b) => (b.onclick = () => setMode(b.dataset.mode as Mode)));
-window.addEventListener('beforeunload', (e) => dirty && e.preventDefault());
+// Skipped under automation or with ?noguard (playtest scripts) so reloads don't hang on the prompt.
+const noGuard = navigator.webdriver || new URLSearchParams(location.search).has('noguard');
+window.addEventListener('beforeunload', (e) => dirty && !noGuard && e.preventDefault());
 
 // ---------- start ----------
 
@@ -597,5 +613,19 @@ window.addEventListener('beforeunload', (e) => dirty && e.preventDefault());
   requestAnimationFrame(animate);
 })();
 
-// Exposed for playtest scripts only.
-(window as unknown as { workshop: unknown }).workshop = { get doc() { return doc; } };
+// Exposed for playtest scripts and batch re-export.
+(window as unknown as { workshop: unknown }).workshop = {
+  get doc() {
+    return doc;
+  },
+  /** Re-export every saved avatar (e.g. after changing the stylizer). */
+  async exportAll() {
+    const done: string[] = [];
+    for (const id of await list()) {
+      await load(id);
+      await exportParts();
+      done.push(id);
+    }
+    return done;
+  },
+};

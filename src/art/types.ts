@@ -61,9 +61,11 @@ export interface AvatarDoc {
   palette: Record<string, string>;
   style: AvatarStyle;
   parts: Part[];
+  /** Generated working base for the owner to redraw; never final art. */
+  placeholder?: boolean;
 }
 
-/** Draw order, back to front. Parents define how parts move together in the rig. */
+/** Draw order, back to front (both ears sit behind the head outline, as in the jam art). Parents define how parts move together in the rig. */
 export const PART_TEMPLATE: { id: PartId; parent?: PartId; label: string }[] = [
   { id: 'earBack', parent: 'head', label: 'Ear (back)' },
   { id: 'tail', parent: 'body', label: 'Tail' },
@@ -71,8 +73,8 @@ export const PART_TEMPLATE: { id: PartId; parent?: PartId; label: string }[] = [
   { id: 'armBack', parent: 'body', label: 'Arm (back)' },
   { id: 'body', label: 'Body' },
   { id: 'legFront', parent: 'body', label: 'Leg (front)' },
-  { id: 'head', parent: 'body', label: 'Head' },
   { id: 'earFront', parent: 'head', label: 'Ear (front)' },
+  { id: 'head', parent: 'body', label: 'Head' },
   { id: 'armFront', parent: 'body', label: 'Arm (front)' },
 ];
 

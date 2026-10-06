@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { CULTURES } from '../data/cultures';
 import { generateTextures } from '../ui/art';
+import { loadRig } from '../ui/CutoutAvatar';
 import { FONT_BODY, label } from '../ui/theme';
 
 const PROPS = ['bug', 'crack', 'stain', 'brush', 'camera', 'uv'];
@@ -21,6 +22,7 @@ export class BootScene extends Phaser.Scene {
     const text = this.add.text(640, 360, 'Loading…', { fontFamily: FONT_BODY, fontSize: '32px', color: '#fff6e6' }).setOrigin(0.5);
     this.load.on('progress', (p: number) => text.setText(`Loading… ${Math.round(p * 100)}%`));
     for (const p of PROPS) this.load.image(`prop-${p}`, `assets/props/${p}.png`);
+    for (const c of CULTURES) if (c.avatar.rig) loadRig(this, c.avatar.rig);
     for (const s of spriteIds())
       for (const [anim, n] of Object.entries(FRAMES))
         for (let i = 1; i <= n; i++) this.load.image(`${s}-${anim}-${i}`, `assets/avatars/${s}/${anim}_${String(i).padStart(2, '0')}.png`);

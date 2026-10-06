@@ -1,4 +1,4 @@
-import { mkdirSync, readdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import type { IncomingMessage } from 'node:http';
 import { join } from 'node:path';
 import type { Plugin } from 'vite';
@@ -50,6 +50,8 @@ export function workshopPlugin(): Plugin {
             const { id, parts, rig } = await readJson(req);
             if (!ID.test(id)) return send(400, { error: 'bad id' });
             const dir = join(OUT_DIR, id, 'parts');
+            // Start clean so parts deleted in the workshop don't linger as stale PNGs.
+            rmSync(dir, { recursive: true, force: true });
             mkdirSync(dir, { recursive: true });
             for (const p of parts as { id: string; png: string }[]) {
               if (!PART.test(p.id)) continue;
