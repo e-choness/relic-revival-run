@@ -10,6 +10,19 @@ You can find our game here:
 
 *Please don't forget to play, comment and vote!*
 
+## Web Rebuild (in progress)
+
+The game is being rebuilt on Phaser 3 + TypeScript + Vite. The original Unity jam project lives in `legacy/` for reference only.
+
+Everything runs in Docker:
+
+```sh
+docker compose up app                              # dev server on http://localhost:5173
+docker compose run --rm app npm test               # unit tests
+docker compose run --rm app npm run package:itch   # release/relic-revival-run-web.zip (itch.io HTML5)
+docker compose run --rm win                        # Windows portable + installer in release/
+```
+
 ## Overview
 
 A 2D platformer runner where you could play as an art restorer who run and perform restoration action on the wonderful art pieces from legacies of Mexico, China and Portugal. Let's bring damaged masterpieces back to their former glory.

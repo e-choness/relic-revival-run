@@ -4,4 +4,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   base: './',
   build: { outDir: 'dist', assetsInlineLimit: 0 },
+  // Lets the containerised browser used for playtesting reach the dev server.
+  // Polling: file events don't cross the Windows → Docker bind mount.
+  server: { allowedHosts: ['host.docker.internal'], watch: { usePolling: true, interval: 300 } },
 });
