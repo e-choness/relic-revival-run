@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Avatar Workshop</title>
+    <link rel="stylesheet" href="./workshop.css" />
+  </head>
+  <body>
+    <header>
+      <strong>Avatar Workshop</strong>
+      <select id="avatarSelect" title="Avatar"></select>
+      <button id="newBtn">New…</button>
+      <button id="saveBtn">Save</button>
+      <button id="exportBtn" title="Render parts to public/assets/avatars/&lt;id&gt;/">Export parts</button>
+      <label class="file">Import SVG…<input id="importSvg" type="file" accept=".svg,image/svg+xml" /></label>
+      <span class="sep"></span>
+      <span class="group" id="tools">
+        <button data-tool="pen" title="P: click = corner, drag = curve, click first point = close, Enter = finish">Pen</button>
+        <button data-tool="edit" title="E: drag points/handles/shapes · Alt+click deletes a point · double-click toggles corner/smooth · Shift breaks handle symmetry">Edit</button>
+        <button data-tool="pivot" title="V: click to set the selected part's rotation pivot">Pivot</button>
+      </span>
+      <span class="group" id="modes">
+        <button data-mode="edit">Rest</button>
+        <button data-mode="run">Run</button>
+        <button data-mode="jump">Jump</button>
+        <button data-mode="fall">Fall</button>
+      </span>
+      <span id="status"></span>
+    </header>
+    <main>
+      <aside id="left">
+        <h3>Parts</h3>
+        <ul id="parts"></ul>
+        <h3>Shapes in part</h3>
+        <ul id="shapes"></ul>
+        <h3>New shape</h3>
+        <label>Material
+          <select id="newMaterial">
+            <option value="solid">solid (fill + shade + ink)</option>
+            <option value="line">line (ink only)</option>
+            <option value="blush">blush (soft glow)</option>
+            <option value="highlight">highlight (fill, no ink)</option>
+          </select>
+        </label>
+        <label>Colour <select id="newColor"></select></label>
+      </aside>
+      <section id="stageWrap">
+        <svg id="stage" viewBox="0 0 1000 1000">
+          <rect width="1000" height="1000" fill="#fffaf2" />
+          <image id="ref" href="" />
+          <g id="styled"></g>
+          <g id="overlay"></g>
+        </svg>
+      </section>
+      <aside id="right">
+        <h3>Reference (tracing)</h3>
+        <label class="file">Load image…<input id="refFile" type="file" accept="image/*" /></label>
+        <button id="refJam">Jam axolotl</button>
+        <label>Opacity <input id="refOpacity" type="range" min="0" max="1" step="0.05" value="0.4" /></label>
+        <label>Scale <input id="refScale" type="range" min="0.2" max="3" step="0.01" value="1" /></label>
+        <label>X <input id="refX" type="range" min="-500" max="500" step="1" value="0" /></label>
+        <label>Y <input id="refY" type="range" min="-500" max="500" step="1" value="0" /></label>
+        <h3>Palette</h3>
+        <div id="palette"></div>
+        <button id="addColor">+ colour</button>
+        <h3>Style</h3>
+        <div id="style"></div>
+        <h3>Compare with jam</h3>
+        <div id="compare">
+          <img id="jamFrame" alt="jam axolotl" />
+          <svg id="mini" viewBox="0 0 1000 1000"></svg>
+        </div>
+      </aside>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

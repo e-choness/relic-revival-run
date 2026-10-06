@@ -15,7 +15,9 @@
     "package:win": "npm run build && electron-builder --win portable nsis"
   },
   "dependencies": {
-    "phaser": "^3.90.0"
+    "perfect-freehand": "^1.2.3",
+    "phaser": "^3.90.0",
+    "svg-path-properties": "^2.1.0"
   },
   "devDependencies": {
     "electron": "^38.0.0",
@@ -27,8 +29,18 @@
   "build": {
     "appId": "fun.studiojojo.relicrevivalrun",
     "productName": "Relic Revival Run",
-    "directories": { "output": "release" },
-    "files": ["dist/**/*", "electron/**/*"],
-    "win": { "target": ["portable", "nsis"] }
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "win": {
+      "target": [
+        "portable",
+        "nsis"
+      ]
+    }
   }
 }
