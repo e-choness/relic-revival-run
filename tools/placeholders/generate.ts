@@ -187,13 +187,22 @@ const SPECS: Spec[] = [
 
 // Pivots: neck, shoulders, hips, ear bases, tail root, body centre of balance.
 const PIVOTS: Record<PartId, [number, number]> = {
-  body: [520, 650], head: [540, 510], earFront: [628, 205], earBack: [486, 205], armFront: [610, 556],
+  body: [520, 650], head: [522, 545], earFront: [598, 240], earBack: [456, 240], armFront: [610, 556],
   armBack: [440, 556], legFront: [552, 756], legBack: [484, 756], tail: [422, 690],
 };
+
+/**
+ * The specs draw heads around x≈570, y≈330. Shift them back over the shoulders and down so the chin
+ * overlaps the collar; a head perched on the collar edge looks like it is about to roll off when running.
+ */
+const HEAD_SHIFT = { x: -32, y: 34 };
+const shifted = (shapes: Shape[] = []): Shape[] =>
+  shapes.map((sh) => ({ ...sh, anchors: sh.anchors?.map((a) => ({ ...a, x: a.x + HEAD_SHIFT.x, y: a.y + HEAD_SHIFT.y })) }));
 
 function build(spec: Spec): AvatarDoc {
   n = 0;
   const parts = { ...outfit(spec.chest), ...spec.parts };
+  for (const id of ['head', 'earFront', 'earBack'] as const) parts[id] = shifted(parts[id]);
   return {
     version: 1,
     id: spec.id,
