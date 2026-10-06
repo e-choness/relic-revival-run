@@ -1,7 +1,9 @@
 import type { SoundProfile } from '../audio/music';
 import type { DamageId } from './conservation';
 
-export type Motif = 'mesoamerican' | 'azulejo' | 'pagoda' | 'egyptian' | 'classical' | 'andean' | 'hills';
+export type Motif =
+  | 'mesoamerican' | 'azulejo' | 'pagoda' | 'egyptian' | 'classical' | 'andean'
+  | 'torii' | 'stupa' | 'dome' | 'benin' | 'angkor' | 'sahel' | 'hills';
 
 export interface Culture {
   id: string;
@@ -79,7 +81,7 @@ export const CULTURES: Culture[] = [
   },
   {
     id: 'japan', name: 'Japan', artifact: 'Lacquer box & ukiyo-e print',
-    avatar: { animal: 'Tanuki', note: 'Raccoon dog of Japanese folklore', rig: 'tanuki' }, motif: 'hills',
+    avatar: { animal: 'Tanuki', note: 'Raccoon dog of Japanese folklore', rig: 'tanuki' }, motif: 'torii',
     damages: ['lacquerLifting', 'mould', 'foxing', 'tear', 'oldRepair'],
     music: ['koto', 'shakuhachi', 'taiko', 'in scale'],
     sound: { root: 64, scale: [0, 1, 5, 7, 8], tempo: 72, lead: 'pluck', perc: 'taiko', drone: 0 },
@@ -87,7 +89,7 @@ export const CULTURES: Culture[] = [
   },
   {
     id: 'india', name: 'India', artifact: 'Chola bronze & Ajanta mural',
-    avatar: { animal: 'Bengal tiger cub', note: 'National animal of India', rig: 'tiger-cub' }, motif: 'hills',
+    avatar: { animal: 'Bengal tiger cub', note: 'National animal of India', rig: 'tiger-cub' }, motif: 'stupa',
     damages: ['bronzeDisease', 'flakingPaint', 'soot', 'yellowedVarnish', 'salts'],
     music: ['sitar', 'bansuri', 'tabla', 'tanpura drone'],
     sound: { root: 61, scale: [0, 2, 4, 6, 7, 9, 11], tempo: 84, lead: 'wind', perc: 'hand', drone: 0.7 },
@@ -95,7 +97,7 @@ export const CULTURES: Culture[] = [
   },
   {
     id: 'iran', name: 'Iran', artifact: 'Safavid tilework',
-    avatar: { animal: 'Asiatic cheetah', note: 'Survives in the wild only in Iran', rig: 'cheetah' }, motif: 'hills',
+    avatar: { animal: 'Asiatic cheetah', note: 'Survives in the wild only in Iran', rig: 'cheetah' }, motif: 'dome',
     damages: ['salts', 'glazeLoss', 'crack', 'oldRepair', 'grime'],
     music: ['santur', 'tar', 'tombak', 'dastgah shur'],
     sound: { root: 62, scale: [0, 1.5, 3, 5, 7, 8, 10], tempo: 80, lead: 'mallet', perc: 'frame', drone: 0.3 },
@@ -103,7 +105,7 @@ export const CULTURES: Culture[] = [
   },
   {
     id: 'nigeria', name: 'Nigeria', artifact: 'Benin bronze plaque',
-    avatar: { animal: 'Leopard', note: 'Royal emblem of the Kingdom of Benin', rig: 'leopard' }, motif: 'hills',
+    avatar: { animal: 'Leopard', note: 'Royal emblem of the Kingdom of Benin', rig: 'leopard' }, motif: 'benin',
     damages: ['corrosion', 'bronzeDisease', 'oldRepair', 'grime', 'insects'],
     music: ['talking drum', 'agogo bell', 'kora-style harp lute', 'call and response'],
     sound: { root: 65, scale: [0, 2, 4, 7, 9], tempo: 118, lead: 'pluck', perc: 'hand', drone: 0 },
@@ -111,7 +113,7 @@ export const CULTURES: Culture[] = [
   },
   {
     id: 'cambodia', name: 'Cambodia', artifact: 'Angkor sandstone relief',
-    avatar: { animal: 'Sun bear', note: 'Smallest bear, native to Southeast Asian forests', rig: 'sun-bear' }, motif: 'hills',
+    avatar: { animal: 'Sun bear', note: 'Smallest bear, native to Southeast Asian forests', rig: 'sun-bear' }, motif: 'angkor',
     damages: ['biofilm', 'rootDamage', 'spalling', 'salts', 'blackCrust', 'yellowedVarnish'],
     music: ['roneat xylophone', 'kong vong gongs', 'sralai oboe', 'skor drums'],
     sound: { root: 60, scale: [0, 2, 4, 7, 9], tempo: 96, lead: 'mallet', perc: 'gong', drone: 0 },
@@ -119,7 +121,7 @@ export const CULTURES: Culture[] = [
   },
   {
     id: 'mali', name: 'Mali', artifact: 'Timbuktu manuscripts',
-    avatar: { animal: 'Desert hedgehog', note: 'Small nocturnal forager of the Sahel', rig: 'desert-hedgehog' }, motif: 'hills',
+    avatar: { animal: 'Desert hedgehog', note: 'Small nocturnal forager of the Sahel', rig: 'desert-hedgehog' }, motif: 'sahel',
     damages: ['insects', 'foxing', 'tear', 'mould', 'flakingPaint', 'creases', 'oldRepair'],
     music: ['kora', 'ngoni', 'djembe', 'balafon'],
     sound: { root: 65, scale: [0, 2, 4, 5, 7, 9, 10], tempo: 108, lead: 'pluck', perc: 'hand', drone: 0 },

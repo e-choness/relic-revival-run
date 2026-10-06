@@ -154,6 +154,38 @@ export function drawSkyline(g: G, motif: Motif, w: number, h: number, color: num
         g.fillTriangle(x - 40, base, x + 360, base, x + 150, base - 220);
         for (let s = 0; s < 4; s++) g.fillRect(x + 60 + s * 20, base - 40 - s * 22, 200 - s * 40, 6);
         break;
+      case 'torii': // Fuji-like peak behind a torii gate
+        g.fillTriangle(x + 150, base, x + 330, base, x + 240, base - 180);
+        g.fillRect(x + 40, base - 130, 14, 130).fillRect(x + 120, base - 130, 14, 130);
+        g.fillRect(x + 18, base - 146, 138, 14).fillRect(x + 32, base - 112, 110, 9);
+        break;
+      case 'stupa': // stupa dome and a stepped temple tower
+        g.fillEllipse(x + 90, base - 40, 150, 120).fillRect(x + 84, base - 150, 12, 60).fillRect(x + 20, base - 20, 140, 20);
+        for (let s = 0; s < 6; s++) g.fillRect(x + 200 + s * 8, base - (s + 1) * 30, 100 - s * 16, 30);
+        break;
+      case 'dome': // onion dome between two minarets
+        g.fillRect(x + 70, base - 90, 160, 90).fillEllipse(x + 150, base - 110, 120, 110).fillTriangle(x + 135, base - 160, x + 165, base - 160, x + 150, base - 200);
+        g.fillRect(x + 44, base - 200, 16, 200).fillRect(x + 240, base - 200, 16, 200).fillCircle(x + 52, base - 204, 12).fillCircle(x + 248, base - 204, 12);
+        break;
+      case 'benin': // palace walls and conical roofs
+        g.fillRect(x, base - 50, 320, 50);
+        for (const hx of [60, 220]) g.fillRect(x + hx - 45, base - 110, 90, 60).fillTriangle(x + hx - 65, base - 110, x + hx + 65, base - 110, x + hx, base - 190);
+        break;
+      case 'angkor': // three lotus-bud towers
+        for (const [tx, tall] of [[70, 0.75], [160, 1], [250, 0.75]] as const)
+          for (let s = 0; s < 5; s++) {
+            const tw = (70 - s * 12) * tall, th = 34 * tall;
+            g.fillRect(x + tx - tw / 2, base - (s + 1) * th, tw, th);
+            if (s === 4) g.fillEllipse(x + tx, base - (s + 1) * th - 10, tw, 30);
+          }
+        break;
+      case 'sahel': // Djenné-style mud mosque with toron sticks
+        g.fillRect(x + 30, base - 120, 260, 120);
+        for (const tx of [40, 110, 180, 250]) g.fillRect(x + tx, base - 170, 30, 60).fillEllipse(x + tx + 15, base - 170, 30, 24);
+        g.fillStyle(mixInt(color, 0x000000, 0.25), 1);
+        for (let r = 0; r < 3; r++) for (let c = 0; c < 6; c++) g.fillRect(x + 40 + c * 44, base - 100 + r * 30, 22, 5);
+        g.fillStyle(color, 1);
+        break;
       default:
         g.fillEllipse(x + 160, base, 360, 220);
     }
@@ -197,8 +229,51 @@ export function drawArtifact(g: G, c: Culture, w: number, h: number) {
       for (let i = 0; i < 5; i++) g.fillStyle([ground, accent, 0xf3ead7, accent, ground][i], 1).fillRect(6, 6 + i * (h - 12) / 5, w - 12, (h - 12) / 5);
       for (let i = 0; i < 6; i++) g.fillStyle(INK, 1).fillRect(14 + i * (w - 28) / 6, h * 0.45, 14, 14);
       break;
+    case 'torii': // black-and-red lacquer box with gold waves
+      g.fillStyle(0x1e1418, 1).fillRoundedRect(w * 0.12, h * 0.2, w * 0.76, h * 0.6, 10);
+      g.fillStyle(0x8c1c13, 1).fillRect(w * 0.12, h * 0.44, w * 0.76, h * 0.1);
+      g.lineStyle(3, 0xd4a83a, 1);
+      for (let i = 0; i < 4; i++) g.strokeCircle(w * (0.25 + i * 0.17), h * 0.33, 10);
+      break;
+    case 'stupa': // Chola bronze dancer in a ring of fire
+      g.lineStyle(6, 0xb8662f, 1).strokeCircle(w / 2, h / 2, h * 0.38);
+      g.fillStyle(0x8a5a2b, 1).fillCircle(w / 2, h * 0.3, 10).fillRect(w / 2 - 6, h * 0.36, 12, 34);
+      g.lineStyle(5, 0x8a5a2b, 1).lineBetween(w / 2 - 34, h * 0.42, w / 2 + 34, h * 0.36).lineBetween(w / 2, h * 0.68, w / 2 + 26, h * 0.8).lineBetween(w / 2, h * 0.68, w / 2 - 30, h * 0.6);
+      break;
+    case 'dome': // blue tiles with eight-point stars
+      for (let ty = 0; ty < 2; ty++)
+        for (let tx = 0; tx < 4; tx++) {
+          const s = (w - 12) / 4, cx = 6 + tx * s + s / 2, cy = 10 + ty * (h - 20) / 2 + (h - 20) / 4;
+          g.fillStyle(ground, 1).fillRect(cx - s / 2 + 1, cy - (h - 20) / 4 + 1, s - 2, (h - 20) / 2 - 2);
+          g.fillStyle(accent, 1).fillRect(cx - 12, cy - 12, 24, 24);
+          g.fillPoints([0, 1, 2, 3].map((k) => new Phaser.Math.Vector2(cx + Math.cos(k * Math.PI / 2) * 17, cy + Math.sin(k * Math.PI / 2) * 17)), true);
+        }
+      break;
+    case 'benin': // bronze plaque with a raised figure
+      g.fillStyle(0x8a5a2b, 1).fillRect(w * 0.2, 6, w * 0.6, h - 12);
+      g.fillStyle(0xb07a3e, 1).fillCircle(w / 2, h * 0.3, 16).fillRect(w / 2 - 18, h * 0.42, 36, h * 0.4);
+      for (let i = 0; i < 8; i++) g.fillStyle(0x5e3c1c, 1).fillCircle(w * 0.24, 16 + i * (h - 32) / 7, 3).fillCircle(w * 0.76, 16 + i * (h - 32) / 7, 3);
+      break;
+    case 'angkor': // sandstone relief with a row of apsaras
+      g.fillStyle(0xb5a284, 1).fillRect(6, 6, w - 12, h - 12);
+      for (let i = 0; i < 5; i++) {
+        const cx = 26 + i * (w - 52) / 4;
+        g.fillStyle(0x7d6b4f, 1).fillCircle(cx, h * 0.35, 9).fillTriangle(cx - 16, h * 0.8, cx + 16, h * 0.8, cx, h * 0.42);
+      }
+      break;
+    case 'sahel': // manuscript page with lines of script
+      g.fillStyle(0xf3e3c3, 1).fillRect(w * 0.15, 6, w * 0.7, h - 12);
+      for (let r = 0; r < 7; r++)
+        for (let c = 0; c < 6; c++) g.fillStyle(r === 0 ? 0x9c2a1c : 0x2b1d2e, 1).fillRect(w * 0.2 + c * w * 0.1, 18 + r * (h - 36) / 7, w * 0.07, 3);
+      break;
     default:
       g.fillStyle(accent, 1).fillCircle(w / 2, h / 2, h * 0.32);
   }
   g.lineStyle(4, INK, 1).strokeRect(0, 0, w, h);
+}
+
+function mixInt(a: number, b: number, t: number) {
+  const ca = Phaser.Display.Color.IntegerToColor(a), cb = Phaser.Display.Color.IntegerToColor(b);
+  const c = Phaser.Display.Color.Interpolate.ColorWithColor(ca, cb, 100, t * 100);
+  return Phaser.Display.Color.GetColor(c.r, c.g, c.b);
 }

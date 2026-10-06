@@ -17,13 +17,15 @@ export class WorldMapScene extends Phaser.Scene {
     AudioDirector.get().play(MENU_PROFILE, 'menu');
     this.avatars = [];
     const save = loadSave();
+    // Dev/testing: ?all opens every culture, including those not in the v1 release.
+    const unlockAll = new URLSearchParams(location.search).has('all');
     this.add.graphics().fillGradientStyle(0x3b2a4a, 0x3b2a4a, 0x1d1424, 0x1d1424, 1).fillRect(0, 0, WIDTH, HEIGHT);
     label(this, WIDTH / 2, 56, 'Choose a culture', 48, { fontFamily: FONT_DISPLAY, color: PAPER_CSS });
 
     const cw = 270, ch = 150;
     CULTURES.forEach((c, i) => {
       const x = 190 + (i % 4) * 300, y = 175 + Math.floor(i / 4) * 175;
-      const open = isUnlocked(save, i);
+      const open = unlockAll || isUnlocked(save, i);
       const g = card(this, x, y, cw, ch, open ? hex(c.palette.sky) : 0x6b5a78);
       g.fillStyle(open ? hex(c.palette.accent) : INK, 1).fillRect(x - cw / 2 + 2, y + ch / 2 - 30, cw - 4, 28);
       // Each culture's restorer stands on its card; locked ones are faded.
