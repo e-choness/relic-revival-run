@@ -17,7 +17,7 @@ export class WorldMapScene extends Phaser.Scene {
     AudioDirector.get().play(MENU_PROFILE, 'menu');
     this.avatars = [];
     const save = loadSave();
-    // Dev/testing: ?all opens every culture, including those not in the v1 release.
+    // Dev/testing: ?all opens every culture, including unreleased ones.
     const unlockAll = new URLSearchParams(location.search).has('all');
     this.add.graphics().fillGradientStyle(0x3b2a4a, 0x3b2a4a, 0x1d1424, 0x1d1424, 1).fillRect(0, 0, WIDTH, HEIGHT);
     label(this, WIDTH / 2, 56, 'Choose a culture', 48, { fontFamily: FONT_DISPLAY, color: PAPER_CSS });
@@ -35,7 +35,7 @@ export class WorldMapScene extends Phaser.Scene {
       label(this, x + 38, y - 42, `${i + 1}. ${c.name}`, 30, { fontFamily: FONT_DISPLAY, fontSize: '24px' });
       label(this, x + 38, y + 2, c.artifact, 16, { wordWrap: { width: 170 }, align: 'center' });
       if (open) stars(this, x, y + ch / 2 - 16, save.stars[c.id] ?? 0, 20);
-      else label(this, x, y + ch / 2 - 16, c.v1 ? 'Locked' : 'Coming soon', 18, { color: PAPER_CSS });
+      else label(this, x, y + ch / 2 - 16, c.released ? 'Locked' : 'Coming soon', 18, { color: PAPER_CSS });
 
       if (!open) return;
       const zone = this.add.zone(x, y, cw, ch).setInteractive({ useHandCursor: true });

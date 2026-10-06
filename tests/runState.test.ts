@@ -40,11 +40,13 @@ describe('RunState', () => {
 });
 
 describe('unlocks', () => {
-  it('unlocks in order and only v1 cultures', () => {
+  it('unlocks in order, through all released cultures', () => {
     expect(isUnlocked({ stars: {} }, 0)).toBe(true);
     expect(isUnlocked({ stars: {} }, 1)).toBe(false);
     expect(isUnlocked({ stars: { mexico: 1 } }, 1)).toBe(true);
     const all = { stars: { mexico: 3, portugal: 3, china: 3, egypt: 3, greece: 3, peru: 3 } };
-    expect(isUnlocked(all, 6)).toBe(false);
+    expect(isUnlocked(all, 6)).toBe(true);
+    expect(isUnlocked(all, 7)).toBe(false);
+    expect(isUnlocked(all, 12)).toBe(false); // past the end
   });
 });

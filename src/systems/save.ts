@@ -31,6 +31,6 @@ export function recordStars(save: SaveData, cultureId: string, stars: number): S
 /** A culture unlocks once the previous one has at least one star. */
 export function isUnlocked(save: SaveData, index: number): boolean {
   const culture = CULTURES[index];
-  if (!culture?.v1) return false;
+  if (!culture?.released) return false;
   return index === 0 || (save.stars[CULTURES[index - 1].id] ?? 0) > 0;
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DAMAGES, TOOLS, isCorrectTool, toolsFor } from '../src/data/conservation';
-import { CULTURES, V1_CULTURES } from '../src/data/cultures';
+import { CULTURES, RELEASED_CULTURES } from '../src/data/cultures';
 import { difficultyFor } from '../src/systems/difficulty';
 
 describe('conservation rules', () => {
@@ -17,9 +17,9 @@ describe('conservation rules', () => {
 });
 
 describe('cultures', () => {
-  it('has 12 cultures, 6 in v1, unique ids', () => {
+  it('has 12 cultures, all released, unique ids', () => {
     expect(CULTURES).toHaveLength(12);
-    expect(V1_CULTURES).toHaveLength(6);
+    expect(RELEASED_CULTURES).toHaveLength(12);
     expect(new Set(CULTURES.map((c) => c.id)).size).toBe(12);
   });
 
