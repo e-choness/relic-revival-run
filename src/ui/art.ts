@@ -66,9 +66,15 @@ const DAMAGE_DRAW: Record<DamageId, (g: G, r: Rng) => void> = {
 
 const TOOL_DRAW: Record<ToolId | UtilityToolId, (g: G) => void> = {
   brush: (g) => {
-    g.lineStyle(9, INK, 1).lineBetween(14, 52, 34, 30).lineStyle(5, 0xb4553a, 1).lineBetween(14, 52, 34, 30);
-    g.fillStyle(0x9aa5b1, 1).fillTriangle(30, 30, 38, 22, 42, 34).fillStyle(0xf3e3c3, 1).fillTriangle(36, 22, 54, 10, 46, 32).fillTriangle(38, 22, 54, 10, 42, 34);
-    g.lineStyle(3, INK, 1).strokeTriangle(36, 22, 54, 10, 46, 32);
+    // Flat conservator's brush on a diagonal: handle, metal ferrule, then a fan of bristles.
+    const n = (k: number, x: number, y: number) => new Phaser.Math.Vector2(x + k * 0.707, y + k * 0.707);
+    g.lineStyle(9, INK, 1).lineBetween(10, 56, 30, 36).lineStyle(5, 0xb4553a, 1).lineBetween(10, 56, 30, 36);
+    const ferrule = [n(-6, 30, 36), n(6, 30, 36), n(6, 37, 29), n(-6, 37, 29)];
+    const bristles = [n(-7, 37, 29), n(7, 37, 29), n(13, 52, 14), n(-13, 52, 14)];
+    g.fillStyle(0x9aa5b1, 1).fillPoints(ferrule, true).lineStyle(3, INK, 1).strokePoints(ferrule, true);
+    g.fillStyle(0xf3e3c3, 1).fillPoints(bristles, true).lineStyle(3, INK, 1).strokePoints(bristles, true);
+    g.lineStyle(1.5, 0x9c8a6a, 1);
+    for (const k of [-5, 0, 5]) g.lineBetween(37 + k * 0.707, 29 + k * 0.707, 52 + k * 1.3, 14 + k * 1.3);
   },
   camera: (g) => {
     g.fillStyle(0x3a3a40, 1).fillRoundedRect(8, 20, 48, 32, 6).fillRect(18, 14, 14, 8);
@@ -127,6 +133,17 @@ export function generateTextures(scene: Phaser.Scene) {
     ctx.drawImage(scene.textures.get(`dmg-${id}`).getSourceImage() as CanvasImageSource, 0, 0);
     tex.refresh();
   }
+  // Effects: sparks for restores, a soft eraser that cleans the artifact panel, a lamp glow for dark levels,
+  // a gold tile piece (tiles twist) and a red ring marking fragile damage.
+  g.clear().fillStyle(0xffffff, 1).fillTriangle(8, 0, 10, 8, 6, 8).fillTriangle(8, 16, 10, 8, 6, 8).fillTriangle(0, 8, 8, 6, 8, 10).fillTriangle(16, 8, 8, 6, 8, 10);
+  g.generateTexture('spark', 16, 16);
+  radial(scene, 'eraser', 48, 'rgba(0,0,0,1)', 'rgba(0,0,0,0)');
+  radial(scene, 'light', 560, 'rgba(0,0,0,1)', 'rgba(0,0,0,0)', 0.45);
+  g.clear().fillStyle(0xf2c14e, 1).fillRoundedRect(8, 8, 56, 56, 8).fillStyle(0x1f4e8c, 1).fillCircle(36, 36, 15).fillStyle(0xfff6e6, 1).fillCircle(36, 36, 6);
+  g.lineStyle(4, INK, 1).strokeRoundedRect(8, 8, 56, 56, 8);
+  g.generateTexture('tile-piece', 72, 72);
+  g.clear().lineStyle(7, 0xc0392b, 1).strokeCircle(48, 48, 44).lineStyle(2, INK, 1).strokeCircle(48, 48, 47);
+  g.generateTexture('fragile-ring', 96, 96);
   // Fallback avatar if a culture's rig failed to load.
   g.clear();
   g.fillStyle(PAPER, 1).fillEllipse(64, 150, 70, 90);
@@ -291,4 +308,17 @@ function mixInt(a: number, b: number, t: number) {
   const ca = Phaser.Display.Color.IntegerToColor(a), cb = Phaser.Display.Color.IntegerToColor(b);
   const c = Phaser.Display.Color.Interpolate.ColorWithColor(ca, cb, 100, t * 100);
   return Phaser.Display.Color.GetColor(c.r, c.g, c.b);
+}
+
+/** Soft round gradient texture: solid out to `inner` × radius, then fading to the edge. */
+function radial(scene: Phaser.Scene, key: string, size: number, from: string, to: string, inner = 0) {
+  const tex = scene.textures.createCanvas(key, size, size)!;
+  const ctx = tex.getContext();
+  const r = size / 2;
+  const grad = ctx.createRadialGradient(r, r, r * inner, r, r, r);
+  grad.addColorStop(0, from);
+  grad.addColorStop(1, to);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, size, size);
+  tex.refresh();
 }

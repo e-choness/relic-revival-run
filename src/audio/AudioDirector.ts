@@ -5,7 +5,7 @@ import { PATTERNS, SUSTAINED, degreeToMidi, midiToFreq, mix, nearestSample, phra
 // Music is a layered, beat-scheduled loop (bass, percussion, lead, drone, tension) whose mix follows play:
 // the combo builds percussion and melody density, low artifact integrity brings in a tense pulse.
 
-export type Sfx = 'jump' | 'switch' | 'restore' | 'wrong' | 'miss' | 'uv' | 'camera' | 'click' | 'win' | 'fail';
+export type Sfx = 'jump' | 'switch' | 'restore' | 'perfect' | 'wrong' | 'miss' | 'uv' | 'camera' | 'click' | 'win' | 'fail' | 'bonus';
 
 const LOOKAHEAD = 0.12;
 const TICK_MS = 25;
@@ -40,6 +40,10 @@ export class AudioDirector {
   private profileKey?: string;
   private phrases: Note[][] = [];
   private step = 0;
+  /** Audio-clock time of beat 0 of the current track. */
+  private musicStart = 0;
+  /** Multiplies the culture tempo (India's crescendo twist). */
+  private tempoScale = 1;
   private nextTime = 0;
   private timer?: ReturnType<typeof setInterval>;
   private sustained: OscillatorNode[] = [];
@@ -90,6 +94,7 @@ export class AudioDirector {
     this.stop();
     this.profile = profile;
     this.profileKey = key;
+    this.tempoScale = 1;
     const seed = seedFrom(key);
     this.phrases = [0, 1, 2].map((i) => phrase(seed + i * 7919, STEPS_PER_PHRASE, profile.scale.length + 2));
     if (this.ctx) {
@@ -146,7 +151,22 @@ export class AudioDirector {
     if (this.ctx) this.music.gain.setTargetAtTime(on ? 0.15 : 0.5, this.ctx.currentTime, 0.1);
   }
 
-  sfx(name: Sfx) {
+  /** Quarter-note beats elapsed on the audio clock, so gameplay lines up with what is heard; null without music. */
+  beatPosition(): { beat: number; dur: number } | null {
+    if (!this.ctx || !this.timer || !this.profile) return null;
+    const dur = this.stepDur * 2;
+    return { beat: (this.ctx.currentTime - this.musicStart) / dur, dur };
+  }
+
+  /** Speed the music up or down without a jump in the beat position. */
+  setTempoScale(scale: number) {
+    const pos = this.beatPosition();
+    this.tempoScale = scale;
+    if (pos && this.ctx) this.musicStart = this.ctx.currentTime - pos.beat * this.stepDur * 2;
+  }
+
+  /** `level`: for restore, the combo (the figure climbs the scale as it grows). */
+  sfx(name: Sfx, level = 0) {
     const ctx = this.ctx;
     if (!ctx || this.muted) return;
     const t = ctx.currentTime + 0.005;
@@ -163,7 +183,18 @@ export class AudioDirector {
       case 'restore': {
         // A short rising figure in the culture's own scale and instrument, nudged onto the beat when close.
         const start = this.quantize(t);
-        [0, 2, 4].forEach((d, i) => this.leadNote(scaleMidi(d), start + i * 0.07, 0.25, this.sfxBus, 0.6));
+        const lift = Math.min(level, 8);
+        [0, 2, 4].forEach((d, i) => this.leadNote(scaleMidi(d + lift), start + i * 0.07, 0.25, this.sfxBus, 0.6));
+        return;
+      }
+      case 'perfect': {
+        const start = this.quantize(t);
+        this.leadNote(scaleMidi(7, 1), start, 0.3, this.sfxBus, 0.5);
+        this.ring(midiToFreq(scaleMidi(4, 2)), start, 0.6, 0.12, this.sfxBus);
+        return;
+      }
+      case 'bonus': {
+        [0, 4, 7].forEach((d, i) => this.leadNote(scaleMidi(d, 1), t + i * 0.05, 0.3, this.sfxBus, 0.5));
         return;
       }
       case 'wrong':
@@ -189,13 +220,14 @@ export class AudioDirector {
   // ---------- scheduler ----------
 
   private get stepDur() {
-    return 60 / (this.profile?.tempo ?? 90) / 2;
+    return 60 / ((this.profile?.tempo ?? 90) * this.tempoScale) / 2;
   }
 
   private start() {
     const ctx = this.ctx!, p = this.profile!;
     this.step = 0;
     this.nextTime = ctx.currentTime + 0.1;
+    this.musicStart = this.nextTime;
     if (p.drone > 0) {
       for (const [m, g] of [[p.root - 24, 1], [p.root - 17, 0.6]] as const) {
         const o = ctx.createOscillator();

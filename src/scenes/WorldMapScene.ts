@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { CULTURES } from '../data/cultures';
-import { isUnlocked, loadSave } from '../systems/save';
+import { dailyFor, isUnlocked, loadSave, setChill, todayKey } from '../systems/save';
 import { AudioDirector } from '../audio/AudioDirector';
 import { MENU_PROFILE } from '../audio/music';
 import { addAvatar, type AvatarView } from '../ui/avatar';
@@ -46,8 +46,22 @@ export class WorldMapScene extends Phaser.Scene {
       focus.push({ x, y, w: cw, h: ch, activate: start });
     });
 
-    const back = button(this, 130, HEIGHT - 50, 'Back', () => this.scene.start('Title'), 180);
-    new MenuNav(this, [...focus, focusButton(back)], { back: () => this.scene.start('Title'), start: Math.max(0, focus.length - 1) });
+    const y = HEIGHT - 50;
+    const back = button(this, 120, y, 'Back', () => this.scene.start('Title'), 170);
+    const museum = button(this, 360, y, 'Museum', () => this.scene.start('Museum'), 230);
+    // Daily challenge: the same seeded run for everyone today, any culture.
+    const date = todayKey();
+    const daily = dailyFor(date);
+    const best = save.daily[date];
+    const dailyBtn = button(this, 680, y, `Daily: ${CULTURES[daily.index].name}${best ? ` (best ${best})` : ''}`, () => this.scene.start('Run', { index: daily.index, daily: { date, seed: daily.seed } }), 380);
+    let chill = save.chill;
+    const chillLabel = () => `Chill mode: ${chill ? 'on' : 'off'}`;
+    const chillBtn = button(this, 1055, y, chillLabel(), () => {
+      chill = !chill;
+      setChill(loadSave(), chill);
+      (chillBtn.getAt(1) as Phaser.GameObjects.Text).setText(chillLabel());
+    }, 330);
+    new MenuNav(this, [...focus, ...[back, museum, dailyBtn, chillBtn].map(focusButton)], { back: () => this.scene.start('Title'), start: Math.max(0, focus.length - 1) });
   }
 
   update(_t: number, deltaMs: number) {

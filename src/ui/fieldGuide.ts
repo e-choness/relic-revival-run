@@ -1,10 +1,10 @@
 import Phaser from 'phaser';
 import { DAMAGES, TOOLS, toolsFor, type DamageId } from '../data/conservation';
 import { CULTURES, type Culture } from '../data/cultures';
+import { TWISTS } from '../data/twists';
 import { damageTexture, toolTexture } from './art';
 import { FONT_DISPLAY, HEIGHT, INK, INK_CSS, WIDTH, button, card, label } from './theme';
 
-const ROW_H = 62;
 
 /** Damage types this culture introduces for the first time in the culture order. */
 export function newDamages(culture: Culture): Set<DamageId> {
@@ -20,17 +20,22 @@ export function showFieldGuide(scene: Phaser.Scene, culture: Culture, actionLabe
   const tools = toolsFor(culture.damages);
   const fresh = newDamages(culture);
   const rows = culture.damages.length;
-  const h = 150 + rows * ROW_H + 70;
+  // Tighter rows for long lists so the guide always fits on screen.
+  const rowH = rows > 6 ? 54 : 62;
+  const h = 214 + rows * rowH + 70;
   const top = HEIGHT / 2 - h / 2;
   const c = scene.add.container(0, 0).setDepth(30);
   c.add(scene.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, INK, 0.65).setInteractive());
   c.add(card(scene, WIDTH / 2, HEIGHT / 2, 820, h));
   c.add(label(scene, WIDTH / 2, top + 40, `Field guide: ${culture.name}`, 34, { fontFamily: FONT_DISPLAY }));
-  c.add(label(scene, WIDTH / 2, top + 82, `Restore the ${culture.artifact.toLowerCase()}. Match each damage to its tool:`, 20));
+  c.add(label(scene, WIDTH / 2, top + 80, `Restore the ${culture.artifact.toLowerCase()}. Damage arrives on the beat: treat it on the beat for a Perfect!`, 18));
+  const twist = TWISTS[culture.twist];
+  c.add(label(scene, WIDTH / 2, top + 112, `${twist.name}: ${twist.guide}`, 17, { color: '#c4622d', wordWrap: { width: 740 }, align: 'center' }));
+  c.add(label(scene, WIDTH / 2, top + 150, 'Match each damage to its tool:', 19));
 
   culture.damages.forEach((d, i) => {
     const def = DAMAGES[d];
-    const y = top + 130 + i * ROW_H;
+    const y = top + 194 + i * rowH;
     const tool = def.treatedBy;
     const key = tools.indexOf(tool) + 1;
     c.add(scene.add.image(WIDTH / 2 - 350, y, damageTexture(d)).setDisplaySize(52, 52));

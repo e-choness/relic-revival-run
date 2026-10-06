@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { DAMAGES } from '../data/conservation';
 import { CULTURES } from '../data/cultures';
-import { isUnlocked, loadSave, recordStars } from '../systems/save';
+import { dailyFor, isUnlocked, loadSave, recordDaily, recordRun } from '../systems/save';
 import { drawArtifact } from '../ui/art';
 import { addAvatar, type AvatarView } from '../ui/avatar';
 import { MenuNav, focusButton } from '../ui/menuNav';
@@ -18,12 +18,17 @@ export class ResultsScene extends Phaser.Scene {
 
   create(r: RunResult) {
     const culture = CULTURES[r.index];
-    const save = recordStars(loadSave(), culture.id, r.stars);
+    const before = loadSave();
+    let save = recordRun(before, culture.id, r.stars, r.restoration, r.seen);
+    if (r.daily) save = recordDaily(save, r.daily, r.score);
+    const newFacts = save.learned.length - before.learned.length;
     this.add.graphics().fillGradientStyle(hex(culture.palette.ground), hex(culture.palette.ground), 0x1d1424, 0x1d1424, 1).fillRect(0, 0, WIDTH, HEIGHT);
     card(this, WIDTH / 2, HEIGHT / 2 - 40, 1000, 540);
 
     const title = r.stars > 0 ? 'Relic restored!' : 'The relic needs more care';
     label(this, WIDTH / 2, 110, title, 44, { fontFamily: FONT_DISPLAY });
+    const mode = [r.daily && `Daily challenge ${r.daily} · best ${save.daily[r.daily]}`, r.chill && 'Chill mode'].filter(Boolean).join('  ·  ');
+    if (mode) label(this, WIDTH / 2, 150, mode, 18);
     stars(this, WIDTH / 2, 185, r.stars, 44);
 
     // The relic, as clean as the player left it.
@@ -37,10 +42,12 @@ export class ResultsScene extends Phaser.Scene {
       `Restored: ${Math.round(r.restoration * 100)}%`,
       `Score: ${r.score}`,
       `Best combo: ×${r.bestCombo}`,
+      `Perfect hits: ${r.perfects}`,
       `Documented before treatment: ${r.documented}`,
     ];
-    stats.forEach((s, i) => label(this, 560, 255 + i * 38, s, 26).setOrigin(0, 0.5));
+    stats.forEach((s, i) => label(this, 560, 245 + i * 33, s, 24).setOrigin(0, 0.5));
     label(this, 560, 420, 'Conservation notes', 24, { fontFamily: FONT_DISPLAY, fontSize: '22px' }).setOrigin(0, 0.5);
+    if (newFacts > 0) label(this, WIDTH / 2, 216, `+${newFacts} new ${newFacts === 1 ? 'fact' : 'facts'} in the museum`, 17, { color: '#c4622d' });
     r.seen.slice(0, 2).forEach((d, i) =>
       label(this, 560, 462 + i * 46, `• ${DAMAGES[d].fact}`, 18, { color: INK_CSS, wordWrap: { width: 400 } }).setOrigin(0, 0.5),
     );
@@ -50,10 +57,10 @@ export class ResultsScene extends Phaser.Scene {
 
     const y = HEIGHT - 60;
     const buttons = [
-      button(this, WIDTH / 2 - 280, y, 'Retry', () => this.scene.start('Run', { index: r.index })),
+      button(this, WIDTH / 2 - 280, y, 'Retry', () => this.scene.start('Run', { index: r.index, daily: r.daily ? { date: r.daily, ...dailyFor(r.daily) } : undefined })),
       button(this, WIDTH / 2, y, 'World map', () => this.scene.start('WorldMap')),
     ];
-    if (isUnlocked(save, r.index + 1)) buttons.push(button(this, WIDTH / 2 + 280, y, 'Next', () => this.scene.start('Run', { index: r.index + 1 })));
+    if (!r.daily && isUnlocked(save, r.index + 1)) buttons.push(button(this, WIDTH / 2 + 280, y, 'Next', () => this.scene.start('Run', { index: r.index + 1 })));
     new MenuNav(this, buttons.map(focusButton), { back: () => this.scene.start('WorldMap'), start: buttons.length - 1 });
   }
 
