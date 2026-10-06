@@ -9,7 +9,9 @@ import { MenuNav, focusButton, type Focusable } from '../ui/menuNav';
 import { FONT_DISPLAY, HEIGHT, INK, INK_CSS, PAPER_CSS, WIDTH, button, card, hex, label, stars } from '../ui/theme';
 
 const EX_W = 170;
-const EX_H = 100;
+const EX_H = 88;
+/** Exhibit frame: artifact on top, name and stars below. */
+const FRAME_H = EX_H + 64;
 
 /**
  * The museum: every artifact you have restored, as clean as your best run, with the conservation facts
@@ -39,16 +41,16 @@ export class MuseumScene extends Phaser.Scene {
       const starCount = save.stars[c.id] ?? 0;
       const visited = best > 0;
       // Gold frame for a perfect restoration.
-      card(this, x, y, EX_W + 40, EX_H + 54, starCount === 3 ? 0xf2c14e : 0xfff6e6);
+      card(this, x, y, EX_W + 40, FRAME_H, starCount === 3 ? 0xf2c14e : 0xfff6e6);
       const art = this.add.graphics().setPosition(x - EX_W / 2, y - EX_H / 2 - 12);
       drawArtifact(art, c, EX_W, EX_H);
       this.add.graphics().setPosition(x - EX_W / 2, y - EX_H / 2 - 12).fillStyle(0x6b5434, visited ? 0.8 * (1 - best) : 0.92).fillRect(0, 0, EX_W, EX_H);
       if (!visited) label(this, x, y - 12, 'Not yet restored', 18, { color: PAPER_CSS });
-      label(this, x, y + EX_H / 2 + 4, c.name, 20, { fontFamily: FONT_DISPLAY, fontSize: '18px' });
-      stars(this, x, y + EX_H / 2 + 28, starCount, 14);
+      label(this, x, y + EX_H / 2, c.name, 20, { fontFamily: FONT_DISPLAY, fontSize: '18px' });
+      stars(this, x, y + EX_H / 2 + 22, starCount, 14);
       const open = () => this.exhibit(c, save);
-      this.add.zone(x, y, EX_W + 40, EX_H + 54).setInteractive({ useHandCursor: true }).on('pointerdown', open);
-      focus.push({ x, y, w: EX_W + 40, h: EX_H + 54, activate: open });
+      this.add.zone(x, y, EX_W + 40, FRAME_H).setInteractive({ useHandCursor: true }).on('pointerdown', open);
+      focus.push({ x, y, w: EX_W + 40, h: FRAME_H, activate: open });
     });
     const back = button(this, 130, HEIGHT - 44, 'Back', () => this.scene.start('WorldMap'), 180);
     this.nav = new MenuNav(this, [...focus, focusButton(back)], { back: () => this.scene.start('WorldMap') });
@@ -73,7 +75,7 @@ export class MuseumScene extends Phaser.Scene {
     c.damages.forEach((d, i) => {
       const known = save.learned.includes(d);
       const def = DAMAGES[d];
-      layer.add(label(this, 560, 190 + i * 50, known ? `${def.name}: ${def.fact}` : '??? Meet this damage in a run to learn about it.', 15, { color: known ? INK_CSS : '#7a6a85', wordWrap: { width: 400 } }).setOrigin(0, 0.5));
+      layer.add(label(this, 560, 192 + i * 52, known ? `${def.name}: ${def.fact}` : '??? Meet this damage in a run to learn about it.', 17, { color: known ? INK_CSS : '#7a6a85', wordWrap: { width: 520 } }).setOrigin(0, 0.5));
     });
     let playing = false;
     const listenLabel = () => (playing ? 'Stop music' : `Listen: ${c.name}`);

@@ -553,8 +553,9 @@ export class RunScene extends Phaser.Scene {
       if (info.done || s.x < PLAYER_X + 160) continue;
       const lane = Phaser.Math.Clamp(info.lane - dir, 0, this.diff.lanes - 1);
       if (lane === info.lane) continue;
+      // Higher lane index = higher on screen.
+      this.floatText(s.x, s.y - 50, lane > info.lane ? '↑' : '↓', '#2b6cb0');
       info.lane = lane;
-      this.floatText(s.x, s.y - 50, dir < 0 ? '↓' : '↑', '#2b6cb0');
       this.tweens.add({ targets: s, y: LANES[lane], duration: this.beatDur * 1000, ease: 'Sine.easeInOut' });
     }
     this.toastText(this.culture.twist === 'sandstorm' ? 'Sandstorm gust!' : 'Gust of wind!', 900);
