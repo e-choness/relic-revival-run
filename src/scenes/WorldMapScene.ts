@@ -4,6 +4,7 @@ import { isUnlocked, loadSave } from '../systems/save';
 import { AudioDirector } from '../audio/AudioDirector';
 import { MENU_PROFILE } from '../audio/music';
 import { addAvatar, type AvatarView } from '../ui/avatar';
+import { MenuNav, focusButton, type Focusable } from '../ui/menuNav';
 import { FONT_DISPLAY, HEIGHT, INK, PAPER_CSS, WIDTH, button, card, hex, label, stars } from '../ui/theme';
 
 export class WorldMapScene extends Phaser.Scene {
@@ -23,6 +24,7 @@ export class WorldMapScene extends Phaser.Scene {
     label(this, WIDTH / 2, 56, 'Choose a culture', 48, { fontFamily: FONT_DISPLAY, color: PAPER_CSS });
 
     const cw = 270, ch = 150;
+    const focus: Focusable[] = [];
     CULTURES.forEach((c, i) => {
       const x = 190 + (i % 4) * 300, y = 175 + Math.floor(i / 4) * 175;
       const open = unlockAll || isUnlocked(save, i);
@@ -39,10 +41,13 @@ export class WorldMapScene extends Phaser.Scene {
 
       if (!open) return;
       const zone = this.add.zone(x, y, cw, ch).setInteractive({ useHandCursor: true });
-      zone.on('pointerdown', () => this.scene.start('Run', { index: i }));
+      const start = () => this.scene.start('Run', { index: i });
+      zone.on('pointerdown', start);
+      focus.push({ x, y, w: cw, h: ch, activate: start });
     });
 
-    button(this, 130, HEIGHT - 50, 'Back', () => this.scene.start('Title'), 180);
+    const back = button(this, 130, HEIGHT - 50, 'Back', () => this.scene.start('Title'), 180);
+    new MenuNav(this, [...focus, focusButton(back)], { back: () => this.scene.start('Title'), start: Math.max(0, focus.length - 1) });
   }
 
   update(_t: number, deltaMs: number) {

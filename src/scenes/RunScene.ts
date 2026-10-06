@@ -7,6 +7,7 @@ import { DAMAGE_SIZE, damageTexture, drawArtifact, drawSkyline, toolTexture } fr
 import { addAvatar, type AvatarView } from '../ui/avatar';
 import { showFieldGuide } from '../ui/fieldGuide';
 import { showControlsMenu } from '../ui/controlsMenu';
+import { MenuNav, focusButton } from '../ui/menuNav';
 import { actionFor, loadBindings, type Action } from '../systems/controls';
 import { AudioDirector } from '../audio/AudioDirector';
 import { FONT_DISPLAY, HEIGHT, INK, PAPER, PAPER_CSS, REDUCED_MOTION, WIDTH, button, card, hex, label } from '../ui/theme';
@@ -89,6 +90,7 @@ export class RunScene extends Phaser.Scene {
   private uvButton!: Phaser.GameObjects.Container;
   private cameraButton!: Phaser.GameObjects.Container;
   private pauseLayer?: Phaser.GameObjects.Container;
+  private pauseNav?: MenuNav;
 
   constructor() {
     super('Run');
@@ -487,10 +489,13 @@ export class RunScene extends Phaser.Scene {
     this.input.on('pointerdown', (_p: Phaser.Input.Pointer, over: Phaser.GameObjects.GameObject[]) => {
       if (over.length === 0 && !this.briefing) this.jump();
     });
-    // Standard gamepad mapping: A jump, X camera, Y UV, LB/RB cycle tools, Start pause.
+    // Standard gamepad mapping. Tools on shoulders/D-pad and UV/camera on triggers, so they work
+    // while the thumb stays on A (jump). X/Y kept as alternates; Start/Select pause.
     this.input.gamepad?.on('down', (_pad: Phaser.Input.Gamepad.Gamepad, b: Phaser.Input.Gamepad.Button) => {
       if (this.briefing) return;
-      ({ 0: () => this.jump(), 2: () => this.useCamera(), 3: () => this.useUV(), 4: () => this.selectTool(this.toolIndex - 1), 5: () => this.selectTool(this.toolIndex + 1), 9: () => this.togglePause() } as Record<number, () => void>)[b.index]?.();
+      const prev = () => this.selectTool(this.toolIndex - 1), next = () => this.selectTool(this.toolIndex + 1);
+      const camera = () => this.useCamera(), uv = () => this.useUV(), pause = () => this.togglePause();
+      ({ 0: () => this.jump(), 12: () => this.jump(), 2: camera, 6: camera, 3: uv, 7: uv, 4: prev, 14: prev, 5: next, 15: next, 8: pause, 9: pause } as Record<number, () => void>)[b.index]?.();
     });
   }
 
@@ -506,17 +511,22 @@ export class RunScene extends Phaser.Scene {
       c.add(this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, INK, 0.6));
       c.add(card(this, WIDTH / 2, HEIGHT / 2, 440, 650));
       c.add(label(this, WIDTH / 2, HEIGHT / 2 - 270, 'Paused', 44, { fontFamily: FONT_DISPLAY }));
-      c.add(button(this, WIDTH / 2, HEIGHT / 2 - 190, 'Resume', () => this.togglePause(), 300));
+      const resume = button(this, WIDTH / 2, HEIGHT / 2 - 190, 'Resume', () => this.togglePause(), 300);
+      c.add(resume);
       const subMenu = (open: (done: () => void) => void) => {
         c.setVisible(false);
         this.subMenu = true;
+        this.pauseNav?.setEnabled(false);
         open(() => {
           this.subMenu = false;
           c.setVisible(true);
+          // Next tick, so the key that closed the sub-menu isn't handled again here.
+          this.time.delayedCall(0, () => this.pauseNav?.setEnabled(true));
         });
       };
-      c.add(button(this, WIDTH / 2, HEIGHT / 2 - 107, 'Field guide', () => subMenu((done) => showFieldGuide(this, this.culture, 'Back', done)), 300));
-      c.add(button(this, WIDTH / 2, HEIGHT / 2 - 24, 'Controls', () => subMenu((done) => showControlsMenu(this, done)), 300));
+      const guide = button(this, WIDTH / 2, HEIGHT / 2 - 107, 'Field guide', () => subMenu((done) => showFieldGuide(this, this.culture, 'Back', done)), 300);
+      const controls = button(this, WIDTH / 2, HEIGHT / 2 - 24, 'Controls', () => subMenu((done) => showControlsMenu(this, done)), 300);
+      c.add([guide, controls]);
       const hintLabel = () => `Tool hints: ${this.assist ? 'on' : 'off'}`;
       const hints = button(this, WIDTH / 2, HEIGHT / 2 + 59, hintLabel(), () => {
         this.assist = !this.assist;
@@ -530,14 +540,19 @@ export class RunScene extends Phaser.Scene {
         (sound.getAt(1) as Phaser.GameObjects.Text).setText(soundLabel());
       }, 300);
       c.add(sound);
-      c.add(button(this, WIDTH / 2, HEIGHT / 2 + 225, 'World map', () => this.scene.start('WorldMap'), 300));
+      const map = button(this, WIDTH / 2, HEIGHT / 2 + 225, 'World map', () => this.scene.start('WorldMap'), 300);
+      c.add(map);
       this.pauseLayer = c;
+      // Esc is the pause key itself, so only gamepad B means "back" here.
+      this.pauseNav = new MenuNav(this, [resume, guide, controls, hints, sound, map].map(focusButton), { back: () => this.togglePause(), escape: false, depth: 25 });
     } else {
       this.physics.resume();
       this.audio.duck(false);
       this.tweens.resumeAll();
       this.anims.resumeAll();
       this.pauseLayer?.destroy();
+      this.pauseNav?.destroy();
+      this.pauseNav = undefined;
     }
   }
 }

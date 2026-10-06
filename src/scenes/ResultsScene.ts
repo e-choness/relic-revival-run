@@ -4,6 +4,7 @@ import { CULTURES } from '../data/cultures';
 import { isUnlocked, loadSave, recordStars } from '../systems/save';
 import { drawArtifact } from '../ui/art';
 import { addAvatar, type AvatarView } from '../ui/avatar';
+import { MenuNav, focusButton } from '../ui/menuNav';
 import { FONT_DISPLAY, HEIGHT, INK_CSS, WIDTH, button, card, hex, label, stars } from '../ui/theme';
 import type { RunResult } from './RunScene';
 
@@ -48,9 +49,12 @@ export class ResultsScene extends Phaser.Scene {
     this.avatar = addAvatar(this, culture, 1060, 470, 170, 'idle');
 
     const y = HEIGHT - 60;
-    button(this, WIDTH / 2 - 280, y, 'Retry', () => this.scene.start('Run', { index: r.index }));
-    button(this, WIDTH / 2, y, 'World map', () => this.scene.start('WorldMap'));
-    if (isUnlocked(save, r.index + 1)) button(this, WIDTH / 2 + 280, y, 'Next', () => this.scene.start('Run', { index: r.index + 1 }));
+    const buttons = [
+      button(this, WIDTH / 2 - 280, y, 'Retry', () => this.scene.start('Run', { index: r.index })),
+      button(this, WIDTH / 2, y, 'World map', () => this.scene.start('WorldMap')),
+    ];
+    if (isUnlocked(save, r.index + 1)) buttons.push(button(this, WIDTH / 2 + 280, y, 'Next', () => this.scene.start('Run', { index: r.index + 1 })));
+    new MenuNav(this, buttons.map(focusButton), { back: () => this.scene.start('WorldMap'), start: buttons.length - 1 });
   }
 
   update(_t: number, deltaMs: number) {

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { ACTIONS, keysLabel, loadBindings, rebind, saveBindings, DEFAULT_BINDINGS, type Action } from '../systems/controls';
+import { MenuNav, focusButton } from './menuNav';
 import { FONT_DISPLAY, HEIGHT, INK, WIDTH, button, card, label } from './theme';
 
 const ROW_H = 70;
@@ -8,6 +9,7 @@ const ROW_H = 70;
 export function showControlsMenu(scene: Phaser.Scene, onClose: () => void) {
   let bindings = loadBindings();
   let listening: Action | null = null;
+  let nav: MenuNav | undefined;
   const h = 150 + ACTIONS.length * ROW_H + 90;
   const top = HEIGHT / 2 - h / 2;
   const c = scene.add.container(0, 0).setDepth(30);
@@ -22,6 +24,7 @@ export function showControlsMenu(scene: Phaser.Scene, onClose: () => void) {
     c.add(label(scene, WIDTH / 2 - 250, y, a.label, 24).setOrigin(0, 0.5));
     const b = button(scene, WIDTH / 2 + 140, y, keysLabel(bindings, a.id), () => {
       listening = a.id;
+      nav?.setEnabled(false);
       (b.getAt(1) as Phaser.GameObjects.Text).setText('press a key…');
     }, 260);
     c.add(b);
@@ -42,21 +45,27 @@ export function showControlsMenu(scene: Phaser.Scene, onClose: () => void) {
     } else hint.setText('That key is reserved (1–9 select tools, M mutes).');
     listening = null;
     refresh();
+    // Next tick, so the key just bound isn't also treated as navigation.
+    scene.time.delayedCall(0, () => nav?.setEnabled(true));
   };
   let closed = false;
   const close = () => {
     if (closed) return;
     closed = true;
     scene.input.keyboard?.off('keydown', onKey);
+    nav?.destroy();
     c.destroy();
     onClose();
   };
-  c.add(button(scene, WIDTH / 2 - 150, top + h - 50, 'Reset', () => {
+  const reset = button(scene, WIDTH / 2 - 150, top + h - 50, 'Reset', () => {
     bindings = structuredClone(DEFAULT_BINDINGS);
     saveBindings(bindings);
     refresh();
-  }, 220));
-  c.add(button(scene, WIDTH / 2 + 150, top + h - 50, 'Back', close, 220));
+  }, 220);
+  const back = button(scene, WIDTH / 2 + 150, top + h - 50, 'Back', close, 220);
+  c.add([reset, back]);
+  // Registered after onKey, so a key that ends "press a key…" is seen by onKey first.
   scene.input.keyboard?.on('keydown', onKey);
+  nav = new MenuNav(scene, [...rows.map((r) => focusButton(r.b)), focusButton(reset), focusButton(back)], { back: close, depth: 40 });
   return c;
 }

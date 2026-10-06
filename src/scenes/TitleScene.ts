@@ -5,6 +5,7 @@ import { drawSkyline } from '../ui/art';
 import { AudioDirector } from '../audio/AudioDirector';
 import { MENU_PROFILE } from '../audio/music';
 import { addAvatar, type AvatarView } from '../ui/avatar';
+import { MenuNav, focusButton } from '../ui/menuNav';
 import { FONT_DISPLAY, HEIGHT, PAPER_CSS, WIDTH, button, hex, label } from '../ui/theme';
 
 const PARADE_GAP = 150;
@@ -33,7 +34,8 @@ export class TitleScene extends Phaser.Scene {
     this.parade = CULTURES.map((c, i) => ({ view: addAvatar(this, c, 0, 560, 120, 'run'), x: -120 - i * PARADE_GAP }));
 
     const keys = loadBindings();
-    button(this, WIDTH / 2, 380, 'Play', () => this.scene.start('WorldMap'), 260);
+    const play = button(this, WIDTH / 2, 380, 'Play', () => this.scene.start('WorldMap'), 260);
+    new MenuNav(this, [focusButton(play)]);
     label(this, WIDTH / 2, 650, `Jump: ${keysLabel(keys, 'jump')} / tap   ·   Tools: 1–8, ${keysLabel(keys, 'prevTool')}/${keysLabel(keys, 'nextTool')}, wheel   ·   UV: ${keysLabel(keys, 'uv')}   ·   Camera: ${keysLabel(keys, 'camera')}   ·   Mute: M`, 22, { color: PAPER_CSS });
   }
 

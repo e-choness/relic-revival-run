@@ -49,10 +49,15 @@ export function button(scene: Phaser.Scene, x: number, y: number, text: string, 
   c.setSize(w, h).setInteractive({ useHandCursor: true });
   c.on('pointerover', () => scene.tweens.add({ targets: c, scale: 1.06, duration: 90 }));
   c.on('pointerout', () => scene.tweens.add({ targets: c, scale: 1, duration: 90 }));
-  c.on('pointerdown', (_p: Phaser.Input.Pointer, _x: number, _y: number, e: Phaser.Types.Input.EventData) => {
-    e.stopPropagation();
+  const activate = () => {
     AudioDirector.get().sfx('click');
     onClick();
+  };
+  // Stored so keyboard/gamepad navigation (menuNav.ts) can press it too.
+  c.setData('activate', activate);
+  c.on('pointerdown', (_p: Phaser.Input.Pointer, _x: number, _y: number, e: Phaser.Types.Input.EventData) => {
+    e.stopPropagation();
+    activate();
   });
   return c;
 }
