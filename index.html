@@ -8,10 +8,16 @@
     <style>
       html, body { margin: 0; height: 100%; background: #1d1424; overflow: hidden; }
       #game { width: 100%; height: 100%; }
+      /* Phones held upright: the game is landscape-only. */
+      #rotate { display: none; }
+      @media (orientation: portrait) and (pointer: coarse) {
+        #rotate { display: flex; position: fixed; inset: 0; z-index: 10; align-items: center; justify-content: center; padding: 24px; text-align: center; background: #1d1424; color: #fff6e6; font: 22px/1.4 sans-serif; }
+      }
     </style>
   </head>
   <body>
     <div id="game"></div>
+    <div id="rotate">Turn your device sideways to play Relic Revival Run.</div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
