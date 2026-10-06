@@ -1,4 +1,4 @@
-import { bounds, samplePath, shapeD } from '../../src/art/geometry';
+import { shapeD } from '../../src/art/geometry';
 import { DEFAULT_RUN, fallPose, jumpPose, runPose, svgTransforms, type Pose } from '../../src/art/rig';
 import { partBounds, renderAvatar, toSvg } from '../../src/art/stylize';
 import { PART_TEMPLATE, newAvatar, type Anchor, type AvatarDoc, type AvatarStyle, type Material, type Part, type PartId, type Shape, type Vec } from '../../src/art/types';
@@ -40,6 +40,9 @@ const stage = $<SVGSVGElement>('#stage');
 const styled = $<SVGGElement>('#styled');
 const overlay = $<SVGGElement>('#overlay');
 const mini = $<SVGSVGElement>('#mini');
+const other = $<SVGSVGElement>('#other');
+/** Another avatar shown beside this one, to keep the cast consistent in size and style. */
+let otherDoc: AvatarDoc | null = null;
 
 // ---------- helpers ----------
 
@@ -82,7 +85,7 @@ function render() {
     styled.innerHTML = `<defs>${defs}</defs>${body}`;
     const m = renderAvatar(doc, { idPrefix: 'mi' });
     mini.innerHTML = `<defs>${m.defs}</defs>${m.body}`;
-    fitMini();
+    fitView(mini);
     drawOverlay();
     drawPanels();
     try {
@@ -94,12 +97,9 @@ function render() {
   });
 }
 
-function fitMini() {
-  const pts = doc.parts.flatMap((p) => p.shapes.flatMap((s) => samplePath(shapeD(s), 16).flat()));
-  if (pts.length === 0) return mini.setAttribute('viewBox', '0 0 1000 1000');
-  const b = bounds(pts);
-  const pad = 60;
-  mini.setAttribute('viewBox', `${b.x - pad} ${b.y - pad} ${b.w + pad * 2} ${b.h + pad * 2}`);
+/** Same fixed frame for every avatar, so the comparison shows true relative size. */
+function fitView(svg: SVGSVGElement) {
+  svg.setAttribute('viewBox', '150 0 750 1000');
 }
 
 function drawOverlay() {
@@ -125,20 +125,17 @@ function drawOverlay() {
   });
 }
 
-let lastJamFrame = -1;
-
 // Animation: only the part transforms change per frame, the styled paths are reused.
 function animate(time: number) {
   if (mode !== 'edit') {
-    const t = svgTransforms(doc, poseFor(time / 1000));
-    for (const root of [styled, mini])
+    const pose = poseFor(time / 1000);
+    const apply = (root: SVGSVGElement | SVGGElement, d: AvatarDoc) => {
+      const t = svgTransforms(d, pose);
       root.querySelectorAll<SVGGElement>('[data-part]').forEach((g) => g.setAttribute('transform', t[g.dataset.part as PartId] ?? ''));
-  }
-  // Jam reference cycles at the same cadence as the rig.
-  const frame = Math.floor((time / 1000) * DEFAULT_RUN.cadence * 8) % 8;
-  if (frame !== lastJamFrame) {
-    lastJamFrame = frame;
-    $<HTMLImageElement>('#jamFrame').src = `/assets/avatars/axolotl/run_0${frame + 1}.png`;
+    };
+    apply(styled, doc);
+    apply(mini, doc);
+    if (otherDoc) apply(other, otherDoc);
   }
   requestAnimationFrame(animate);
 }
@@ -256,7 +253,7 @@ function setMode(m: Mode) {
   mode = m;
   document.querySelectorAll('#modes button').forEach((b) => b.classList.toggle('on', (b as HTMLElement).dataset.mode === m));
   if (m === 'edit') styled.querySelectorAll('[data-part]').forEach((g) => g.removeAttribute('transform'));
-  if (m === 'edit') mini.querySelectorAll('[data-part]').forEach((g) => g.removeAttribute('transform'));
+  if (m === 'edit') for (const svg of [mini, other]) svg.querySelectorAll('[data-part]').forEach((g) => g.removeAttribute('transform'));
   render();
 }
 
@@ -441,7 +438,6 @@ $<HTMLInputElement>('#refFile').onchange = (e) => {
   const f = (e.target as HTMLInputElement).files?.[0];
   if (f) loadRef(URL.createObjectURL(f));
 };
-$('#refJam').onclick = () => loadRef('/legacy/Assets/Animation/Character Images/ajolote/running/ajolote_run_01.png');
 for (const id of ['#refOpacity', '#refScale', '#refX', '#refY']) $<HTMLInputElement>(id).oninput = applyRef;
 
 // ---------- SVG import (Inkscape) ----------
@@ -567,8 +563,21 @@ async function exportParts() {
   status(res.ok ? `Exported ${parts.length} parts to public/assets/avatars/${doc.id}/` : 'Export failed');
 }
 
+async function showOther(id: string) {
+  const res = await fetch(`/avatars/${id}.avatar.json?t=${Date.now()}`);
+  otherDoc = res.ok && res.headers.get('content-type')?.includes('json') ? await res.json() : null;
+  if (!otherDoc) return (other.innerHTML = '');
+  const r = renderAvatar(otherDoc, { idPrefix: 'ot' });
+  other.innerHTML = `<defs>${r.defs}</defs>${r.body}`;
+  fitView(other);
+}
+
 async function refreshList(select?: string) {
   const ids = await list();
+  const cmp = $<HTMLSelectElement>('#compareSelect');
+  const keep = cmp.value;
+  cmp.replaceChildren(new Option('(none)', ''), ...ids.map((id) => new Option(id, id)));
+  cmp.value = keep;
   if (select && !ids.includes(select)) ids.push(select);
   const sel = $<HTMLSelectElement>('#avatarSelect');
   sel.replaceChildren(...ids.map((id) => new Option(id, id)));
@@ -589,6 +598,7 @@ $('#newBtn').onclick = async () => {
   selectPart('head');
 };
 $('#saveBtn').onclick = save;
+$<HTMLSelectElement>('#compareSelect').onchange = (e) => showOther((e.target as HTMLSelectElement).value);
 $<HTMLInputElement>('#placeholderBox').onchange = (e) => {
   snapshot();
   doc.placeholder = (e.target as HTMLInputElement).checked || undefined;

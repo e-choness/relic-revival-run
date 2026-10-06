@@ -3,13 +3,10 @@ import type { DamageId, ToolId, UtilityToolId } from '../data/conservation';
 import type { Culture, Motif } from '../data/cultures';
 import { INK, PAPER, hex } from './theme';
 
-// Procedural placeholder art. Where the jam has a hand-drawn prop (public/assets/props) we use it instead.
+// Procedural placeholder art for damage spots, tool icons, skylines and artifacts (no external images).
 
 export const DAMAGE_SIZE = 84;
 export const TOOL_SIZE = 64;
-
-const PROP_DAMAGE: Partial<Record<DamageId, string>> = { insects: 'prop-bug', crack: 'prop-crack', foxing: 'prop-stain' };
-const PROP_TOOL: Partial<Record<ToolId | UtilityToolId, string>> = { brush: 'prop-brush', camera: 'prop-camera', uvLamp: 'prop-uv' };
 
 type G = Phaser.GameObjects.Graphics;
 type Rng = Phaser.Math.RandomDataGenerator;
@@ -53,7 +50,13 @@ const DAMAGE_DRAW: Record<DamageId, (g: G, r: Rng) => void> = {
   tear: (g, r) => { g.fillStyle(0xf3e6cf, 1).fillRect(20, 22, 44, 40); g.fillStyle(0x3a2a2a, 1).fillTriangle(40, 22, 46, 22, 42, 62); lines(g, r, 1, INK, 2); },
   foxing: (g, r) => blobs(g, r, 10, 0xa0622d, 2, 5),
   creases: (g, r) => { g.fillStyle(0xf3e6cf, 1).fillRect(20, 20, 44, 44); g.lineStyle(2, 0x9c8a6a, 1); for (let i = 0; i < 4; i++) g.lineBetween(20, r.between(22, 62), 64, r.between(22, 62)); },
-  insects: (g, r) => blobs(g, r, 6, 0x5a3a1a, 3, 5),
+  insects: (g) => {
+    g.lineStyle(3, INK, 1);
+    for (const y of [36, 44, 52]) g.lineBetween(28, y, 56, y + 4).lineBetween(56, y, 28, y + 4);
+    g.lineBetween(38, 26, 32, 16).lineBetween(46, 26, 52, 16);
+    g.fillStyle(0x7a4a1e, 1).fillEllipse(42, 46, 22, 30).fillStyle(0x4a2a12, 1).fillCircle(42, 28, 7);
+    g.lineStyle(3, INK, 1).strokeEllipse(42, 46, 22, 30).strokeCircle(42, 28, 7).lineBetween(42, 32, 42, 60);
+  },
   bronzeDisease: (g, r) => { blobs(g, r, 6, 0x6b4e2e, 8, 12); blobs(g, r, 14, 0x5fd38d, 2, 6); },
   corrosion: (g, r) => { blobs(g, r, 8, 0xb8662f, 5, 10); blobs(g, r, 6, 0x3f8f6f, 3, 6); },
   rootDamage: (g, r) => lines(g, r, 5, 0x6b4426, 4),
@@ -61,7 +64,23 @@ const DAMAGE_DRAW: Record<DamageId, (g: G, r: Rng) => void> = {
   yellowedVarnish: (g, r) => blobs(g, r, 5, 0xe3c341, 10, 16, 0.75),
 };
 
-const TOOL_DRAW: Record<Exclude<ToolId, 'brush'>, (g: G) => void> = {
+const TOOL_DRAW: Record<ToolId | UtilityToolId, (g: G) => void> = {
+  brush: (g) => {
+    g.lineStyle(9, INK, 1).lineBetween(14, 52, 34, 30).lineStyle(5, 0xb4553a, 1).lineBetween(14, 52, 34, 30);
+    g.fillStyle(0x9aa5b1, 1).fillTriangle(30, 30, 38, 22, 42, 34).fillStyle(0xf3e3c3, 1).fillTriangle(36, 22, 54, 10, 46, 32).fillTriangle(38, 22, 54, 10, 42, 34);
+    g.lineStyle(3, INK, 1).strokeTriangle(36, 22, 54, 10, 46, 32);
+  },
+  camera: (g) => {
+    g.fillStyle(0x3a3a40, 1).fillRoundedRect(8, 20, 48, 32, 6).fillRect(18, 14, 14, 8);
+    g.fillStyle(0x8fd0f0, 1).fillCircle(34, 36, 11).fillStyle(0xffffff, 1).fillCircle(30, 32, 3).fillStyle(0xe0457b, 1).fillCircle(48, 26, 3);
+    g.lineStyle(3, INK, 1).strokeRoundedRect(8, 20, 48, 32, 6).strokeCircle(34, 36, 11);
+  },
+  uvLamp: (g) => {
+    g.fillStyle(0x8e44ff, 0.35).fillTriangle(40, 32, 62, 14, 62, 50);
+    g.fillStyle(0x4a4a52, 1).fillRoundedRect(6, 26, 26, 12, 4).fillRoundedRect(30, 22, 12, 20, 3);
+    g.fillStyle(0xb48ad9, 1).fillRect(40, 24, 4, 16);
+    g.lineStyle(3, INK, 1).strokeRoundedRect(6, 26, 26, 12, 4).strokeRoundedRect(30, 22, 12, 20, 3);
+  },
   wash: (g) => { g.fillStyle(0x5aa9e6, 1).fillCircle(32, 40, 14).fillTriangle(18, 36, 46, 36, 32, 10); g.lineStyle(3, INK, 1).strokeCircle(32, 40, 14); },
   poultice: (g) => { g.fillStyle(0xd9c7a7, 1).fillRoundedRect(12, 24, 40, 28, 6); g.fillStyle(0xf3ead7, 1).fillEllipse(32, 24, 40, 12); g.lineStyle(3, INK, 1).strokeRoundedRect(12, 24, 40, 28, 6).strokeEllipse(32, 24, 40, 12); },
   consolidant: (g) => { g.fillStyle(0xc0c4c8, 1).fillRoundedRect(28, 8, 8, 30, 3); g.fillStyle(0x8c5a2b, 1).fillRoundedRect(26, 36, 12, 22, 4); g.fillStyle(0xf2c14e, 1).fillCircle(46, 18, 6); g.lineStyle(3, INK, 1).strokeRoundedRect(28, 8, 8, 30, 3).strokeRoundedRect(26, 36, 12, 22, 4); },
@@ -76,14 +95,13 @@ export function damageTexture(id: DamageId) {
 }
 
 export function toolTexture(id: ToolId | UtilityToolId) {
-  return PROP_TOOL[id] ?? `tool-${id}`;
+  return `tool-${id}`;
 }
 
-/** Called once from Boot after props are loaded. */
+/** Called once from Boot. */
 export function generateTextures(scene: Phaser.Scene) {
   const g = scene.make.graphics({}, false);
   for (const [id, draw] of Object.entries(DAMAGE_DRAW)) {
-    if (PROP_DAMAGE[id as DamageId]) continue;
     g.clear();
     draw(g, new Phaser.Math.RandomDataGenerator([id]));
     g.generateTexture(`dmg-${id}`, DAMAGE_SIZE, DAMAGE_SIZE);
@@ -106,13 +124,10 @@ export function generateTextures(scene: Phaser.Scene) {
     ctx.arc(c, c, c - 3, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
-    const prop = PROP_DAMAGE[id];
-    const src = scene.textures.get(prop ?? `dmg-${id}`).getSourceImage() as CanvasImageSource;
-    if (prop) ctx.drawImage(src, c - 31, c - 31, 62, 62);
-    else ctx.drawImage(src, 0, 0);
+    ctx.drawImage(scene.textures.get(`dmg-${id}`).getSourceImage() as CanvasImageSource, 0, 0);
     tex.refresh();
   }
-  // Placeholder avatar for cultures without hand-drawn sprites yet.
+  // Fallback avatar if a culture's rig failed to load.
   g.clear();
   g.fillStyle(PAPER, 1).fillEllipse(64, 150, 70, 90);
   g.fillStyle(0xd9a066, 1).fillCircle(64, 80, 46).fillTriangle(26, 60, 40, 14, 56, 46).fillTriangle(102, 60, 88, 14, 72, 46);

@@ -1,20 +1,27 @@
 # Relic Revival Run
 
-This is a relic restoration runner game for [Game Work Jam](https://itch.io/jam/mini-game-work-jam-2023): A game that advocates against the illicit traffic of cultural property.
+A runner about restoring cultural heritage. Play as an animal art restorer and run through twelve cultures, from Mexico and Portugal to Mali. Use the right conservation tool on each kind of damage to bring masterpieces back to life.
 
-[Official Trailer](https://www.youtube.com/watch?v=MbZWifvPbOs)
+This is a **remake** by Echo Yin of the 2023 game-jam original by **Studio Jojo**, made for the [Mini Game Work Jam](https://itch.io/jam/mini-game-work-jam-2023), a jam that advocates against the illicit traffic of cultural property.
+- **What carries over:** the remake builds on the original's concept and design.
+- **What's new:** it is a new web-based build, and most of the original assets are not part of it.
 
-You can find our game here:
+- Original game: [paoowo.itch.io/relic-revival-run](https://paoowo.itch.io/relic-revival-run)
+- Original trailer: [YouTube](https://www.youtube.com/watch?v=MbZWifvPbOs)
 
-[![Relic Revival Run](legacy/Assets/UI/Comic/comic17.jpg)](https://paoowo.itch.io/relic-revival-run)
+## Features
 
-*Please don't forget to play, comment and vote!*
+- **12 cultures, rising difficulty.**
+  - **Cultures:** Mexico, Portugal, China, Egypt, Greece, Peru, Japan, India, Iran, Nigeria, Cambodia, Mali.
+  - **Artifacts and damage:** each culture has its own artifact and damage types drawn from real conservation problems (salt efflorescence, bronze disease, foxing, insect infestation, and more).
+- **Tools that match real practice.** Poultices draw out salts, an anoxic bag treats insects, a solvent gel removes old repairs. A UV lamp reveals hidden damage, and a camera documents it before treatment.
+- **The game teaches its rules.** A field guide before every run, a tool-bar legend, tool hints, and feedback on every mistake.
+- **Reactive music** built on each culture's scales and rhythms. It grows with your combo and turns tense as the artifact suffers.
+- **Controls for every player:** keyboard, mouse, touch and gamepad; remappable keys; menus you can navigate without a mouse; reduced-motion support.
 
-## Web Rebuild (in progress)
+## Development
 
-The game is being rebuilt on Phaser 3 + TypeScript + Vite. The original Unity jam project lives in `legacy/` for reference only.
-
-Everything runs in Docker:
+The game uses Phaser 3, TypeScript and Vite. Everything runs in Docker:
 
 ```sh
 docker compose up app                              # dev server on http://localhost:5173
@@ -23,34 +30,19 @@ docker compose run --rm app npm run package:itch   # release/relic-revival-run-w
 docker compose run --rm win                        # Windows portable + installer in release/
 ```
 
-## Overview
+The avatar workshop, a dev-only tool for drawing the cut-out characters, runs at http://localhost:5173/tools/workshop/.
 
-A 2D platformer runner where you could play as an art restorer who run and perform restoration action on the wonderful art pieces from legacies of Mexico, China and Portugal. Let's bring damaged masterpieces back to their former glory.
+## The original (2023)
 
-## Updates
+The Unity jam project is kept in `legacy/` for reference only, and will be removed.
 
-- [x] Player input using the new Unity Input System. Has potential to support multiple platforms and reduce the risks of sting overflow.
-- [x] Spawn pick-ups based on random values and heights.
-- [x] A toolbox for player to choose tools from.
-- [x] All tools only interact with respective spawn object types.
-- [x] FMOD plugin for Unity.
-- [x] Adaptive music for each level and player activites.
-- [x] UI for Main Menu and In-game pause menu.
-- [x] Background scrolling.
-- [x] Mexio, Chinese and Portugal levels done.
-- [x] Character animation sprites for each level.
-- [x] In-game tip for tools and restoration activities.
-- [x] Loading screen.
-- [x] End-game credit.
-- [x] Bugfixes.
-
-## Making Of
+### Making of
 
 - [Making of Sound](https://www.youtube.com/watch?v=6v6Oa1RjByw)
 
 - [Making of Music](https://www.youtube.com/watch?v=gu-DScXpfLM)
 
-## Studio Jojo Devlog
+### Studio Jojo devlog
 
 - [Studio Jojo DevLog (Part I) — Mini Game Work Jam: Against the Illicit Traffic of Cultural Property](https://medium.com/@echoness/studio-jojo-dev-log-part-i-mini-game-work-jam-against-the-illicit-traffic-of-cultural-property-9635821233bb)
 
@@ -66,13 +58,16 @@ A 2D platformer runner where you could play as an art restorer who run and perfo
   
 - [Studio Jojo Devlog (Part 7) — Relic Revival Run : From Prototype to Reality](https://medium.com/@echoness/studio-jojo-part-7-relic-revival-run-from-prototype-to-reality-67323875aba3)
   
+
 ## Credits
 
-![Credits](legacy/Assets/UI/images/team01.png)
+- **Remake:** Echo Yin.
+- **Original game:** Studio Jojo.
+- **Fonts:** [Borel](https://fonts.google.com/specimen/Borel) and [Edu SA Beginner](https://fonts.google.com/specimen/Edu+SA+Beginner), under the SIL Open Font License.
 
 ## License
 
 - **Code** is under the [PolyForm Noncommercial License 1.0.0](LICENSE).
 - **Art and audio** are under [CC BY-NC 4.0](LICENSE-ASSETS).
-- **Fonts and bundled libraries** keep their own licenses (see `LICENSE-ASSETS`).
-- Earlier releases stay under the MIT license they were published with.
+- **Fonts, bundled libraries and third-party audio clips** keep their own licenses (see `LICENSE-ASSETS`).
+- The original 2023 jam release remains under the MIT license it was published with.

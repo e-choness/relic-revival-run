@@ -1,16 +1,20 @@
-Art and audio in Relic Revival Run are licensed under the Creative Commons
-Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0).
+Art and audio in this remake of Relic Revival Run are licensed under the
+Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0).
 https://creativecommons.org/licenses/by-nc/4.0/
 
-Copyright (c) 2023-2026 Echo Yin and the Studio Jojo team.
+Copyright (c) 2026 Echo Yin. This remake builds on Relic Revival Run (2023) by Studio Jojo.
 
-This covers: public/assets/avatars, public/assets/props, public/favicon.svg,
-build/icon.png, avatars/*.avatar.json, and the art and audio in legacy/.
+This license covers: public/assets/avatars, avatars/*.avatar.json, public/favicon.svg,
+build/icon.png, and the art and music the game generates.
 
 It does NOT cover:
 - Code, which is licensed under PolyForm Noncommercial 1.0.0 (see LICENSE).
+- legacy/: the original 2023 Unity jam project by Studio Jojo, released under MIT.
+  It is kept for reference only and will be removed; none of its assets are used by the remake.
 - Third-party material, which keeps its own license:
   - public/assets/fonts (Borel and Edu SA Beginner): SIL Open Font License 1.1.
+  - public/assets/audio: open audio clips, each under the license listed in
+    public/assets/audio/CREDITS.md.
   - Bundled libraries (Phaser, perfect-freehand, svg-path-properties): their own licenses.
 
 =======================================================================

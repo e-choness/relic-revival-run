@@ -1,0 +1,126 @@
+{
+  "id": "red-panda",
+  "size": 1000,
+  "scale": 0.35,
+  "order": [
+    "earBack",
+    "tail",
+    "legBack",
+    "armBack",
+    "body",
+    "legFront",
+    "earFront",
+    "head",
+    "armFront"
+  ],
+  "parts": [
+    {
+      "id": "earBack",
+      "parent": "head",
+      "pivot": {
+        "x": 456,
+        "y": 240
+      },
+      "x": 393,
+      "y": 96,
+      "w": 151,
+      "h": 169
+    },
+    {
+      "id": "tail",
+      "parent": "body",
+      "pivot": {
+        "x": 422,
+        "y": 690
+      },
+      "x": 202,
+      "y": 586,
+      "w": 254,
+      "h": 155
+    },
+    {
+      "id": "legBack",
+      "parent": "body",
+      "pivot": {
+        "x": 484,
+        "y": 756
+      },
+      "x": 425,
+      "y": 723,
+      "w": 141,
+      "h": 228
+    },
+    {
+      "id": "armBack",
+      "parent": "body",
+      "pivot": {
+        "x": 440,
+        "y": 556
+      },
+      "x": 333,
+      "y": 518,
+      "w": 141,
+      "h": 179
+    },
+    {
+      "id": "body",
+      "parent": null,
+      "pivot": {
+        "x": 520,
+        "y": 650
+      },
+      "x": 374,
+      "y": 481,
+      "w": 302,
+      "h": 315
+    },
+    {
+      "id": "legFront",
+      "parent": "body",
+      "pivot": {
+        "x": 552,
+        "y": 756
+      },
+      "x": 494,
+      "y": 723,
+      "w": 142,
+      "h": 228
+    },
+    {
+      "id": "earFront",
+      "parent": "head",
+      "pivot": {
+        "x": 598,
+        "y": 240
+      },
+      "x": 514,
+      "y": 94,
+      "w": 169,
+      "h": 171
+    },
+    {
+      "id": "head",
+      "parent": "body",
+      "pivot": {
+        "x": 522,
+        "y": 545
+      },
+      "x": 304,
+      "y": 155,
+      "w": 500,
+      "h": 418
+    },
+    {
+      "id": "armFront",
+      "parent": "body",
+      "pivot": {
+        "x": 610,
+        "y": 556
+      },
+      "x": 573,
+      "y": 518,
+      "w": 168,
+      "h": 181
+    }
+  ]
+}

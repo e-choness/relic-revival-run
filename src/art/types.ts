@@ -78,7 +78,7 @@ export const PART_TEMPLATE: { id: PartId; parent?: PartId; label: string }[] = [
   { id: 'armFront', parent: 'body', label: 'Arm (front)' },
 ];
 
-/** Line and shading defaults matched by eye to the jam sprites (ink weight relative to sprite height). */
+/** Line and shading defaults, matched by eye to the original jam art style (ink weight relative to height). */
 export const DEFAULT_STYLE: AvatarStyle = {
   inkColor: '#1e1418',
   inkWidth: 9,

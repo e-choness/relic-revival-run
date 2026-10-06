@@ -12,8 +12,6 @@ export interface Culture {
   avatar: {
     animal: string;
     note: string;
-    /** Hand-drawn frame animation in public/assets/avatars/<sprite> (the jam avatars). */
-    sprite?: string;
     /** Cut-out rig exported by the avatar workshop to public/assets/avatars/<rig>. */
     rig?: string;
   };
@@ -33,7 +31,7 @@ export interface Culture {
 export const CULTURES: Culture[] = [
   {
     id: 'mexico', name: 'Mexico', artifact: 'Maya mural & stone stela',
-    avatar: { animal: 'Axolotl', note: 'Endemic to the lakes of Mexico City', sprite: 'axolotl' }, motif: 'mesoamerican',
+    avatar: { animal: 'Axolotl', note: 'Endemic to the lakes of Mexico City', rig: 'axolotl' }, motif: 'mesoamerican',
     damages: ['grime', 'salts', 'flakingPaint'],
     music: ['marimba', 'huehuetl drum', 'clay ocarina'],
     sound: { root: 62, scale: [0, 2, 4, 5, 7, 9, 11], tempo: 112, lead: 'mallet', perc: 'hand', drone: 0 },
@@ -41,7 +39,7 @@ export const CULTURES: Culture[] = [
   },
   {
     id: 'portugal', name: 'Portugal', artifact: 'Azulejo tile panel',
-    avatar: { animal: 'Iberian lynx', note: 'One of the rarest wild cats on Earth', sprite: 'lynx' }, motif: 'azulejo',
+    avatar: { animal: 'Iberian lynx', note: 'One of the rarest wild cats on Earth', rig: 'iberian-lynx' }, motif: 'azulejo',
     damages: ['grime', 'salts', 'glazeLoss', 'crack'],
     music: ['Portuguese guitar', 'classical guitar', 'fado minor harmony'],
     sound: { root: 57, scale: [0, 2, 3, 5, 7, 8, 11], tempo: 76, lead: 'pluck', perc: 'none', drone: 0 },
@@ -49,7 +47,7 @@ export const CULTURES: Culture[] = [
   },
   {
     id: 'china', name: 'China', artifact: 'Silk scroll & bronze ding',
-    avatar: { animal: 'Red panda', note: 'Lives in the mountain forests of Sichuan and Yunnan', sprite: 'red-panda' }, motif: 'pagoda',
+    avatar: { animal: 'Red panda', note: 'Lives in the mountain forests of Sichuan and Yunnan', rig: 'red-panda' }, motif: 'pagoda',
     damages: ['foxing', 'insects', 'tear', 'bronzeDisease'],
     music: ['guzheng', 'erhu', 'dizi', 'pentatonic scale'],
     sound: { root: 62, scale: [0, 2, 4, 7, 9], tempo: 90, lead: 'pluck', perc: 'gong', drone: 0 },

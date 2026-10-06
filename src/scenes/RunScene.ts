@@ -252,7 +252,7 @@ export class RunScene extends Phaser.Scene {
       const info = s.getData('info') as SpotInfo;
       if (info.done || info.documented || s.x > WIDTH || s.alpha < 1) continue;
       info.documented = true;
-      info.badge = this.add.image(s.x + 30, s.y - 30, 'prop-camera').setScale(0.28).setDepth(6);
+      info.badge = this.add.image(s.x + 30, s.y - 30, toolTexture('camera')).setDisplaySize(30, 30).setDepth(6);
     }
   }
 
@@ -363,8 +363,8 @@ export class RunScene extends Phaser.Scene {
       treats.forEach((d, k) => this.add.image(c.x + (k - (treats.length - 1) / 2) * 26, HEIGHT - 106, damageTexture(d)).setDisplaySize(26, 26).setDepth(10));
     });
 
-    this.uvButton = this.actionButton(WIDTH - 150, HEIGHT - 52, 'prop-uv', 'U', () => this.useUV());
-    this.cameraButton = this.actionButton(WIDTH - 60, HEIGHT - 52, 'prop-camera', 'C', () => this.useCamera());
+    this.uvButton = this.actionButton(WIDTH - 150, HEIGHT - 52, toolTexture('uvLamp'), 'U', () => this.useUV());
+    this.cameraButton = this.actionButton(WIDTH - 60, HEIGHT - 52, toolTexture('camera'), 'C', () => this.useCamera());
     if (!this.culture.damages.some((d) => DAMAGES[d].hiddenUntilUV)) this.uvButton.setVisible(false);
 
     this.toast = label(this, WIDTH / 2, 170, '', 28, { color: PAPER_CSS, stroke: '#2b1d2e', strokeThickness: 7 }).setDepth(11).setAlpha(0);

@@ -183,6 +183,53 @@ const SPECS: Spec[] = [
       tail: tuft('spines'),
     },
   },
+  {
+    id: 'axolotl', name: 'Axolotl (placeholder)',
+    palette: { fur: '#f7c6d4', furLight: '#fde4ec', gill: '#e8708a', nose: '#c25a74' },
+    parts: {
+      head: [solid('fur', ellipse(575, 335, 215, 165)), solid('furLight', ellipse(700, 392, 92, 52)), ...eyeJam(662, 318), blush(640, 392), mouth(762)],
+      // Feathery external gills fan out behind the head.
+      earFront: [blob('gill', [[600, 230], [640, 120], [668, 128], [640, 236]]), blob('gill', [[560, 220], [560, 90], [590, 92], [592, 226]]), blob('gill', [[520, 236], [470, 120], [498, 108], [552, 228]])],
+      earBack: [blob('gill', [[430, 280], [330, 210], [346, 186], [446, 256]]), blob('gill', [[420, 330], [300, 320], [304, 292], [424, 300]])],
+      tail: [blob('fur', [[424, 670], [340, 640], [262, 640], [250, 668], [330, 700], [420, 712]]), blob('furLight', [[330, 642], [262, 640], [250, 668], [300, 680]])],
+    },
+  },
+  {
+    id: 'iberian-lynx', name: 'Iberian lynx (placeholder)',
+    palette: { fur: '#c9955a', furLight: '#f4e6cf', innerEar: '#f0c9a8', nose: '#2a1c18', spot: '#3a2a22', tip: '#1e1418' },
+    parts: {
+      head: [
+        // Facial ruff: pointed cheek tufts under the jaw.
+        blob('furLight', [[430, 420, true], [470, 520, true], [540, 470], [620, 540, true], [660, 470]]),
+        solid('fur', ellipse(570, 330, 205, 180)), solid('furLight', ellipse(704, 386, 96, 66)),
+        ...[[480, 230], [530, 200], [450, 300], [505, 270]].map(([x, y]) => flat('spot', ellipse(x, y, 10, 8))),
+        ...eyeJam(), blush(), nose(), mouth(),
+      ],
+      // Triangular ears with the lynx's black tufts.
+      earFront: [blob('fur', [[575, 200, true], [628, 60, true], [680, 200, true]]), blob('innerEar', [[598, 190, true], [628, 100, true], [658, 190, true]]), line([[628, 60], [632, 20]])],
+      earBack: [blob('fur', [[462, 210, true], [474, 70, true], [546, 190, true]]), line([[474, 70], [470, 30]])],
+      tail: [blob('fur', [[424, 668], [370, 640], [348, 660], [418, 700]]), blob('tip', [[370, 640], [348, 660], [362, 672], [382, 650]])],
+    },
+  },
+  {
+    id: 'red-panda', name: 'Red panda (placeholder)',
+    palette: { fur: '#c9522a', furLight: '#fbf3ea', innerEar: '#fbf3ea', nose: '#1e1418', ring: '#8a3519', eye: '#3b1f12' },
+    parts: {
+      head: [
+        solid('fur', ellipse(570, 330, 210, 185)),
+        // White eyebrow and cheek markings.
+        flat('furLight', ellipse(650, 255, 34, 18)), blob('furLight', [[600, 360], [660, 330], [800, 350, true], [740, 440], [620, 430]]),
+        ...eyeJam(), blush(626, 404), nose(796, 356), mouth(),
+      ],
+      earFront: [blob('fur', [[575, 190], [600, 90], [680, 110], [680, 200]]), blob('innerEar', [[600, 180], [612, 116], [660, 128], [660, 186]])],
+      earBack: [blob('fur', [[460, 200], [460, 100], [536, 96], [546, 186]])],
+      // Long bushy tail with darker rings.
+      tail: [
+        blob('fur', [[425, 670], [340, 640], [262, 610], [226, 640], [262, 690], [350, 712], [418, 712]]),
+        line([[350, 648], [346, 704]]), line([[300, 628], [294, 696]]), line([[258, 614], [252, 684]]),
+      ],
+    },
+  },
 ];
 
 // Pivots: neck, shoulders, hips, ear bases, tail root, body centre of balance.
