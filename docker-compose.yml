@@ -1,0 +1,25 @@
+# All installs, tests and builds run in containers; node_modules lives in a volume, not on the host.
+services:
+  app:
+    build: { context: ., dockerfile: docker/Dockerfile }
+    working_dir: /app
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    ports: ["5173:5173"]
+    command: npm run dev
+
+  # Windows desktop build (electron-builder via Wine).
+  win:
+    image: electronuserland/builder:wine
+    working_dir: /app
+    environment: [ELECTRON_CACHE=/root/.cache/electron, ELECTRON_BUILDER_CACHE=/root/.cache/electron-builder]
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+      - electron_cache:/root/.cache
+    command: npm run package:win
+
+volumes:
+  node_modules:
+  electron_cache:
