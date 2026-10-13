@@ -24,7 +24,7 @@ export interface Shape {
   d?: string;
 }
 
-export type PartId = 'earBack' | 'tail' | 'legBack' | 'armBack' | 'body' | 'legFront' | 'head' | 'earFront' | 'armFront';
+export type PartId = 'earBack' | 'tail' | 'legBack' | 'shinBack' | 'footBack' | 'armBack' | 'forearmBack' | 'body' | 'coatTail' | 'legFront' | 'shinFront' | 'footFront' | 'head' | 'earFront' | 'armFront' | 'forearmFront';
 
 export interface Part {
   id: PartId;
@@ -69,13 +69,21 @@ export interface AvatarDoc {
 export const PART_TEMPLATE: { id: PartId; parent?: PartId; label: string }[] = [
   { id: 'earBack', parent: 'head', label: 'Ear (back)' },
   { id: 'tail', parent: 'body', label: 'Tail' },
-  { id: 'legBack', parent: 'body', label: 'Leg (back)' },
+  { id: 'legBack', parent: 'body', label: 'Thigh (back)' },
+  { id: 'shinBack', parent: 'legBack', label: 'Shin (back)' },
+  { id: 'footBack', parent: 'shinBack', label: 'Foot (back)' },
   { id: 'armBack', parent: 'body', label: 'Arm (back)' },
+  { id: 'forearmBack', parent: 'armBack', label: 'Forearm (back)' },
+  { id: 'legFront', parent: 'body', label: 'Thigh (front)' },
+  { id: 'shinFront', parent: 'legFront', label: 'Shin (front)' },
+  { id: 'footFront', parent: 'shinFront', label: 'Foot (front)' },
+  // Both thighs are underneath the coat; the side silhouette hides the hips.
+  { id: 'coatTail', parent: 'body', label: 'Coat hem' },
   { id: 'body', label: 'Body' },
-  { id: 'legFront', parent: 'body', label: 'Leg (front)' },
   { id: 'earFront', parent: 'head', label: 'Ear (front)' },
   { id: 'head', parent: 'body', label: 'Head' },
   { id: 'armFront', parent: 'body', label: 'Arm (front)' },
+  { id: 'forearmFront', parent: 'armFront', label: 'Forearm (front)' },
 ];
 
 /** Line and shading defaults, matched by eye to the original jam art style (ink weight relative to height). */

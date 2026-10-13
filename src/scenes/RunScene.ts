@@ -8,7 +8,8 @@ import { difficultyFor, type Difficulty } from '../systems/difficulty';
 import { PatternSpawner, type SpawnEvent } from '../systems/patterns';
 import { RunState } from '../systems/runState';
 import { loadSave } from '../systems/save';
-import { DAMAGE_SIZE, damageTexture, drawArtifact, drawSkyline, toolTexture } from '../ui/art';
+import { DAMAGE_SIZE, damageTexture, drawArtifact, toolTexture } from '../ui/art';
+import { addLandscape, advanceLandscape, loadLandscape } from '../ui/landscape';
 import { addAvatar, type AvatarView } from '../ui/avatar';
 import { showControlsMenu } from '../ui/controlsMenu';
 import { showFieldGuide } from '../ui/fieldGuide';
@@ -94,6 +95,7 @@ export class RunScene extends Phaser.Scene {
   private toolIndex = 0;
   private player!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   private avatar!: AvatarView;
+  private avatarShadow!: Phaser.GameObjects.Ellipse;
   private spots!: Phaser.Physics.Arcade.Group;
   private floor!: Phaser.GameObjects.Rectangle;
   private layers: { sprite: Phaser.GameObjects.TileSprite; factor: number }[] = [];
@@ -192,6 +194,10 @@ export class RunScene extends Phaser.Scene {
     this.spawner = new PatternSpawner({ damages: this.culture.damages, lanes: this.diff.lanes, level: this.index, rng: seededRng(seed), pairs: twist === 'pairs' });
   }
 
+  preload() {
+    loadLandscape(this, this.culture.id);
+  }
+
   create() {
     this.audio.play(this.culture.sound, this.culture.id);
     this.audio.setIntensity(0);
@@ -217,35 +223,14 @@ export class RunScene extends Phaser.Scene {
   // ---------- world ----------
 
   private createBackground() {
-    const { sky, ground } = this.culture.palette;
-    const skyC = hex(sky), groundC = hex(ground);
-    this.add.graphics().fillGradientStyle(skyC, skyC, mix(skyC, 0xffffff, 0.4), mix(skyC, 0xffffff, 0.4), 1).fillRect(0, 0, WIDTH, HEIGHT);
-
-    const far = `skyline-${this.culture.id}`;
-    if (!this.textures.exists(far)) {
-      const g = this.make.graphics({}, false);
-      drawSkyline(g, this.culture.motif, 1280, 300, mix(skyC, groundC, 0.35));
-      g.generateTexture(far, 1280, 300);
-      g.clear().fillStyle(mix(skyC, groundC, 0.6), 1);
-      for (let x = 0; x < 1280; x += 256) g.fillEllipse(x + 128, 200, 340, 160);
-      g.generateTexture(`hills-${this.culture.id}`, 1280, 200);
-      g.clear().fillStyle(groundC, 1).fillRect(0, 0, 256, 100).fillStyle(mix(groundC, 0x000000, 0.2), 1);
-      for (let x = 0; x < 256; x += 64) g.fillRect(x, 0, 32, 8);
-      g.lineStyle(4, INK, 1).lineBetween(0, 2, 256, 2);
-      g.generateTexture(`ground-${this.culture.id}`, 256, 100);
-      g.destroy();
-    }
-    const add = (key: string, y: number, h: number, factor: number) =>
-      this.layers.push({ sprite: this.add.tileSprite(0, y, WIDTH, h, key).setOrigin(0, 0), factor });
-    add(far, GROUND_Y - 300, 300, 0.12);
-    add(`hills-${this.culture.id}`, GROUND_Y - 160, 200, 0.4);
-    add(`ground-${this.culture.id}`, GROUND_Y, 100, 1);
+    this.layers = addLandscape(this, this.culture, GROUND_Y);
 
     this.floor = this.add.rectangle(WIDTH / 2, GROUND_Y + 50, WIDTH * 2, 100).setVisible(false);
     this.physics.add.existing(this.floor, true);
   }
 
   private createPlayer() {
+    this.avatarShadow = this.add.ellipse(PLAYER_X, GROUND_Y + 3, 78, 13, 0x38281f, 0.22).setDepth(4);
     // Invisible physics body with the same hitbox for every avatar; the visible avatar follows it.
     this.player = this.physics.add.sprite(PLAYER_X, GROUND_Y - 120, 'avatar-placeholder').setVisible(false);
     this.player.body.setSize(PLAYER_HITBOX.w, PLAYER_HITBOX.h);
@@ -343,6 +328,7 @@ export class RunScene extends Phaser.Scene {
     spot.body.enable = false;
 
     if (info.kind === 'tile') {
+      this.avatar.react('restore');
       this.state.bonus(150);
       this.audio.sfx('bonus');
       this.sparks.explode(18, spot.x, spot.y);
@@ -357,6 +343,7 @@ export class RunScene extends Phaser.Scene {
     const tool = this.tools[this.toolIndex];
     const outcome = this.state.treat(info.damage, tool, { documented: info.documented, perfect, fragile: info.fragile });
     if (outcome === 'restored') {
+      this.avatar.react('restore');
       this.audio.sfx('restore', this.state.combo);
       if (perfect) this.audio.sfx('perfect');
       this.sparks.explode(perfect ? 26 : 12, spot.x, spot.y);
@@ -375,6 +362,7 @@ export class RunScene extends Phaser.Scene {
       this.tweens.add({ targets: spot, scale: spot.scale * 1.6, alpha: 0, duration: 260, onComplete: () => spot.destroy() });
     } else {
       this.lastCallRestored = false;
+      this.avatar.react('mistake');
       const need = TOOLS[DAMAGES[info.damage].treatedBy].name;
       this.floatText(spot.x, spot.y - 40, info.fragile ? 'Wrong tool! ×2' : 'Wrong tool!', '#c0392b');
       this.toastText(`${DAMAGES[info.damage].name} needs the ${need}`, 2000);
@@ -443,7 +431,7 @@ export class RunScene extends Phaser.Scene {
     this.elapsed += dt;
     this.uvCooldown = Math.max(0, this.uvCooldown - dt);
     this.cameraCooldown = Math.max(0, this.cameraCooldown - dt);
-    for (const l of this.layers) l.sprite.tilePositionX += this.speed * l.factor * dt;
+    advanceLandscape(this.layers, this.speed * dt, REDUCED_MOTION);
 
     const running = this.elapsed < this.diff.duration;
     const beat = this.beatNow();
@@ -563,7 +551,10 @@ export class RunScene extends Phaser.Scene {
 
   private animatePlayer(dt: number) {
     const body = this.player.body;
+    const lift = Phaser.Math.Clamp((GROUND_Y - body.bottom) / 350, 0, 1);
+    this.avatarShadow.setPosition(this.player.x, GROUND_Y + 3).setScale(1 - lift * 0.55).setAlpha(1 - lift * 0.7);
     this.avatar.setAnim(this.finale ? 'idle' : body.blocked.down ? 'run' : body.velocity.y < 0 ? 'jump' : 'fall');
+    this.avatar.setRunSpeed(this.speed);
     this.avatar.setFeet(this.player.x, body.bottom);
     this.avatar.tick(dt);
   }
@@ -942,12 +933,6 @@ export class RunScene extends Phaser.Scene {
       this.pauseNav = undefined;
     }
   }
-}
-
-function mix(a: number, b: number, t: number) {
-  const ca = Phaser.Display.Color.IntegerToColor(a), cb = Phaser.Display.Color.IntegerToColor(b);
-  const c = Phaser.Display.Color.Interpolate.ColorWithColor(ca, cb, 100, t * 100);
-  return Phaser.Display.Color.GetColor(c.r, c.g, c.b);
 }
 
 function readAssist() {

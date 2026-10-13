@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { DEFAULT_STYLE, PART_TEMPLATE, type Anchor, type AvatarDoc, type Material, type PartId, type Shape } from '../../src/art/types';
+import { SIDE_JOINTS } from '../../src/art/skeleton';
 
 // PLACEHOLDER avatars, generated at the owner's request as working bases to redraw over in the workshop.
 // Every shape is plain editable anchors. Re-running never overwrites an existing avatar file
@@ -40,20 +41,59 @@ const blob = (color: string, pts: Pt[]) => solid(color, smooth(pts, true));
 function outfit(chest = 'fur'): Partial<Record<PartId, Shape[]>> {
   return {
     body: [
-      blob('coat', [[420, 520], [600, 520], [640, 640], [652, 772, true], [398, 772, true], [408, 640]]),
-      flat(chest, smooth([[505, 524, true], [577, 524, true], [541, 604, true]], true)),
-      line([[504, 526], [541, 604], [578, 526]]),
+      // Narrow side torso: back seam at the left, chest and opening at the right.
+      // The uninterrupted hem occludes BOTH thigh roots, including the near thigh.
+      blob('coat', [[493, 523], [553, 516], [582, 550], [588, 607], [579, 672], [594, 764, true], [465, 768, true], [478, 655], [471, 581]]),
+      flat(chest, smooth([[553, 518, true], [575, 532, true], [578, 573, true]], true)),
+      blob('lapel', [[538, 522, true], [569, 539, true], [580, 588, true], [554, 567, true]]),
+      line([[580, 592], [571, 675], [581, 750]]),
+      ...[620, 666, 711].map(y => flat('button', ellipse(580, y, 4, 5))),
+      blob('pocket', [[495, 662, true], [545, 662, true], [542, 704], [498, 704]]),
+      line([[505, 657], [505, 633]]),
+      blob('bristle', [[497, 636, true], [498, 615, true], [512, 612, true], [514, 636, true]]),
+      blob('leather', [[473, 719], [503, 719], [504, 752], [471, 752]]),
+      flat('bristle', ellipse(488, 735, 4, 4)),
+      line([[486, 590], [490, 636]]),
     ],
-    legFront: [blob('pants', [[520, 748, true], [588, 748, true], [583, 884], [524, 884]]), solid('shoes', ellipse(566, 902, 46, 26))],
-    legBack: [blob('pants', [[452, 748, true], [518, 748, true], [513, 884], [455, 884]]), solid('shoes', ellipse(496, 902, 46, 26))],
-    armFront: [blob('coat', [[598, 545], [642, 560], [694, 628], [668, 656], [616, 602]]), solid('glove', ellipse(692, 652, 25, 23))],
-    armBack: [blob('coat', [[444, 545], [404, 562], [378, 628], [404, 652], [446, 602]]), solid('glove', ellipse(382, 650, 25, 23))],
+    coatTail: [blob('coat', [[490, 641], [516, 660], [507, 773], [449, 781, true], [469, 720]])],
+    ...limb('Front', 528, false), ...limb('Back', 516, true),
+    ...sleeve('Front', 530, false), ...sleeve('Back', 541, true),
+  };
+}
+
+function limb(side: 'Front' | 'Back', x: number, far: boolean): Partial<Record<PartId, Shape[]>> {
+  const pants = far ? 'pantsBack' : 'pants';
+  return {
+    [`leg${side}`]: [blob(pants, [[x - 24, 697], [x + 25, 697], [x + 22, 809], [x, 833], [x - 22, 811]])],
+    [`shin${side}`]: [blob(pants, [[x - 21, 809], [x, 795], [x + 22, 811], [x + 18, 913], [x - 19, 913]]), blob('cuff', [[x - 20, 893, true], [x + 19, 893, true], [x + 19, 913, true], [x - 20, 913, true]])],
+    [`foot${side}`]: [
+      blob(far ? 'shoesBack' : 'shoes', [[x - 20, 905, true], [x + 18, 905, true], [x + 23, 917], [x + 58, 924], [x + 60, 937], [x - 22, 937, true]]),
+      flat('sole', smooth([[x - 22, 931, true], [x + 60, 931, true], [x + 59, 939, true], [x - 22, 939, true]], true)),
+      line([[x + 17, 918], [x + 34, 917]]), line([[x + 24, 925], [x + 43, 924]]),
+    ],
+  };
+}
+
+function sleeve(side: 'Front' | 'Back', x: number, far: boolean): Partial<Record<PartId, Shape[]>> {
+  const coat = far ? 'coatBack' : 'coat';
+  return {
+    [`arm${side}`]: [blob(coat, [[x - 21, 544], [x, 530], [x + 24, 544], [x + 19, 638], [x, 655], [x - 19, 637]])],
+    [`forearm${side}`]: [
+      blob(coat, [[x - 17, 635], [x, 620], [x + 18, 636], [x + 17, 697], [x - 16, 697]]),
+      blob('lapel', [[x - 17, 683, true], [x + 18, 683, true], [x + 18, 702, true], [x - 17, 702, true]]),
+      blob(far ? 'gloveBack' : 'glove', [[x - 14, 700], [x + 15, 700], [x + 20, 718], [x + 6, 735], [x - 11, 727]]),
+      line([[x + 6, 716], [x + 12, 721]]),
+    ],
   };
 }
 
 // ---------- head building blocks ----------
 
-const eyeJam = (x = 662, y = 312) => [solid('eye', ellipse(x, y, 30, 38)), flat('white', ellipse(x + 9, y - 13, 10, 12))];
+const eyeJam = (x = 662, y = 312) => [
+  solid('white', ellipse(x, y, 32, 40)), solid('eye', ellipse(x + 7, y + 3, 23, 32)),
+  flat('ink', ellipse(x + 12, y + 5, 13, 25)), flat('white', ellipse(x + 13, y - 13, 9, 11)),
+  flat('white', ellipse(x + 1, y + 18, 4, 5)), line([[x - 26, y - 57], [x - 4, y - 65], [x + 19, y - 60]]),
+];
 const blush = (x = 642, y = 388) => shape('blush', 'blush', ellipse(x, y, 32, 18));
 const mouth = (x = 760) => line([[x - 16, 404], [x, 414], [x + 16, 403]]);
 const nose = (x = 790, y = 360, rx = 16, ry = 12) => solid('nose', ellipse(x, y, rx, ry));
@@ -72,7 +112,7 @@ interface Spec {
   chest?: string;
 }
 
-const BASE_PALETTE = { coat: '#fbf3f1', pants: '#1e6a8f', shoes: '#f6e6ea', glove: '#8fd0f0', eye: '#6b3b1e', white: '#ffffff', blush: '#f4a0a8', ink: '#1e1418' };
+const BASE_PALETTE = { coat: '#fff4dc', lapel: '#fffbef', pocket: '#e8d8b8', pants: '#355c69', cuff: '#61848a', shoes: '#885638', sole: '#3c302b', glove: '#9dd7d1', leather: '#b37a4d', bristle: '#e4b763', badge: '#287e7d', button: '#9d7955', eye: '#61432c', white: '#fffdf5', blush: '#ed9b92', ink: '#362b2a' };
 
 const SPECS: Spec[] = [
   {
@@ -187,10 +227,16 @@ const SPECS: Spec[] = [
     id: 'axolotl', name: 'Axolotl (placeholder)',
     palette: { fur: '#f7c6d4', furLight: '#fde4ec', gill: '#e8708a', nose: '#c25a74' },
     parts: {
-      head: [solid('fur', ellipse(575, 335, 215, 165)), solid('furLight', ellipse(700, 392, 92, 52)), ...eyeJam(662, 318), blush(640, 392), mouth(762)],
+      head: [
+        blob('fur', [[369, 324], [403, 220], [534, 184], [682, 216], [779, 304], [791, 392], [705, 471], [529, 493], [407, 434]]),
+        flat('furLight', smooth([[452, 397], [590, 388], [777, 364], [750, 442], [607, 471], [481, 445]], true)),
+        ...eyeJam(690, 324), blush(666, 401),
+        line([[750, 402], [772, 411], [786, 400]]),
+        flat('nose', ellipse(784, 375, 4, 3)),
+      ],
       // Feathery external gills fan out behind the head.
-      earFront: [blob('gill', [[600, 230], [640, 120], [668, 128], [640, 236]]), blob('gill', [[560, 220], [560, 90], [590, 92], [592, 226]]), blob('gill', [[520, 236], [470, 120], [498, 108], [552, 228]])],
-      earBack: [blob('gill', [[430, 280], [330, 210], [346, 186], [446, 256]]), blob('gill', [[420, 330], [300, 320], [304, 292], [424, 300]])],
+      earFront: gills(529, 231, false),
+      earBack: gills(420, 312, true),
       tail: [blob('fur', [[424, 670], [340, 640], [262, 640], [250, 668], [330, 700], [420, 712]]), blob('furLight', [[330, 642], [262, 640], [250, 668], [300, 680]])],
     },
   },
@@ -226,39 +272,66 @@ const SPECS: Spec[] = [
       // Long bushy tail with darker rings.
       tail: [
         blob('fur', [[425, 670], [340, 640], [262, 610], [226, 640], [262, 690], [350, 712], [418, 712]]),
-        line([[350, 648], [346, 704]]), line([[300, 628], [294, 696]]), line([[258, 614], [252, 684]]),
+        flat('ring', smooth([[340, 640, true], [366, 651, true], [362, 712, true], [340, 709, true]], true)),
+        flat('ring', smooth([[287, 617, true], [312, 631, true], [307, 704, true], [282, 697, true]], true)),
+        flat('ring', smooth([[245, 616], [260, 610], [260, 688], [239, 668]], true)),
       ],
     },
   },
 ];
 
-// Pivots: neck, shoulders, hips, ear bases, tail root, body centre of balance.
-const PIVOTS: Record<PartId, [number, number]> = {
-  body: [520, 650], head: [522, 545], earFront: [598, 240], earBack: [456, 240], armFront: [610, 556],
-  armBack: [440, 556], legFront: [552, 756], legBack: [484, 756], tail: [422, 690],
-};
+/** Branching external gills give the axolotl a recognizable silhouette at small sizes. */
+function gills(x: number, y: number, back: boolean): Shape[] {
+  const result: Shape[] = [];
+  for (let i = 0; i < 3; i++) {
+    const angle = (back ? -2.65 + i * 0.48 : -2.05 + i * 0.48);
+    const dx = Math.cos(angle), dy = Math.sin(angle);
+    const px = -dy, py = dx;
+    const points: Pt[] = [[x - px * 12, y - py * 12]];
+    for (let k = 1; k <= 4; k++) {
+      const d = k * 26;
+      points.push([x + dx * d - px * 27, y + dy * d - py * 27, true], [x + dx * (d + 7) - px * 9, y + dy * (d + 7) - py * 9]);
+    }
+    points.push([x + dx * 138, y + dy * 138]);
+    for (let k = 4; k >= 1; k--) {
+      const d = k * 26;
+      points.push([x + dx * (d + 7) + px * 9, y + dy * (d + 7) + py * 9], [x + dx * d + px * 27, y + dy * d + py * 27, true]);
+    }
+    points.push([x + px * 12, y + py * 12]);
+    result.push(blob('gill', points), line([[x, y], [x + dx * 114, y + dy * 114]]));
+  }
+  return result;
+}
 
 /**
  * The specs draw heads around x≈570, y≈330. Shift them back over the shoulders and down so the chin
  * overlaps the collar; a head perched on the collar edge looks like it is about to roll off when running.
  */
 const HEAD_SHIFT = { x: -32, y: 34 };
-const shifted = (shapes: Shape[] = []): Shape[] =>
-  shapes.map((sh) => ({ ...sh, anchors: sh.anchors?.map((a) => ({ ...a, x: a.x + HEAD_SHIFT.x, y: a.y + HEAD_SHIFT.y })) }));
+const shifted = (shapes: Shape[] = [], extraX = 0): Shape[] =>
+  shapes.map((sh) => ({ ...sh, anchors: sh.anchors?.map((a) => ({
+    ...a, x: 540 + (a.x + HEAD_SHIFT.x + extraX - 540) * 0.8, y: 533 + (a.y + HEAD_SHIFT.y - 533) * 0.84,
+    in: a.in && { x: a.in.x * 0.8, y: a.in.y * 0.84 }, out: a.out && { x: a.out.x * 0.8, y: a.out.y * 0.84 },
+  })) }));
 
 function build(spec: Spec): AvatarDoc {
   n = 0;
   const parts = { ...outfit(spec.chest), ...spec.parts };
-  for (const id of ['head', 'earFront', 'earBack'] as const) parts[id] = shifted(parts[id]);
+  for (const id of ['head', 'earFront', 'earBack'] as const) {
+    // In profile the two ears overlap, rather than sitting on either side of a frontal head.
+    parts[id] = shifted(parts[id], id === 'earBack' && spec.id !== 'axolotl' ? 108 : 0);
+  }
+  // Carry the tail at the back of the new narrow side-view coat.
+  parts.tail = parts.tail?.map(sh => ({ ...sh, anchors: sh.anchors?.map(a => ({ ...a, x: a.x + 52 })) }));
   return {
     version: 1,
     id: spec.id,
     name: spec.name,
     size: 1000,
     placeholder: true,
-    palette: { ...BASE_PALETTE, ...spec.palette },
-    style: { ...DEFAULT_STYLE },
-    parts: PART_TEMPLATE.map((t) => ({ id: t.id, parent: t.parent, pivot: { x: PIVOTS[t.id][0], y: PIVOTS[t.id][1] }, shapes: parts[t.id] ?? [] })),
+    palette: { ...BASE_PALETTE, ...spec.palette, coatBack: '#d8cbb1', pantsBack: '#294751', shoesBack: '#674530', gloveBack: '#6ba7a4' },
+    style: { ...DEFAULT_STYLE, inkColor: '#362b2a', inkWidth: 8, shadeOffset: 24, shadeDarken: 0.16, wobble: 0.9 },
+    parts: PART_TEMPLATE.map((t) => ({ id: t.id, parent: t.parent, pivot: { ...SIDE_JOINTS[t.id] }, shapes: parts[t.id] ?? [] })),
   };
 }
 

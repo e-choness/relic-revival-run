@@ -32,6 +32,10 @@ docker compose run --rm win                        # Windows portable + installe
 
 The avatar workshop, a dev-only tool for drawing the cut-out characters, runs at http://localhost:5173/tools/workshop/.
 
+The animated cast and all twelve illustrated backgrounds can be reviewed at
+http://localhost:5173/tools/art-preview/. See [the art notes](art/README.md) for
+editable sources, generated concept provenance, and export instructions.
+
 ## The original (2023)
 
 The Unity jam project is kept in `legacy/` for reference only, and will be removed.

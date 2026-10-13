@@ -1,18 +1,19 @@
 import Phaser from 'phaser';
 import { CULTURES } from '../data/cultures';
 import { keysLabel, loadBindings } from '../systems/controls';
-import { drawSkyline } from '../ui/art';
+import { addLandscape, advanceLandscape, type LandscapeLayer } from '../ui/landscape';
 import { AudioDirector } from '../audio/AudioDirector';
 import { MENU_PROFILE } from '../audio/music';
 import { addAvatar, type AvatarView } from '../ui/avatar';
 import { MenuNav, focusButton } from '../ui/menuNav';
-import { FONT_DISPLAY, HEIGHT, PAPER_CSS, WIDTH, button, hex, label } from '../ui/theme';
+import { FONT_DISPLAY, PAPER_CSS, REDUCED_MOTION, WIDTH, button, label } from '../ui/theme';
 
 const PARADE_GAP = 150;
 const PARADE_SPEED = 160;
 
 export class TitleScene extends Phaser.Scene {
   private parade: { view: AvatarView; x: number }[] = [];
+  private landscape: LandscapeLayer[] = [];
 
   constructor() {
     super('Title');
@@ -20,12 +21,7 @@ export class TitleScene extends Phaser.Scene {
 
   create() {
     AudioDirector.get().play(MENU_PROFILE, 'menu');
-    const mexico = CULTURES[0];
-    const bg = this.add.graphics();
-    bg.fillGradientStyle(hex(mexico.palette.sky), hex(mexico.palette.sky), 0xe9a15b, 0xe9a15b, 1).fillRect(0, 0, WIDTH, HEIGHT);
-    const sky = this.add.graphics();
-    drawSkyline(sky, 'mesoamerican', WIDTH + 320, 560, 0xd9875a);
-    bg.fillStyle(hex(mexico.palette.ground), 1).fillRect(0, 560, WIDTH, HEIGHT - 560);
+    this.landscape = addLandscape(this, CULTURES[0], 560);
 
     label(this, WIDTH / 2, 150, 'Relic Revival Run', 84, { fontFamily: FONT_DISPLAY, color: PAPER_CSS, stroke: '#2b1d2e', strokeThickness: 12 });
     label(this, WIDTH / 2, 250, 'Run, restore, and bring heritage back to life', 30, { color: PAPER_CSS, stroke: '#2b1d2e', strokeThickness: 6 });
@@ -41,11 +37,13 @@ export class TitleScene extends Phaser.Scene {
 
   update(_t: number, deltaMs: number) {
     const dt = deltaMs / 1000;
+    if (!REDUCED_MOTION) advanceLandscape(this.landscape, dt * 24);
     const loop = WIDTH + 120 + CULTURES.length * PARADE_GAP;
     for (const p of this.parade) {
       p.x += PARADE_SPEED * dt;
       if (p.x > WIDTH + 120) p.x -= loop;
       p.view.setFeet(p.x, 560);
+      p.view.setRunSpeed(PARADE_SPEED + (REDUCED_MOTION ? 0 : 24));
       p.view.tick(dt);
     }
   }

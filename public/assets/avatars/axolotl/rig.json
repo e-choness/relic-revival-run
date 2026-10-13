@@ -6,121 +6,212 @@
     "earBack",
     "tail",
     "legBack",
+    "shinBack",
+    "footBack",
     "armBack",
-    "body",
+    "forearmBack",
     "legFront",
+    "shinFront",
+    "footFront",
+    "coatTail",
+    "body",
     "earFront",
     "head",
-    "armFront"
+    "armFront",
+    "forearmFront"
   ],
   "parts": [
     {
       "id": "earBack",
       "parent": "head",
       "pivot": {
-        "x": 456,
-        "y": 240
+        "x": 545,
+        "y": 306
       },
-      "x": 230,
-      "y": 194,
-      "w": 214,
-      "h": 195
+      "x": 301,
+      "y": 240,
+      "w": 156,
+      "h": 168
     },
     {
       "id": "tail",
       "parent": "body",
       "pivot": {
-        "x": 422,
-        "y": 690
+        "x": 474,
+        "y": 694
       },
-      "x": 221,
-      "y": 612,
-      "w": 236,
-      "h": 125
+      "x": 275,
+      "y": 614,
+      "w": 232,
+      "h": 121
     },
     {
       "id": "legBack",
       "parent": "body",
       "pivot": {
-        "x": 484,
-        "y": 756
+        "x": 516,
+        "y": 706
       },
-      "x": 425,
-      "y": 723,
-      "w": 141,
-      "h": 228
+      "x": 466,
+      "y": 661,
+      "w": 101,
+      "h": 194
+    },
+    {
+      "id": "shinBack",
+      "parent": "legBack",
+      "pivot": {
+        "x": 516,
+        "y": 812
+      },
+      "x": 470,
+      "y": 772,
+      "w": 92,
+      "h": 176
+    },
+    {
+      "id": "footBack",
+      "parent": "shinBack",
+      "pivot": {
+        "x": 516,
+        "y": 914
+      },
+      "x": 472,
+      "y": 883,
+      "w": 131,
+      "h": 78
     },
     {
       "id": "armBack",
       "parent": "body",
       "pivot": {
-        "x": 440,
-        "y": 556
+        "x": 541,
+        "y": 548
       },
-      "x": 333,
-      "y": 518,
-      "w": 141,
-      "h": 179
+      "x": 496,
+      "y": 507,
+      "w": 92,
+      "h": 170
     },
     {
-      "id": "body",
-      "parent": null,
+      "id": "forearmBack",
+      "parent": "armBack",
       "pivot": {
-        "x": 520,
-        "y": 650
+        "x": 541,
+        "y": 636
       },
-      "x": 374,
-      "y": 481,
-      "w": 302,
-      "h": 315
+      "x": 499,
+      "y": 598,
+      "w": 84,
+      "h": 159
     },
     {
       "id": "legFront",
       "parent": "body",
       "pivot": {
-        "x": 552,
-        "y": 756
+        "x": 528,
+        "y": 706
       },
-      "x": 494,
-      "y": 723,
-      "w": 142,
-      "h": 228
+      "x": 478,
+      "y": 661,
+      "w": 101,
+      "h": 194
+    },
+    {
+      "id": "shinFront",
+      "parent": "legFront",
+      "pivot": {
+        "x": 528,
+        "y": 812
+      },
+      "x": 482,
+      "y": 772,
+      "w": 92,
+      "h": 176
+    },
+    {
+      "id": "footFront",
+      "parent": "shinFront",
+      "pivot": {
+        "x": 528,
+        "y": 914
+      },
+      "x": 484,
+      "y": 883,
+      "w": 131,
+      "h": 78
+    },
+    {
+      "id": "coatTail",
+      "parent": "body",
+      "pivot": {
+        "x": 502,
+        "y": 647
+      },
+      "x": 428,
+      "y": 614,
+      "w": 111,
+      "h": 192
+    },
+    {
+      "id": "body",
+      "parent": null,
+      "pivot": {
+        "x": 525,
+        "y": 706
+      },
+      "x": 444,
+      "y": 491,
+      "w": 172,
+      "h": 299
     },
     {
       "id": "earFront",
       "parent": "head",
       "pivot": {
-        "x": 598,
-        "y": 240
+        "x": 533,
+        "y": 309
       },
-      "x": 413,
-      "y": 85,
-      "w": 247,
-      "h": 221
+      "x": 429,
+      "y": 171,
+      "w": 155,
+      "h": 163
     },
     {
       "id": "head",
       "parent": "body",
       "pivot": {
-        "x": 522,
-        "y": 545
+        "x": 540,
+        "y": 533
       },
-      "x": 304,
-      "y": 180,
-      "w": 480,
-      "h": 378
+      "x": 355,
+      "y": 246,
+      "w": 387,
+      "h": 305
     },
     {
       "id": "armFront",
       "parent": "body",
       "pivot": {
-        "x": 610,
-        "y": 556
+        "x": 530,
+        "y": 548
       },
-      "x": 573,
-      "y": 518,
-      "w": 168,
-      "h": 181
+      "x": 485,
+      "y": 507,
+      "w": 92,
+      "h": 170
+    },
+    {
+      "id": "forearmFront",
+      "parent": "armFront",
+      "pivot": {
+        "x": 530,
+        "y": 636
+      },
+      "x": 488,
+      "y": 598,
+      "w": 84,
+      "h": 159
     }
   ]
 }

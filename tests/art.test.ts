@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { anchorsToD, samplePath } from '../src/art/geometry';
-import { runPose, worldMatrices } from '../src/art/rig';
+import { blendPose, DEFAULT_RUN, fallPose, jumpPose, runPose, worldMatrices } from '../src/art/rig';
 import { inkPath, mix, partBounds, renderAvatar } from '../src/art/stylize';
 import { DEFAULT_STYLE, newAvatar, type Anchor } from '../src/art/types';
+import { SIDE_JOINTS, solveLeg, strideFoot } from '../src/art/skeleton';
+import { loopPixels } from '../src/art/loopTexture';
 
 // Test geometry is deliberately trivial (squares); character shapes come only from the owner.
 const square: Anchor[] = [
@@ -79,9 +81,86 @@ describe('rig', () => {
     expect(m.earFront[5]).toBeCloseTo(-10);
   });
 
-  it('legs swing in opposite directions', () => {
-    const p = runPose(0.1);
-    expect(Math.sign(p.legFront!.rot!)).toBe(-Math.sign(p.legBack!.rot!));
+  it('keeps a planted ankle level and its sole flat while the pelvis bounces', () => {
+    const side = newAvatar('side', 'Side view');
+    for (const part of side.parts) part.pivot = SIDE_JOINTS[part.id];
+    for (let frame = 0; frame < 100; frame++) {
+      const phase = frame / 100;
+      const pose = runPose(phase, { ...DEFAULT_RUN, cadence: 1 });
+      const matrices = worldMatrices(side, pose);
+      for (const name of ['Front', 'Back'] as const) {
+        const foot = strideFoot(phase + (name === 'Back' ? 0.5 : 0), DEFAULT_RUN.legSwing * 5);
+        if (!foot.planted) continue;
+        const pivot = SIDE_JOINTS[`foot${name}`];
+        const [a, b, c, d, e, f] = matrices[`foot${name}`];
+        expect(a * pivot.x + c * pivot.y + e).toBeCloseTo(SIDE_JOINTS[`leg${name}`].x + foot.x, 4);
+        expect(b * pivot.x + d * pivot.y + f).toBeCloseTo(914, 4);
+        expect(Math.atan2(b, a)).toBeCloseTo(0, 5);
+        expect(pose[`shin${name}`]!.rot).toBeGreaterThan(0);
+      }
+      expect(pose.body!.rot).toBeGreaterThan(10);
+    }
+  });
+
+  it('bends knees forward and handles an unreachable target without NaN', () => {
+    const leg = solveLeg({ x: 0, y: 0 }, { x: 0, y: 150 });
+    expect(leg.knee.x).toBeGreaterThan(0);
+    expect(Math.hypot(leg.knee.x, leg.knee.y)).toBeCloseTo(106);
+    expect(Math.hypot(leg.ankle.x - leg.knee.x, leg.ankle.y - leg.knee.y)).toBeCloseTo(102);
+    const stretched = solveLeg({ x: 0, y: 0 }, { x: 1000, y: 1000 });
+    expect(Number.isFinite(stretched.shin)).toBe(true);
+    expect(Math.hypot(stretched.ankle.x, stretched.ankle.y)).toBeLessThan(208);
+  });
+
+  it('hides both hips under the coat and tucks the knees more in a jump than a fall', () => {
+    const ids = doc.parts.map(p => p.id);
+    expect(ids.indexOf('legFront')).toBeLessThan(ids.indexOf('body'));
+    expect(ids.indexOf('legBack')).toBeLessThan(ids.indexOf('body'));
+    expect(jumpPose(0.2).shinFront!.rot!).toBeGreaterThan(fallPose().shinFront!.rot!);
+    expect(jumpPose(0.2).shinBack!.rot!).toBeGreaterThan(fallPose().shinBack!.rot!);
+  });
+
+  it('loops without a pose discontinuity at the run boundary', () => {
+    const start = worldMatrices(doc, runPose(0));
+    const end = worldMatrices(doc, runPose(1 / DEFAULT_RUN.cadence));
+    for (const id of doc.parts.map(p => p.id))
+      start[id].forEach((value, i) => expect(end[id][i]).toBeCloseTo(value, 6));
+  });
+
+  it('can transition from jump to fall without snapping unkeyed joints', () => {
+    const jump = jumpPose(), fall = fallPose();
+    const start = worldMatrices(doc, blendPose(jump, fall, 0));
+    const end = worldMatrices(doc, blendPose(jump, fall, 1));
+    expect(start).toEqual(worldMatrices(doc, jump));
+    expect(end).toEqual(worldMatrices(doc, fall));
+    expect(blendPose({ head: { rot: 10 } }, {}, 0.5).head?.rot).toBe(5);
+  });
+});
+
+describe('looping scenery', () => {
+  it('joins adjacent source columns at the wrap and preserves the central landmark', () => {
+    const width = 20, height = 2;
+    const source = new Uint8ClampedArray(width * height * 4);
+    for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) source.set([x * 10, y * 100, 80, 255], (y * width + x) * 4);
+    const loop = loopPixels(source, width, height, 4);
+    expect(loop.width).toBe(16);
+    for (let y = 0; y < height; y++) {
+      const row = y * loop.width * 4;
+      expect(loop.data[row]).toBe(40);
+      expect(loop.data[row + (loop.width - 1) * 4]).toBe(30);
+      expect(loop.data[row + 6 * 4]).toBe(100);
+      for (let x = 0; x < loop.width; x++) expect(loop.data[row + x * 4 + 3]).toBe(255);
+    }
+  });
+
+  it('does not darken translucent edges while blending over transparent black', () => {
+    const source = new Uint8ClampedArray(20 * 4);
+    for (let x = 16; x < 20; x++) source.set([200, 120, 50, 255], x * 4);
+    const loop = loopPixels(source, 20, 1, 4);
+    const pixel = 13 * 4;
+    expect([...loop.data.slice(pixel, pixel + 3)]).toEqual([200, 120, 50]);
+    expect(loop.data[pixel + 3]).toBeGreaterThan(0);
+    expect(loop.data[pixel + 3]).toBeLessThan(255);
   });
 });
 

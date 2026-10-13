@@ -3,6 +3,7 @@ import { CULTURES } from '../data/cultures';
 import { generateTextures } from '../ui/art';
 import { loadRig } from '../ui/CutoutAvatar';
 import { FONT_BODY, label } from '../ui/theme';
+import { loadLandscape } from '../ui/landscape';
 
 const FONTS: [string, string][] = [
   ['Borel', 'assets/fonts/Borel-Regular.ttf'],
@@ -18,6 +19,7 @@ export class BootScene extends Phaser.Scene {
     const text = this.add.text(640, 360, 'Loading…', { fontFamily: FONT_BODY, fontSize: '32px', color: '#fff6e6' }).setOrigin(0.5);
     this.load.on('progress', (p: number) => text.setText(`Loading… ${Math.round(p * 100)}%`));
     for (const c of CULTURES) if (c.avatar.rig) loadRig(this, c.avatar.rig);
+    loadLandscape(this, 'mexico');
   }
 
   async create() {
