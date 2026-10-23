@@ -17,7 +17,7 @@ import { showOptionsMenu } from '../ui/optionsMenu';
 import { showFieldGuide } from '../ui/fieldGuide';
 import { freshKeys } from '../ui/keys';
 import { MenuNav, focusButton } from '../ui/menuNav';
-import { FONT_DISPLAY, HEIGHT, INK, PAPER, PAPER_CSS, REDUCED_MOTION, WIDTH, button, card, hex, label } from '../ui/theme';
+import { ACCENT, FONT_DISPLAY, HEIGHT, INK, INKED, OCHRE, PAPER, PAPER_CSS, REDUCED_MOTION, TEAL, TOUCH, WIDTH, button, card, hex, label, rowButton, slip, tape } from '../ui/theme';
 
 const GROUND_Y = 620;
 const PLAYER_X = 240;
@@ -26,8 +26,10 @@ const JUMP_V = -760;
 const DOUBLE_JUMP_V = -640;
 const UV_COOLDOWN = 4;
 const CAMERA_COOLDOWN = 3;
-const ARTIFACT_W = 230;
-const ARTIFACT_H = 140;
+const ARTIFACT_W = 158;
+const ARTIFACT_H = 92;
+/** Centre line of the tool belt's slots. */
+const BELT_Y = HEIGHT - 46;
 const AVATAR_HEIGHT = 150;
 /** How far ahead (px) the tool hint looks for the next damage. */
 const HINT_RANGE = 560;
@@ -155,18 +157,25 @@ export class RunScene extends Phaser.Scene {
   private toolName!: Phaser.GameObjects.Text;
   private scoreText!: Phaser.GameObjects.Text;
   private comboText!: Phaser.GameObjects.Text;
+  private comboBg!: Phaser.GameObjects.Graphics;
   private timeBar!: Phaser.GameObjects.Graphics;
+  private timeText!: Phaser.GameObjects.Text;
   private integrityBar!: Phaser.GameObjects.Graphics;
-  private progressText!: Phaser.GameObjects.Text;
   private conditionText!: Phaser.GameObjects.Text;
   private restorationText!: Phaser.GameObjects.Text;
+  private nextTag!: Phaser.GameObjects.Container;
+  private nextTagBg!: Phaser.GameObjects.Graphics;
+  private nextIcon!: Phaser.GameObjects.Image;
   private nextText!: Phaser.GameObjects.Text;
+  private controlsHint?: Phaser.GameObjects.Text;
   private grime!: Phaser.GameObjects.RenderTexture;
   private artifactPos = { x: 0, y: 0 };
   private artifactCracks!: Phaser.GameObjects.Graphics;
   private glow!: Phaser.GameObjects.Graphics;
   private sparks!: Phaser.GameObjects.Particles.ParticleEmitter;
-  private toast!: Phaser.GameObjects.Text;
+  private toast!: Phaser.GameObjects.Container;
+  private toastBg!: Phaser.GameObjects.Graphics;
+  private toastText_!: Phaser.GameObjects.Text;
   private uvButton!: Phaser.GameObjects.Container;
   private cameraButton!: Phaser.GameObjects.Container;
   private pauseLayer?: Phaser.GameObjects.Container;
@@ -245,6 +254,8 @@ export class RunScene extends Phaser.Scene {
       this.briefing = false;
       this.physics.resume();
       this.toastText(`${this.culture.name}: restore the ${this.culture.artifact.toLowerCase()}!`, 2500);
+      // The controls reminder steps aside once the run is under way.
+      if (this.controlsHint) this.tweens.add({ targets: this.controlsHint, alpha: 0, delay: 12000, duration: 800 });
     });
   }
 
@@ -502,8 +513,8 @@ export class RunScene extends Phaser.Scene {
     this.drawTimeBar();
     this.drawToolHint();
     this.drawGlow();
-    this.updateUtility(this.uvButton, this.uvCooldown, 'uv', 'Reveal');
-    this.updateUtility(this.cameraButton, this.cameraCooldown, 'camera', 'Photo');
+    this.updateUtility(this.uvButton, this.uvCooldown, 'Reveal');
+    this.updateUtility(this.cameraButton, this.cameraCooldown, 'Photo');
 
     if (this.state.failed) return this.finish();
     if (!running && this.spots.countActive() === 0) {
@@ -657,7 +668,7 @@ export class RunScene extends Phaser.Scene {
     const start = button(this, WIDTH / 2, 477, 'Begin final care', () => this.beginFinale(), 300);
     layer.add(start);
     this.finale = { steps, at: 0, left: time, ready: false, start, layer, grime, rows, timer };
-    this.nextText.setText('Final care · press Jump or Begin when ready');
+    this.setNextHint('');
     this.hintRing.clear();
     this.audio.setIntensity(4);
     this.highlightFinale();
@@ -667,7 +678,7 @@ export class RunScene extends Phaser.Scene {
     if (!this.finale || this.finale.ready || this.paused || this.ended) return;
     this.finale.ready = true;
     this.finale.start.setVisible(false).disableInteractive();
-    this.nextText.setText('Final care · select a tool to apply it');
+    this.setNextHint('');
   }
 
   private highlightFinale() {
@@ -725,77 +736,112 @@ export class RunScene extends Phaser.Scene {
   }
 
   // ---------- HUD ----------
+  // A field journal laid over the painting: small paper slips at the edges, inked text on the art,
+  // and no full-width bars, so the landscape stays visible.
 
   private createHud() {
-    this.add.graphics().fillStyle(INK, 0.88).fillRoundedRect(12, 12, 366, 145, 18).setDepth(9);
-    this.add.graphics().fillStyle(INK, 0.88).fillRoundedRect(492, 12, 296, 105, 18).setDepth(9);
-    this.add.rectangle(WIDTH / 2, HEIGHT - 47, WIDTH, 94, INK, 0.94).setDepth(9);
-    label(this, 28, 37, this.culture.name, 30, { fontFamily: FONT_DISPLAY, color: PAPER_CSS }).setOrigin(0, 0.5).setDepth(10);
-    this.progressText = label(this, 28, 91, '', 17, { color: PAPER_CSS }).setOrigin(0, 0.5).setDepth(10);
+    // Run card, top left: place, time, condition.
+    slip(this.add.graphics().setDepth(10), 132, 51, 232, 74, PAPER, 16);
+    label(this, 28, 31, this.culture.name, 21, { fontFamily: FONT_DISPLAY }).setOrigin(0, 0.5).setDepth(10);
+    this.timeText = label(this, 236, 31, '', 16, { fontStyle: 'bold' }).setOrigin(1, 0.5).setDepth(10);
     this.timeBar = this.add.graphics().setDepth(10);
+    label(this, 28, 68, this.chill ? 'Protected' : 'Condition', 14).setOrigin(0, 0.5).setDepth(10);
     this.integrityBar = this.add.graphics().setDepth(10);
-    this.conditionText = label(this, 28, 128, '', 18, { color: PAPER_CSS }).setOrigin(0, 0.5).setDepth(10);
-    label(this, WIDTH / 2, 27, this.daily ? 'DAILY SCORE' : 'SCORE', 14, { color: '#e5cfae', fontFamily: 'Arial, sans-serif', letterSpacing: 3 }).setDepth(10);
-    this.scoreText = label(this, WIDTH / 2, 58, '0', 32, { color: PAPER_CSS, fontFamily: 'Arial, sans-serif', fontStyle: 'bold' }).setDepth(10);
-    this.comboText = label(this, WIDTH / 2, 93, '', 20, { color: '#f2c14e' }).setDepth(10);
-    this.nextText = label(this, WIDTH / 2, 144, '', 21, { color: PAPER_CSS, stroke: '#2b1d2e', strokeThickness: 6 }).setDepth(10);
-    button(this, 899, 49, 'Pause', () => this.togglePause(), 142).setDepth(18);
-    button(this, 105, HEIGHT - 48, 'Jump', () => this.jump(), 156).setDepth(10);
-    label(this, 105, HEIGHT - 10, this.diff.lanes > 3 ? 'Tap twice: double jump' : 'Tap or press Jump', 15, { color: PAPER_CSS }).setDepth(10);
+    this.conditionText = label(this, 236, 68, '', 14, { fontStyle: 'bold' }).setOrigin(1, 0.5).setDepth(10);
 
-    // Artifact panel: every restore wipes a patch of grime away; mistakes crack it.
-    const ax = WIDTH - ARTIFACT_W - 28, ay = 20;
-    this.artifactPos = { x: ax, y: ay };
-    card(this, ax + ARTIFACT_W / 2, ay + ARTIFACT_H / 2, ARTIFACT_W + 12, ARTIFACT_H + 12).setDepth(10);
-    addArtifact(this, this.culture, ax, ay, ARTIFACT_W, ARTIFACT_H).setDepth(10);
+    // Score, inked straight onto the sky, with a streak ribbon under it.
+    this.scoreText = label(this, WIDTH / 2, 34, '0', 34, { ...INKED, fontFamily: FONT_DISPLAY }).setDepth(10);
+    this.comboBg = this.add.graphics().setDepth(10);
+    this.comboText = label(this, WIDTH / 2, 76, '', 15, { fontStyle: 'bold' }).setDepth(10);
+
+    const pause = this.add.container(1044, 40).setDepth(18).setSize(44, 44).setInteractive({ useHandCursor: true });
+    pause.add([slip(this.add.graphics(), 0, 0, 44, 44, PAPER, 14), this.add.graphics().lineStyle(3.2, INK, 1).lineBetween(-4, -7, -3.6, 7).lineBetween(3.6, -7, 4, 7)]);
+    pause.on('pointerdown', (_p: unknown, _x: unknown, _y: unknown, e: Phaser.Types.Input.EventData) => {
+      e.stopPropagation();
+      this.togglePause();
+    });
+
+    // The artifact, taped into the journal like a polaroid; every restore wipes a patch of grime away.
+    const polaroid = this.add.container(WIDTH - 18 - 88, 14 + 62).setDepth(10).setAngle(REDUCED_MOTION ? 0 : 1.6);
+    const frame = this.add.graphics();
+    frame.fillStyle(INK, 0.85).fillRect(-88 + 3, -62 + 4, 176, 124);
+    frame.fillStyle(0xfffaf0, 1).fillRect(-88, -62, 176, 124).lineStyle(2, INK, 1).strokeRect(-88, -62, 176, 124);
+    const ax = -ARTIFACT_W / 2, ay = -62 + 8;
+    this.artifactPos = { x: polaroid.x + ax, y: polaroid.y + ay };
     const g = this.make.graphics({}, false);
     const rng = new Phaser.Math.RandomDataGenerator([this.culture.id]);
     g.fillStyle(0x6b5434, 0.8).fillRect(0, 0, ARTIFACT_W, ARTIFACT_H);
-    for (let i = 0; i < 40; i++) g.fillStyle(0x3d2f1f, 0.6).fillCircle(rng.between(0, ARTIFACT_W), rng.between(0, ARTIFACT_H), rng.between(3, 12));
-    this.grime = this.add.renderTexture(ax, ay, ARTIFACT_W, ARTIFACT_H).setOrigin(0, 0).setDepth(10);
+    for (let i = 0; i < 30; i++) g.fillStyle(0x3d2f1f, 0.6).fillCircle(rng.between(0, ARTIFACT_W), rng.between(0, ARTIFACT_H), rng.between(3, 10));
+    this.grime = this.add.renderTexture(ax, ay, ARTIFACT_W, ARTIFACT_H).setOrigin(0, 0);
     this.grime.draw(g);
     g.destroy();
-    this.artifactCracks = this.add.graphics().setPosition(ax, ay).setDepth(10);
-    this.restorationText = label(this, ax + ARTIFACT_W / 2, 184, '', 18, { color: PAPER_CSS, stroke: '#2b1d2e', strokeThickness: 5 }).setDepth(10);
+    this.artifactCracks = this.add.graphics().setPosition(ax, ay);
+    this.restorationText = label(this, 0, 50, '', 14);
+    polaroid.add([frame, addArtifact(this, this.culture, ax, ay, ARTIFACT_W, ARTIFACT_H), this.grime, this.artifactCracks, this.restorationText, tape(this, 0, -62, 52)]);
 
-    this.toolName = label(this, WIDTH / 2, HEIGHT - 108, '', 20, { color: PAPER_CSS, stroke: '#2b1d2e', strokeThickness: 5 }).setDepth(10);
-    const spacing = 92, start = WIDTH / 2 - ((this.tools.length - 1) * spacing) / 2;
+    // The tool belt: one paper slot per tool, with the damage it treats pinned above.
+    this.toolName = label(this, WIDTH / 2, HEIGHT - 128, '', 16, { ...INKED, fontStyle: 'bold' }).setDepth(10);
+    const spacing = 74, start = WIDTH / 2 - ((this.tools.length - 1) * spacing) / 2;
     this.tools.forEach((tool, i) => {
-      const c = this.add.container(start + i * spacing, HEIGHT - 52).setDepth(10);
+      const c = this.add.container(start + i * spacing, BELT_Y).setDepth(10);
       const bg = this.add.graphics();
-      const icon = this.add.image(0, -2, toolTexture(tool)).setDisplaySize(58, 58);
-      const key = label(this, 26, 23, String(i + 1), 19, { fontFamily: 'Arial, sans-serif', fontStyle: 'bold' });
-      c.add([bg, icon, key]).setSize(80, 80).setInteractive({ useHandCursor: true });
+      const icon = this.add.image(0, 0, toolTexture(tool)).setDisplaySize(42, 42);
+      const badge = this.add.graphics().fillStyle(INK, 1).fillCircle(24, 24, 10);
+      const key = label(this, 24, 24, String(i + 1), 12, { fontFamily: 'Arial, sans-serif', fontStyle: 'bold', color: PAPER_CSS, padding: { top: 0, bottom: 0 } });
+      c.add([bg, icon, badge, key]).setSize(64, 64).setInteractive({ useHandCursor: true });
       c.on('pointerdown', (_p: unknown, _x: unknown, _y: unknown, e: Phaser.Types.Input.EventData) => {
         e.stopPropagation();
         this.pickTool(i);
       });
       this.toolSlots.push(c);
       const treats = this.culture.damages.filter((d) => DAMAGES[d].treatedBy === tool);
-      treats.forEach((d, k) => this.add.image(c.x + (k - (treats.length - 1) / 2) * 26, HEIGHT - 100, damageTexture(d)).setDisplaySize(23, 23).setDepth(10));
+      treats.forEach((d, k) => this.add.image(c.x + (k - (treats.length - 1) / 2) * 28, BELT_Y - 54, damageTexture(d)).setDisplaySize(26, 26).setDepth(10));
     });
 
-    this.uvButton = this.actionButton(WIDTH - 150, HEIGHT - 52, toolTexture('uvLamp'), 'U', () => this.useUV());
-    this.cameraButton = this.actionButton(WIDTH - 60, HEIGHT - 52, toolTexture('camera'), 'C', () => this.useCamera());
-    if (!this.culture.damages.some((d) => DAMAGES[d].hiddenUntilUV) && this.culture.twist !== 'darkness') this.uvButton.setVisible(false);
+    // Reveal and Photo, bottom right: left and right mouse buttons (or their own buttons on touch screens).
+    this.uvButton = this.actionButton(WIDTH - 18 - 28 - 70, HEIGHT - 58, toolTexture('uvLamp'), 'left', () => this.useUV());
+    this.cameraButton = this.actionButton(WIDTH - 18 - 28, HEIGHT - 58, toolTexture('camera'), 'right', () => this.useCamera());
+    if (!this.hasUV) this.uvButton.setVisible(false);
 
-    this.toast = label(this, WIDTH / 2, 188, '', 25, { color: PAPER_CSS, stroke: '#2b1d2e', strokeThickness: 7, wordWrap: { width: 720 }, align: 'center' }).setDepth(11).setAlpha(0);
+    if (TOUCH) {
+      button(this, 22 + 46, HEIGHT - 18 - 33, 'Jump', () => this.jump(), 92, PAPER, 66).setDepth(10);
+    } else {
+      const keys = loadBindings();
+      const parts = [`${keyLabel(keys.jump[0] ?? 'Space')} jump`, `1–${this.tools.length} tools`, this.hasUV && 'left-click reveal', 'right-click photo'].filter(Boolean);
+      this.controlsHint = label(this, 18, HEIGHT - 26, parts.join(' · '), 14, { color: PAPER_CSS, backgroundColor: 'rgba(43,29,46,0.72)', padding: { x: 10, y: 3 } }).setOrigin(0, 0.5).setDepth(10);
+    }
+
+    // The next damage and its tool, on a tag above the restorer's head.
+    this.nextTag = this.add.container(PLAYER_X, GROUND_Y - 190).setDepth(11).setVisible(false);
+    this.nextTagBg = this.add.graphics();
+    this.nextIcon = this.add.image(0, 0, damageTexture(this.culture.damages[0])).setDisplaySize(22, 22);
+    this.nextText = label(this, 0, 0, '', 15).setOrigin(0, 0.5);
+    this.nextTag.add([this.nextTagBg, this.nextIcon, this.nextText]);
+
+    this.toastBg = this.add.graphics();
+    this.toastText_ = label(this, 0, 0, '', 17);
+    this.toast = this.add.container(WIDTH / 2, 118, [this.toastBg, this.toastText_]).setDepth(11).setAlpha(0);
     this.hintRing = this.add.graphics().setDepth(11);
     this.glow = this.add.graphics().setDepth(9);
     this.sparks = this.add
       .particles(0, 0, 'spark', {
         lifespan: 550, speed: { min: 90, max: 260 }, scale: { start: 1, end: 0 }, alpha: { start: 1, end: 0 },
-        rotate: { min: 0, max: 360 }, tint: [hex(this.culture.palette.accent), 0xf2c14e, 0xffffff], emitting: false,
+        rotate: { min: 0, max: 360 }, tint: [hex(this.culture.palette.accent), OCHRE, 0xffffff], emitting: false,
       })
       .setDepth(12);
     this.selectTool(0);
-    this.updateUtility(this.uvButton, 0, 'uv', 'Reveal');
-    this.updateUtility(this.cameraButton, 0, 'camera', 'Photo');
+    this.updateUtility(this.uvButton, 0, 'Reveal');
+    this.updateUtility(this.cameraButton, 0, 'Photo');
     this.drawTimeBar();
     this.refreshHud();
   }
 
-  /** Wipe a soft patch of grime off the artifact panel. */
+  /** The UV lamp matters where damage hides under UV, and in the dark tomb. */
+  private get hasUV() {
+    return this.culture.damages.some((d) => DAMAGES[d].hiddenUntilUV) || this.culture.twist === 'darkness';
+  }
+
+  /** Wipe a soft patch of grime off the artifact polaroid. */
   private cleanPatch(times: number) {
     for (let i = 0; i < times; i++) this.grime.erase('eraser', this.rand() * (ARTIFACT_W - 48), this.rand() * (ARTIFACT_H - 48));
     if (!REDUCED_MOTION) this.sparks.explode(6, this.artifactPos.x + ARTIFACT_W / 2, this.artifactPos.y + ARTIFACT_H / 2);
@@ -807,17 +853,26 @@ export class RunScene extends Phaser.Scene {
     if (this.state.combo < 8) return;
     const pulse = REDUCED_MOTION ? 0.35 : 0.35 + 0.25 * Math.sin(this.time.now / 140);
     const w = Math.min(18, 6 + (this.state.combo - 8));
-    g.lineStyle(w, 0xf2c14e, pulse).strokeRect(w / 2, w / 2, WIDTH - w, HEIGHT - w);
+    g.lineStyle(w, OCHRE, pulse).strokeRect(w / 2, w / 2, WIDTH - w, HEIGHT - w);
   }
 
-  private actionButton(x: number, y: number, tex: string, key: string, onClick: () => void) {
+  /** A round paper button for Reveal / Photo, marked with the mouse button that uses it. */
+  private actionButton(x: number, y: number, tex: string, mouse: 'left' | 'right', onClick: () => void) {
     const c = this.add.container(x, y).setDepth(10);
-    const bg = card(this, 0, 0, 76, 76);
-    const status = label(this, 0, 45, '', 16, { color: PAPER_CSS });
-    const shortcut = label(this, 26, 26, key, 16);
-    c.add([bg, this.add.image(0, -2, tex).setDisplaySize(56, 56), shortcut, status]);
-    c.setData('status', status).setData('shortcut', shortcut);
-    c.setSize(76, 76).setInteractive({ useHandCursor: true });
+    const cooldown = this.add.graphics();
+    const status = label(this, 0, 42, '', 14, { ...INKED, strokeThickness: 5, fontStyle: 'bold' });
+    c.add([slip(this.add.graphics(), 0, 0, 56, 56, PAPER, 16), cooldown, this.add.image(0, 0, tex).setDisplaySize(40, 40), status]);
+    if (!TOUCH) {
+      // A little mouse with the button to press filled in.
+      const m = this.add.graphics().setPosition(22, -26);
+      m.fillStyle(PAPER, 1).fillRoundedRect(-10, -14, 20, 28, 10).lineStyle(2, INK, 1).strokeRoundedRect(-10, -14, 20, 28, 10);
+      m.fillStyle(ACCENT, 1).slice(0, -4, 10, mouse === 'left' ? Math.PI : -Math.PI / 2, mouse === 'left' ? -Math.PI / 2 : 0, false).fillPath();
+      m.fillRect(mouse === 'left' ? -10 : 0, -4, 10, 1.5);
+      m.lineStyle(1.8, INK, 1).lineBetween(0, -14, 0, -2).lineBetween(-10, -2, 10, -2);
+      c.add(m);
+    }
+    c.setData('status', status).setData('cooldown', cooldown);
+    c.setSize(60, 60).setInteractive({ useHandCursor: true });
     c.on('pointerdown', (_p: unknown, _x: unknown, _y: unknown, e: Phaser.Types.Input.EventData) => {
       e.stopPropagation();
       onClick();
@@ -825,11 +880,12 @@ export class RunScene extends Phaser.Scene {
     return c;
   }
 
-  private updateUtility(c: Phaser.GameObjects.Container, cooldown: number, action: Action, name: string) {
-    (c.getAt(1) as Phaser.GameObjects.Image).setAlpha(cooldown > 0 ? 0.4 : 1);
-    (c.getData('status') as Phaser.GameObjects.Text).setText(cooldown > 0 ? `${cooldown.toFixed(1)}s` : `${name} · ready`);
-    const key = loadBindings()[action][0];
-    (c.getData('shortcut') as Phaser.GameObjects.Text).setText(key ? keyLabel(key) : '');
+  private updateUtility(c: Phaser.GameObjects.Container, cooldown: number, name: string) {
+    const max = c === this.uvButton ? UV_COOLDOWN : CAMERA_COOLDOWN;
+    (c.getAt(2) as Phaser.GameObjects.Image).setAlpha(cooldown > 0 ? 0.5 : 1);
+    const pie = (c.getData('cooldown') as Phaser.GameObjects.Graphics).clear();
+    if (cooldown > 0) pie.fillStyle(INK, 0.28).slice(0, 0, 28, -Math.PI / 2, -Math.PI / 2 + (cooldown / max) * Math.PI * 2, false).fillPath();
+    (c.getData('status') as Phaser.GameObjects.Text).setText(cooldown > 0 ? `${name} ${cooldown.toFixed(1)}s` : name);
   }
 
   /** Direct pick (number key / tap): in the finale this also applies the tool. */
@@ -847,86 +903,101 @@ export class RunScene extends Phaser.Scene {
     this.toolIndex = next;
     this.toolSlots.forEach((c, k) => {
       const on = k === this.toolIndex;
-      const bg = c.getAt(0) as Phaser.GameObjects.Graphics;
-      bg.clear().fillStyle(INK, 0.9).fillRoundedRect(-36, -32, 76, 76, 16);
-      bg.fillStyle(on ? hex(this.culture.palette.accent) : PAPER, 1).fillRoundedRect(-40, -38, 76, 76, 16);
-      bg.lineStyle(4, INK, 1).strokeRoundedRect(-40, -38, 76, 76, 16);
+      slip((c.getAt(0) as Phaser.GameObjects.Graphics).clear(), 0, 0, 60, 60, on ? ACCENT : PAPER, 18);
       this.tweens.killTweensOf(c);
-      this.tweens.add({ targets: c, y: HEIGHT - 52 - (on ? 6 : 0), scale: on ? 1.06 : 1, duration: REDUCED_MOTION ? 0 : 100 });
+      this.tweens.add({ targets: c, y: BELT_Y - (on ? 8 : 0), angle: on && !REDUCED_MOTION ? -2 : 0, scale: 1, duration: REDUCED_MOTION ? 0 : 100 });
     });
-    this.toolName.setText(`${this.toolIndex + 1} · ${TOOLS[this.tools[this.toolIndex]].name}`).setPosition(278, HEIGHT - 45).setOrigin(0.5).setWordWrapWidth(150).setFontSize(18);
+    this.toolName.setText(TOOLS[this.tools[this.toolIndex]].name).setX(this.toolSlots[this.toolIndex].x);
+  }
+
+  /** The tag above the restorer: the next damage and the tool it needs, or nothing. */
+  private setNextHint(text: string, damage?: DamageId) {
+    if (!text) return void this.nextTag.setVisible(false);
+    this.nextTag.setVisible(true).setY(Math.min(GROUND_Y - 190, this.player.body.top - 34));
+    if (text === this.nextText.text) return;
+    this.nextText.setText(text);
+    this.nextIcon.setVisible(!!damage);
+    if (damage) this.nextIcon.setTexture(damageTexture(damage)).setDisplaySize(22, 22);
+    const w = this.nextText.width + (damage ? 46 : 22), h = 30;
+    this.nextIcon.setX(-w / 2 + 19);
+    this.nextText.setX(-w / 2 + (damage ? 36 : 11));
+    const g = slip(this.nextTagBg.clear(), 0, 0, w, h, PAPER, 12);
+    // The tag's tail points down at the restorer.
+    g.fillStyle(PAPER, 1).fillTriangle(-7, h / 2 - 1, 7, h / 2 - 1, 0, h / 2 + 8);
+    g.lineStyle(2.5, INK, 1).lineBetween(-7, h / 2, 0, h / 2 + 8).lineBetween(0, h / 2 + 8, 7, h / 2);
   }
 
   /** Pulse the slot of the tool the next visible damage needs. */
   private drawToolHint() {
     const g = this.hintRing.clear();
-    if (!this.assist) {
-      this.nextText.setText('Match the tool · jump to reach damage');
-      return;
-    }
+    if (!this.assist) return this.setNextHint('');
     let next: Spot | undefined;
     for (const s of this.activeSpots()) {
       const info = s.getData('info') as SpotInfo;
       if (info.kind !== 'damage' || info.done || s.x < PLAYER_X - 30 || s.x > PLAYER_X + HINT_RANGE) continue;
       if (!next || s.x < next.x) next = s;
     }
-    if (!next) {
-      this.nextText.setText(this.elapsed >= this.diff.duration ? 'Finish the remaining spots' : 'Look ahead · select a tool before contact');
-      return;
-    }
+    if (!next) return this.setNextHint('');
     const info = next.getData('info') as SpotInfo;
-    if (info.hidden && next.alpha < 1) {
-      this.nextText.setText('Hidden damage ahead · use Reveal');
-      return;
-    }
+    if (info.hidden && next.alpha < 1) return this.setNextHint(TOUCH ? 'Hidden damage · Reveal' : 'Hidden damage · left-click to reveal');
     const index = this.tools.indexOf(DAMAGES[info.damage].treatedBy);
     const slot = this.toolSlots[index];
-    this.nextText.setText(`${DAMAGES[info.damage].name} → ${TOOLS[this.tools[index]].name} [${index + 1}]`);
-    const pulse = REDUCED_MOTION ? 1 : 0.75 + 0.25 * Math.sin(this.time.now / 110);
-    // Ink under gold so the ring reads on every culture's palette.
-    g.lineStyle(10, INK, pulse).strokeRoundedRect(slot.x - 52, slot.y - 50, 100, 100, 22);
-    g.lineStyle(5, 0xf2c14e, pulse).strokeRoundedRect(slot.x - 52, slot.y - 50, 100, 100, 22);
+    this.setNextHint(`${DAMAGES[info.damage].name} → ${TOOLS[this.tools[index]].name} [${index + 1}]`, info.damage);
+    if (index === this.toolIndex) return;
+    const pulse = REDUCED_MOTION ? 1 : 0.7 + 0.3 * Math.sin(this.time.now / 110);
+    dashedRect(g.lineStyle(3, OCHRE, pulse), slot.x - 37, BELT_Y - 37, 74, 74);
   }
 
   private flashSlot(i: number) {
     const slot = this.toolSlots[i];
     if (!slot) return;
-    this.tweens.add({ targets: slot, scale: 1.35, duration: 120, yoyo: true, repeat: 1 });
+    this.tweens.add({ targets: slot, scale: 1.3, duration: 120, yoyo: true, repeat: 1 });
   }
 
   private refreshHud() {
     this.audio.setIntensity(this.state.combo);
     this.audio.setIntegrity(this.state.integrity);
     this.scoreText.setText(this.state.score.toLocaleString());
-    this.comboText.setText(this.state.combo > 1 ? `${this.state.combo} in a row · keep going!` : 'Match · jump · restore');
-    this.conditionText.setText(this.chill ? 'Chill · protected' : `Condition ${Math.ceil(this.state.integrity * 100)}%`);
+    const combo = this.state.combo > 1;
+    this.comboText.setText(combo ? `×${this.state.combo} streak · keep going` : '').setVisible(combo);
+    this.comboBg.clear();
+    if (combo) {
+      const w = this.comboText.width + 24;
+      this.comboBg.fillStyle(OCHRE, 1).fillRoundedRect(WIDTH / 2 - w / 2, 64, w, 24, { tl: 9, tr: 12, br: 8, bl: 11 });
+      this.comboBg.lineStyle(2, INK, 1).strokeRoundedRect(WIDTH / 2 - w / 2, 64, w, 24, { tl: 9, tr: 12, br: 8, bl: 11 });
+    }
+    this.conditionText.setText(this.chill ? '' : `${Math.ceil(this.state.integrity * 100)}%`);
     const resolved = this.state.restored + this.state.wrongTools + this.state.missed;
-    this.restorationText.setText(resolved ? `${this.state.restored} restored · ${Math.round(this.state.accuracy * 100)}% accuracy` : 'Your restoration starts here');
+    this.restorationText.setText(resolved ? `${Math.round(this.state.restoration * 100)}% restored · ${Math.round(this.state.accuracy * 100)}% accurate` : 'Your restoration starts here');
     const g = this.integrityBar.clear();
-    g.fillStyle(PAPER, 0.2).fillRoundedRect(182, 120, 174, 14, 7);
-    if (this.state.integrity > 0) g.fillStyle(this.state.integrity > 0.35 ? 0x65d4b6 : 0xf08a77, 1).fillRoundedRect(182, 120, 174 * this.state.integrity, 14, 7);
+    const bx = 102, bw = this.chill ? 134 : 96;
+    g.fillStyle(0xf1e2c2, 1).fillRoundedRect(bx, 63, bw, 10, 5);
+    if (this.state.integrity > 0) g.fillStyle(this.state.integrity > 0.35 ? TEAL : 0xd0574a, 1).fillRoundedRect(bx, 63, Math.max(10, bw * this.state.integrity), 10, 5);
+    g.lineStyle(1.5, INK, 1).strokeRoundedRect(bx, 63, bw, 10, 5);
     // One crack per ~10% integrity lost.
     const cracks = Math.floor((1 - this.state.integrity) * 10);
-    const c = this.artifactCracks.clear().lineStyle(3, INK, 1);
+    const c = this.artifactCracks.clear().lineStyle(2.5, INK, 1);
     const rng = new Phaser.Math.RandomDataGenerator(['cracks']);
     for (let i = 0; i < cracks; i++) {
-      let x = rng.between(10, ARTIFACT_W - 10), y = rng.between(10, ARTIFACT_H - 10);
+      let x = rng.between(8, ARTIFACT_W - 8), y = rng.between(8, ARTIFACT_H - 8);
       c.beginPath().moveTo(x, y);
-      for (let k = 0; k < 4; k++) c.lineTo((x += rng.between(-18, 18)), (y += rng.between(-14, 14)));
+      for (let k = 0; k < 4; k++) c.lineTo((x += rng.between(-14, 14)), (y += rng.between(-10, 10)));
       c.strokePath();
     }
   }
 
   private drawTimeBar() {
     const p = Math.min(1, this.elapsed / this.diff.duration);
-    this.progressText.setText(p < 1 ? `${Math.ceil(this.diff.duration - this.elapsed)}s remaining · final care next` : 'Run complete · finish the remaining spots');
-    this.timeBar.clear().fillStyle(PAPER, 0.2).fillRoundedRect(28, 65, 328, 8, 4);
-    if (p > 0) this.timeBar.fillStyle(0xf2c14e, 1).fillRoundedRect(28, 65, 328 * p, 8, 4);
+    this.timeText.setText(p < 1 ? `${Math.ceil(this.diff.duration - this.elapsed)}s` : 'Final care');
+    this.timeBar.clear().fillStyle(INK, 0.18).fillRoundedRect(28, 46, 208, 5, 3);
+    if (p > 0) this.timeBar.fillStyle(OCHRE, 1).fillRoundedRect(28, 46, 208 * p, 5, 3);
   }
 
   private toastText(msg: string, ms: number) {
     this.tweens.killTweensOf(this.toast);
-    this.toast.setText(msg).setAlpha(1);
+    this.toastText_.setText(msg).setWordWrapWidth(560);
+    slip(this.toastBg.clear(), 0, 0, this.toastText_.width + 32, this.toastText_.height + 2, PAPER, 14);
+    this.toast.setAlpha(1);
     this.tweens.add({ targets: this.toast, alpha: 0, delay: ms, duration: 400 });
   }
 
@@ -958,8 +1029,15 @@ export class RunScene extends Phaser.Scene {
       }
     }));
     this.input.on('wheel', (_p: unknown, _o: unknown, _dx: number, dy: number) => this.selectTool(this.toolIndex + Math.sign(dy)));
-    this.input.on('pointerdown', (_p: Phaser.Input.Pointer, over: Phaser.GameObjects.GameObject[]) => {
-      if (over.length === 0 && !this.briefing) this.jump();
+    // Mouse: left button reveals, right button photographs, so the hand on the mouse never has to reach
+    // for a key mid-jump; jumping stays on the keyboard. Touch: tapping the art jumps (Reveal and Photo
+    // have their own buttons). In the finale any click on the art begins final care.
+    this.input.mouse?.disableContextMenu();
+    this.input.on('pointerdown', (p: Phaser.Input.Pointer, over: Phaser.GameObjects.GameObject[]) => {
+      if (over.length > 0 || this.briefing) return;
+      if (this.finale || p.wasTouch) return this.jump();
+      if (p.rightButtonDown()) this.useCamera();
+      else if (p.leftButtonDown()) this.useUV();
     });
     // Standard gamepad mapping. Tools on shoulders/D-pad and UV/camera on triggers, so they work
     // while the thumb stays on A (jump). X/Y kept as alternates; Start/Select pause.
@@ -981,9 +1059,15 @@ export class RunScene extends Phaser.Scene {
       this.tweens.pauseAll();
       this.anims.pauseAll();
       const c = this.add.container(0, 0).setDepth(20);
-      c.add(this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, INK, 0.6).setInteractive());
-      c.add(card(this, WIDTH / 2, HEIGHT / 2, 440, 560));
-      c.add(label(this, WIDTH / 2, HEIGHT / 2 - 225, 'Paused', 44, { fontFamily: FONT_DISPLAY }));
+      c.add(this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, INK, 0.5).setInteractive());
+      // A compact journal page, taped over the run.
+      const top = HEIGHT / 2 - 170;
+      c.add(card(this, WIDTH / 2, HEIGHT / 2, 340, 340).setAngle(REDUCED_MOTION ? 0 : -0.6));
+      c.add(tape(this, WIDTH / 2, top, 64, 3));
+      c.add(label(this, WIDTH / 2 - 144, top + 38, 'Paused', 30, { fontFamily: FONT_DISPLAY }).setOrigin(0, 0.5));
+      c.add(label(this, WIDTH / 2 + 144, top + 42, this.finale ? `${this.culture.name} · final care` : `${this.culture.name} · ${Math.max(0, Math.ceil(this.diff.duration - this.elapsed))}s left`, 15).setOrigin(1, 0.5));
+      c.add(this.add.graphics().lineStyle(2, INK, 1).lineBetween(WIDTH / 2 - 144, top + 68, WIDTH / 2 + 144, top + 70));
+      c.add(label(this, WIDTH / 2, top + 364, 'Arrows or D-pad to choose · Enter or A to confirm', 15, { color: PAPER_CSS }));
       const subMenu = (open: (done: () => void) => void) => {
         c.setVisible(false);
         this.subMenu = true;
@@ -995,15 +1079,15 @@ export class RunScene extends Phaser.Scene {
           this.time.delayedCall(0, () => this.pauseNav?.setEnabled(true));
         });
       };
-      const at = (i: number) => HEIGHT / 2 - 145 + i * 83;
-      const resume = button(this, WIDTH / 2, at(0), 'Resume', () => this.togglePause(), 300);
-      const restart = button(this, WIDTH / 2, at(1), 'Restart', () => this.scene.restart({ index: this.index, daily: this.daily }), 300);
-      const guide = button(this, WIDTH / 2, at(2), 'Field guide', () => subMenu((done) => showFieldGuide(this, this.culture, 'Back', done)), 300);
-      const options = button(this, WIDTH / 2, at(3), 'Options', () => subMenu((done) => showOptionsMenu(this, { inRun: true }, () => {
+      const at = (i: number) => top + 104 + i * 50;
+      const resume = rowButton(this, WIDTH / 2, at(0), 'Resume', () => this.togglePause());
+      const restart = rowButton(this, WIDTH / 2, at(1), 'Restart', () => this.scene.restart({ index: this.index, daily: this.daily }));
+      const guide = rowButton(this, WIDTH / 2, at(2), 'Field guide', () => subMenu((done) => showFieldGuide(this, this.culture, 'Back', done)));
+      const options = rowButton(this, WIDTH / 2, at(3), 'Options', () => subMenu((done) => showOptionsMenu(this, { inRun: true }, () => {
         this.assist = loadAssist();
         done();
-      })), 300);
-      const map = button(this, WIDTH / 2, at(4), 'World map', () => this.scene.start('WorldMap'), 300);
+      })));
+      const map = rowButton(this, WIDTH / 2, at(4), 'World map', () => this.scene.start('WorldMap'));
       c.add([resume, restart, guide, options, map]);
       this.pauseLayer = c;
       // Esc is the pause key itself, so only gamepad B means "back" here.
@@ -1018,4 +1102,20 @@ export class RunScene extends Phaser.Scene {
       this.pauseNav = undefined;
     }
   }
+}
+
+/** A dashed rectangle outline (Phaser draws no dashed lines): the "needed next" mark on a tool slot. */
+function dashedRect(g: Phaser.GameObjects.Graphics, x: number, y: number, w: number, h: number, dash = 9, gap = 6) {
+  const edge = (x1: number, y1: number, x2: number, y2: number) => {
+    const len = Math.hypot(x2 - x1, y2 - y1);
+    for (let d = 0; d < len; d += dash + gap) {
+      const a = d / len, b = Math.min(len, d + dash) / len;
+      g.lineBetween(x1 + (x2 - x1) * a, y1 + (y2 - y1) * a, x1 + (x2 - x1) * b, y1 + (y2 - y1) * b);
+    }
+  };
+  edge(x + 8, y, x + w - 8, y);
+  edge(x + w, y + 8, x + w, y + h - 8);
+  edge(x + w - 8, y + h, x + 8, y + h);
+  edge(x, y + h - 8, x, y + 8);
+  return g;
 }

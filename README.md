@@ -16,13 +16,13 @@ This is a **remake** by Echo Yin of the 2023 game-jam original by **Studio Jojo*
   - **Artifacts and damage:** each culture has its own artifact and damage types drawn from real conservation problems (salt efflorescence, bronze disease, foxing, insect infestation, and more).
 - **Tools that match real practice.** Poultices draw out salts, an anoxic bag treats insects, a solvent gel removes old repairs. A UV lamp reveals hidden damage, and a camera documents it before treatment.
 - **The game teaches its rules.** A field guide before every run, a tool-bar legend, tool hints, and feedback on every mistake.
-- **Readable run feedback.** Time remaining, condition, treatment accuracy, next-tool hints, utility cooldowns, and touch controls for jumping and pausing. Losing focus pauses the run.
+- **A field-journal HUD that leaves the art visible.** Small paper slips at the screen edges carry time, condition, score and the artifact (a taped polaroid that clears as you restore it); a tag above the restorer names the next damage and its tool; a compact tool belt replaces the old full-width bar. Losing focus pauses the run.
 - **Room to learn.** Runs last 55–75 seconds, with extra spacing for lane changes. Final care waits until you are ready; restore 60% / 80% / 95% while preserving condition to earn 1 / 2 / 3 stars.
 - **Reactive music** with recurring themes, related answers, resolving phrases, moving bass, quiet harmonic support, and stereo room ambience. Accompaniment grows with your combo while the melody stays complete; low condition adds tension.
 - **A story with an ending.** A short prologue sets out why the restorers are running. Restore all twelve relics to complete the collection: the ending gathers every artifact and closes with the game's message about looted and trafficked heritage, followed by the credits (replayable from the title screen).
 - **Progress worth chasing.** Best stars, restoration and score per culture; curator ranks; "new best" and "culture unlocked" news on the results card.
 - **An illustrated museum.** Twelve artifact illustrations show the objects you are restoring, with enlarged exhibits, conservation notes, and full-arrangement soundtrack previews.
-- **Controls for every player:** keyboard, mouse, touch and gamepad; remappable keys; menus you can navigate without a mouse; reduced-motion support.
+- **Controls for every player:** jump on the keyboard (Space/W/↑), tools on 1–8, Q/E or the wheel, and the mouse buttons for the utilities: **left click reveals (UV lamp), right click photographs**. Touch screens tap to jump and get on-screen Reveal/Photo buttons; gamepads, remappable keys, menus you can navigate without a mouse, and reduced-motion support.
 - **Options** from the title and pause menus: music and effects volume, sound on/off, tool hints, chill mode, controls, and a two-step progress reset. The pause menu can also restart a run.
 
 ## Development

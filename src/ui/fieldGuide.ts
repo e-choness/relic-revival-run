@@ -5,7 +5,7 @@ import { TWISTS } from '../data/twists';
 import { keyLabel, loadBindings } from '../systems/controls';
 import { damageTexture, toolTexture } from './art';
 import { freshKeys } from './keys';
-import { FONT_DISPLAY, HEIGHT, INK, INK_CSS, WIDTH, button, card, label } from './theme';
+import { FONT_DISPLAY, HEIGHT, INK, INK_CSS, TOUCH, WIDTH, button, card, label } from './theme';
 
 
 /** Damage types this culture introduces for the first time in the culture order. */
@@ -41,10 +41,10 @@ export function showFieldGuide(scene: Phaser.Scene, culture: Culture, actionLabe
     const tool = def.treatedBy;
     const key = tools.indexOf(tool) + 1;
     c.add(scene.add.image(WIDTH / 2 - 350, y, damageTexture(d)).setDisplaySize(52, 52));
-    c.add(label(scene, WIDTH / 2 - 312, y - 10, def.name + (fresh.has(d) ? '  · NEW' : ''), 22).setOrigin(0, 0.5));
+    c.add(label(scene, WIDTH / 2 - 312, y - 11, def.name + (fresh.has(d) ? '  · NEW' : ''), 22).setOrigin(0, 0.5));
     const uvKey = loadBindings().uv[0];
-    const note = def.hiddenUntilUV ? `Hidden: use Reveal${uvKey ? ` (${keyLabel(uvKey)})` : ''} first` : def.fact;
-    c.add(label(scene, WIDTH / 2 - 312, y + 14, note, 14, { color: def.hiddenUntilUV ? '#8e44ff' : INK_CSS, wordWrap: { width: 380 } }).setOrigin(0, 0.5));
+    const note = def.hiddenUntilUV ? `Hidden: Reveal it first (${TOUCH ? 'Reveal button' : `left click${uvKey ? ` or ${keyLabel(uvKey)}` : ''}`})` : def.fact;
+    c.add(label(scene, WIDTH / 2 - 312, y + 4, note, 14, { color: def.hiddenUntilUV ? '#8e44ff' : INK_CSS, wordWrap: { width: 380 }, padding: { top: 0, bottom: 2 } }).setOrigin(0, 0));
     c.add(label(scene, WIDTH / 2 + 95, y, '→', 28));
     c.add(scene.add.image(WIDTH / 2 + 150, y, toolTexture(tool)).setDisplaySize(46, 46));
     c.add(label(scene, WIDTH / 2 + 185, y, `${TOOLS[tool].name}  [${key}]`, 19, { wordWrap: { width: 205 } }).setOrigin(0, 0.5));
@@ -52,7 +52,8 @@ export function showFieldGuide(scene: Phaser.Scene, culture: Culture, actionLabe
 
   const jump = loadBindings().jump[0];
   const doubleJump = CULTURES.indexOf(culture) >= 2 ? ' · Jump again in the air to reach the highest lane' : '';
-  c.add(label(scene, WIDTH / 2, top + h - 121, `Jump: tap the playfield${jump ? ` or ${keyLabel(jump)}` : ''}${doubleJump}`, 18));
+  const how = TOUCH ? 'Jump: tap the playfield' : `Jump: ${jump ? keyLabel(jump) : 'your jump key'} · Reveal: left click · Photo: right click`;
+  c.add(label(scene, WIDTH / 2, top + h - 121, how + doubleJump, 18));
   c.add(label(scene, WIDTH / 2, top + h - 94, 'Restore 60% / 80% / 95% for 1 / 2 / 3 stars. Keep condition above zero.', 18, { color: '#476853' }));
 
   let closed = false;

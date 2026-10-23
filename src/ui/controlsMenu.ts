@@ -17,7 +17,7 @@ export function showControlsMenu(scene: Phaser.Scene, onClose: () => void) {
   c.add(scene.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, INK, 0.65).setInteractive());
   c.add(card(scene, WIDTH / 2, HEIGHT / 2, 640, h));
   c.add(label(scene, WIDTH / 2, top + 42, 'Controls', 36, { fontFamily: FONT_DISPLAY }));
-  const hint = label(scene, WIDTH / 2, top + 86, 'Click an action, then press its new key. Number keys and M are fixed.', 17);
+  const hint = label(scene, WIDTH / 2, top + 86, 'Click an action, then press its new key. Number keys and M are fixed;\nwith a mouse, left click also reveals and right click photographs.', 16, { align: 'center' });
   c.add(hint);
 
   const rows = ACTIONS.map((a, i) => {

@@ -8,7 +8,7 @@ import { AudioDirector } from '../audio/AudioDirector';
 import { MENU_PROFILE } from '../audio/music';
 import { addAvatar, type AvatarView } from '../ui/avatar';
 import { MenuNav, focusButton } from '../ui/menuNav';
-import { FONT_DISPLAY, PAPER_CSS, REDUCED_MOTION, WIDTH, button, label } from '../ui/theme';
+import { FONT_DISPLAY, INKED, PAPER_CSS, REDUCED_MOTION, TOUCH, WIDTH, button, label } from '../ui/theme';
 
 const PARADE_GAP = 150;
 const PARADE_SPEED = 160;
@@ -49,7 +49,10 @@ export class TitleScene extends Phaser.Scene {
     }, 200).setDepth(10);
     const credits = button(this, WIDTH / 2 + 230, 430, 'Credits', () => this.scene.start('Credits', { ending: isComplete(save) }), 200).setDepth(10);
     nav = new MenuNav(this, [play, museum, options, credits].map(focusButton));
-    label(this, WIDTH / 2, 650, `Jump: ${keysLabel(keys, 'jump')} / tap   ·   Tools: 1–8, ${keysLabel(keys, 'prevTool')}/${keysLabel(keys, 'nextTool')}, wheel   ·   UV: ${keysLabel(keys, 'uv')}   ·   Camera: ${keysLabel(keys, 'camera')}   ·   Mute: M`, 22, { color: PAPER_CSS });
+    const controls = TOUCH
+      ? 'Tap to jump   ·   Tap a tool to pick it   ·   Reveal and Photo have their own buttons'
+      : `Jump: ${keysLabel(keys, 'jump')}   ·   Tools: 1–8, ${keysLabel(keys, 'prevTool')}/${keysLabel(keys, 'nextTool')}, wheel   ·   Reveal: left click   ·   Photo: right click   ·   Mute: M`;
+    label(this, WIDTH / 2, 650, controls, 20, { ...INKED, strokeThickness: 5 });
   }
 
   update(_t: number, deltaMs: number) {

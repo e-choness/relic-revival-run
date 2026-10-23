@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { nearest, type Dir } from '../systems/navigation';
 import { freshKeys } from './keys';
-import { INK } from './theme';
+import { INK, OCHRE } from './theme';
 
 /** Something a keyboard or gamepad user can focus and activate. Coordinates are its centre. */
 export interface Focusable {
@@ -102,8 +102,8 @@ export class MenuNav {
     this.ring.clear();
     const it = this.items[this.index];
     if (!it || !this.visible || !this.enabled) return;
-    this.ring.lineStyle(9, INK, 1).strokeRoundedRect(it.x - it.w / 2 - 8, it.y - it.h / 2 - 8, it.w + 16, it.h + 16, 20);
-    this.ring.lineStyle(5, 0xf2c14e, 1).strokeRoundedRect(it.x - it.w / 2 - 8, it.y - it.h / 2 - 8, it.w + 16, it.h + 16, 20);
+    this.ring.lineStyle(7, INK, 1).strokeRoundedRect(it.x - it.w / 2 - 7, it.y - it.h / 2 - 7, it.w + 14, it.h + 14, 18);
+    this.ring.lineStyle(3.5, OCHRE, 1).strokeRoundedRect(it.x - it.w / 2 - 7, it.y - it.h / 2 - 7, it.w + 14, it.h + 14, 18);
   }
 }
 

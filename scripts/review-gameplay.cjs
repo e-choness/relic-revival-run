@@ -44,8 +44,16 @@ const out = process.env.REVIEW_OUT || '/work/docs/gameplay-review';
     await page.waitForTimeout(150);
     assert.ok(await page.evaluate(() => window.game.scene.getScene('Run').cameraCooldown > 0));
     await page.screenshot({ path: `${out}/cooldown.png` });
+    // Mouse: right click on the art photographs, left click reveals; neither jumps.
+    await page.evaluate(() => { window.game.scene.getScene('Run').cameraCooldown = 0; });
+    await page.mouse.click(700, 300, { button: 'right' });
+    await page.waitForTimeout(150);
+    assert.ok(await page.evaluate(() => window.game.scene.getScene('Run').cameraCooldown > 0));
+    await page.mouse.click(700, 300);
+    await page.waitForTimeout(150);
+    assert.ok(await page.evaluate(() => window.game.scene.getScene('Run').player.body.velocity.y >= 0), 'a left click must not jump');
     // Real pointer interaction must pause without jumping and preserve run time.
-    await page.mouse.click(899, 49);
+    await page.mouse.click(1044, 40);
     assert.equal(await page.evaluate(() => window.game.scene.getScene('Run').paused), true);
     const frozen = await page.evaluate(() => window.game.scene.getScene('Run').elapsed);
     await page.waitForTimeout(250);
@@ -87,7 +95,7 @@ const out = process.env.REVIEW_OUT || '/work/docs/gameplay-review';
     await press('Begin final care');
     await page.waitForTimeout(200);
     assert.ok(await page.evaluate(() => window.game.scene.getScene('Run').finale.left) < before);
-    await page.mouse.click(899, 49);
+    await page.mouse.click(1044, 40);
     await press('Resume');
     assert.equal(await page.evaluate(() => window.game.scene.getScene('Run').physics.world.isPaused), true);
     await page.evaluate(async () => {
@@ -113,7 +121,7 @@ const out = process.env.REVIEW_OUT || '/work/docs/gameplay-review';
     await press('Begin final care');
     await page.screenshot({ path: `${out}/mali-finale.png` });
     // Pause menu: options overlay, then restart into a fresh briefing.
-    await page.mouse.click(899, 49);
+    await page.mouse.click(1044, 40);
     await press('Options');
     await page.screenshot({ path: `${out}/pause-options.png` });
     await page.keyboard.press('Escape');
@@ -135,7 +143,7 @@ const out = process.env.REVIEW_OUT || '/work/docs/gameplay-review';
     await page.waitForFunction(() => window.game.scene.getScene('Credits').finished);
     await page.screenshot({ path: `${out}/credits.png` });
     assert.deepEqual(errors, []);
-    console.log('PASS: pointer controls, cooldowns, pause/submenus, focus loss, finite bonus spawns, finale readiness/resume/completion, results, options, restart, ending and credits; no browser errors.');
+    console.log('PASS: pointer controls, cooldowns, pause/submenus, focus loss, finite bonus spawns, finale readiness/resume/completion, mouse reveal/photo, results, options, restart, ending and credits; no browser errors.');
   } finally {
     await browser.close();
   }
