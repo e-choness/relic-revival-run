@@ -15,6 +15,7 @@ import { addLandscape, advanceLandscape, loadLandscape } from '../ui/landscape';
 import { addAvatar, type AvatarView } from '../ui/avatar';
 import { showOptionsMenu } from '../ui/optionsMenu';
 import { showFieldGuide } from '../ui/fieldGuide';
+import { freshKeys } from '../ui/keys';
 import { MenuNav, focusButton } from '../ui/menuNav';
 import { FONT_DISPLAY, HEIGHT, INK, PAPER, PAPER_CSS, REDUCED_MOTION, WIDTH, button, card, hex, label } from '../ui/theme';
 
@@ -132,6 +133,8 @@ export class RunScene extends Phaser.Scene {
   /** Beats per pattern slot at this level's density. */
   private slotBeats = 2;
   private lastWholeBeat = -1;
+  /** Added to audio-clock beats so the run's beat count never jumps (see beatNow). */
+  private clockOffset: number | null = null;
   private tempoScale = 1;
   private regrowQueue: { beat: number; event: SpawnEvent }[] = [];
   private lastCallRestored = false;
@@ -196,6 +199,7 @@ export class RunScene extends Phaser.Scene {
     this.regrowQueue = [];
     this.nextSpawnBeat = this.lastWholeBeat = -1;
     this.heldAt = null;
+    this.clockOffset = null;
     this.tempoScale = 1;
     this.beatDur = 60 / this.culture.sound.tempo;
     // A pattern slot is the level's spawn interval rounded to the music's beats.
@@ -297,13 +301,17 @@ export class RunScene extends Phaser.Scene {
     }
   }
 
-  /** Current beat: the music's audio clock when it runs, else a local clock at the same tempo. */
+  /**
+   * Current beat: the music's audio clock when it runs, else a local clock at the same tempo. Switching
+   * clocks (audio unlocked or interrupted mid-run) keeps the beat continuous; whole beats stay on the music's grid.
+   */
   private beatNow(): number {
     const pos = this.audio.beatPosition();
     if (pos) {
       this.beatDur = pos.dur;
-      return pos.beat;
-    }
+      this.clockOffset ??= Math.round(this.localBeat - pos.beat);
+      this.localBeat = pos.beat + this.clockOffset;
+    } else this.clockOffset = null;
     return this.localBeat;
   }
 
@@ -931,7 +939,7 @@ export class RunScene extends Phaser.Scene {
 
   private bindInput() {
     const kb = this.input.keyboard!;
-    kb.on('keydown', (e: KeyboardEvent) => {
+    kb.on('keydown', freshKeys((e) => {
       if (this.briefing || this.subMenu || e.repeat) return;
       const actions: Record<Action, () => void> = {
         jump: () => this.jump(),
@@ -948,7 +956,7 @@ export class RunScene extends Phaser.Scene {
         const i = Number(e.code.slice(5)) - 1;
         if (i < this.tools.length && !this.paused) this.pickTool(i);
       }
-    });
+    }));
     this.input.on('wheel', (_p: unknown, _o: unknown, _dx: number, dy: number) => this.selectTool(this.toolIndex + Math.sign(dy)));
     this.input.on('pointerdown', (_p: Phaser.Input.Pointer, over: Phaser.GameObjects.GameObject[]) => {
       if (over.length === 0 && !this.briefing) this.jump();

@@ -5,6 +5,7 @@ import { CULTURES } from '../data/cultures';
 import { loadSave, markSeen } from '../systems/save';
 import { addArtifact, loadArtifact } from '../ui/artifacts';
 import { addAvatar, type AvatarView } from '../ui/avatar';
+import { freshKeys } from '../ui/keys';
 import { MenuNav, focusButton } from '../ui/menuNav';
 import { FONT_DISPLAY, HEIGHT, PAPER_CSS, REDUCED_MOTION, WIDTH, button, card, label } from '../ui/theme';
 
@@ -62,6 +63,7 @@ export class CreditsScene extends Phaser.Scene {
   private finished = false;
   private ending = false;
   private skipHint?: Phaser.GameObjects.Text;
+  private endingTimers: Phaser.Time.TimerEvent[] = [];
 
   constructor() {
     super('Credits');
@@ -71,6 +73,7 @@ export class CreditsScene extends Phaser.Scene {
     this.ending = !!data.ending;
     this.finished = false;
     this.roll = undefined;
+    this.endingTimers = [];
   }
 
   preload() {
@@ -93,9 +96,9 @@ export class CreditsScene extends Phaser.Scene {
     this.parade.forEach((p) => p.view.object.setDepth(5));
 
     const skip = () => (this.roll ? this.done() : this.startRoll());
-    this.input.keyboard?.on('keydown', (e: KeyboardEvent) => {
+    this.input.keyboard?.on('keydown', freshKeys((e) => {
       if (!e.repeat && !this.finished && ['Escape', 'Enter', 'Space'].includes(e.code)) skip();
-    });
+    }));
     this.input.gamepad?.on('down', (_p: unknown, b: Phaser.Input.Gamepad.Button) => {
       if (!this.finished && [0, 1, 9].includes(b.index)) skip();
     });
@@ -119,23 +122,26 @@ export class CreditsScene extends Phaser.Scene {
       frame.add(addArtifact(this, c, -fw / 2, -fh / 2, fw, fh));
       frame.add(label(this, 0, fh / 2 + 24, c.name, 19, { color: PAPER_CSS }));
       layer.add(frame);
-      this.time.delayedCall(500 + i * 380, () => {
+      this.endingTimers.push(this.time.delayedCall(500 + i * 380, () => {
         AudioDirector.get().sfx('restore', i % 8);
         this.tweens.add({ targets: frame, alpha: 1, scale: { from: REDUCED_MOTION ? 1 : 0.8, to: 1 }, duration: 320, ease: 'Back.easeOut' });
-      });
+      }));
     });
     const message = label(this, WIDTH / 2, 520, MESSAGE, 22, { color: PAPER_CSS, wordWrap: { width: 980 }, align: 'center' }).setAlpha(0);
     layer.add(message);
-    this.time.delayedCall(500 + CULTURES.length * 380 + 400, () => {
+    this.endingTimers.push(this.time.delayedCall(500 + CULTURES.length * 380 + 400, () => {
       AudioDirector.get().sfx('win');
       this.tweens.add({ targets: message, alpha: 1, duration: 900 });
-    });
+    }));
     // Linger on the message, then roll the credits.
     this.time.delayedCall(500 + CULTURES.length * 380 + 9000, () => this.startRoll());
   }
 
   private startRoll() {
     if (this.roll || this.finished) return;
+    // Skipped early: the remaining artifacts must not keep popping in (and chiming) under the credits.
+    this.endingTimers.forEach((t) => t.remove());
+    this.endingTimers = [];
     const ending = this.children.getByName('ending');
     if (ending) this.tweens.add({ targets: ending, alpha: 0, duration: 600, onComplete: () => ending.destroy() });
     const c = this.add.container(0, HEIGHT).setDepth(2);

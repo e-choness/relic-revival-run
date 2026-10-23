@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { nearest, type Dir } from '../systems/navigation';
+import { freshKeys } from './keys';
 import { INK } from './theme';
 
 /** Something a keyboard or gamepad user can focus and activate. Coordinates are its centre. */
@@ -27,6 +28,7 @@ export class MenuNav {
   private enabled = true;
   private readonly ring: Phaser.GameObjects.Graphics;
   private stickHeld = false;
+  private readonly keyHandler = freshKeys((e) => this.onKey(e));
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -36,7 +38,7 @@ export class MenuNav {
   ) {
     this.index = opts.start ?? 0;
     this.ring = scene.add.graphics().setDepth(opts.depth ?? 50);
-    scene.input.keyboard?.on('keydown', this.onKey, this);
+    scene.input.keyboard?.on('keydown', this.keyHandler);
     scene.input.gamepad?.on('down', this.onPad, this);
     scene.events.on('update', this.pollStick, this);
     scene.events.once('shutdown', () => this.destroy());
@@ -49,7 +51,7 @@ export class MenuNav {
   }
 
   destroy() {
-    this.scene.input.keyboard?.off('keydown', this.onKey, this);
+    this.scene.input.keyboard?.off('keydown', this.keyHandler);
     this.scene.input.gamepad?.off('down', this.onPad, this);
     this.scene.events.off('update', this.pollStick, this);
     this.ring.destroy();

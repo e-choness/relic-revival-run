@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { ACTIONS, keysLabel, loadBindings, rebind, saveBindings, DEFAULT_BINDINGS, type Action } from '../systems/controls';
+import { freshKeys } from './keys';
 import { MenuNav, focusButton } from './menuNav';
 import { FONT_DISPLAY, HEIGHT, INK, WIDTH, button, card, label } from './theme';
 
@@ -32,7 +33,7 @@ export function showControlsMenu(scene: Phaser.Scene, onClose: () => void) {
   });
   const refresh = () => rows.forEach(({ action, b }) => (b.getAt(1) as Phaser.GameObjects.Text).setText(keysLabel(bindings, action)));
 
-  const onKey = (e: KeyboardEvent) => {
+  const onKey = freshKeys((e) => {
     if (!listening) {
       if (e.code === 'Escape') close();
       return;
@@ -47,7 +48,7 @@ export function showControlsMenu(scene: Phaser.Scene, onClose: () => void) {
     refresh();
     // Next tick, so the key just bound isn't also treated as navigation.
     scene.time.delayedCall(0, () => nav?.setEnabled(true));
-  };
+  });
   let closed = false;
   const close = () => {
     if (closed) return;

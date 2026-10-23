@@ -205,9 +205,12 @@ export class AudioDirector {
     return (this.ducked ? 0.15 : MUSIC_LEVEL) * this.volumes.music;
   }
 
-  /** Quarter-note beats elapsed on the audio clock, so gameplay lines up with what is heard; null without music. */
+  /**
+   * Quarter-note beats elapsed on the audio clock, so gameplay lines up with what is heard. Null without
+   * music, and while the context is suspended or interrupted: its clock stands still then, and play must not.
+   */
   beatPosition(): { beat: number; dur: number } | null {
-    if (!this.ctx || !this.timer || !this.profile) return null;
+    if (!this.ctx || !this.timer || !this.profile || this.ctx.state !== 'running') return null;
     const dur = this.stepDur * 2;
     return { beat: (this.ctx.currentTime - this.musicStart) / dur, dur };
   }

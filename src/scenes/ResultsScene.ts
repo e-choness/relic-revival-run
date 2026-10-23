@@ -29,7 +29,10 @@ export class ResultsScene extends Phaser.Scene {
   create(r: RunResult) {
     const culture = CULTURES[r.index];
     const before = loadSave();
-    let save = recordRun(before, culture.id, r.stars, r.restoration, r.seen, r.score);
+    // The daily challenge can visit a culture not reached yet. Its stars wait until then, or they would
+    // unlock the next culture out of order; the facts it taught are kept.
+    const counts = !r.daily || isUnlocked(before, r.index);
+    let save = counts ? recordRun(before, culture.id, r.stars, r.restoration, r.seen, r.score) : recordRun(before, culture.id, 0, 0, r.seen);
     if (r.daily) save = recordDaily(save, r.daily, r.score);
     const newFacts = save.learned.length - before.learned.length;
     this.add.graphics().fillGradientStyle(hex(culture.palette.ground), hex(culture.palette.ground), 0x1d1424, 0x1d1424, 1).fillRect(0, 0, WIDTH, HEIGHT);
@@ -37,7 +40,7 @@ export class ResultsScene extends Phaser.Scene {
 
     const title = r.failed ? 'A little more practice' : r.stars > 0 ? 'Relic restored!' : 'The relic needs more care';
     label(this, WIDTH / 2, 110, title, 44, { fontFamily: FONT_DISPLAY });
-    const mode = [r.daily && `Daily challenge ${r.daily} · best ${save.daily[r.daily]}`, r.chill && 'Chill mode'].filter(Boolean).join('  ·  ');
+    const mode = [r.daily && `Daily challenge ${r.daily} · best ${save.daily[r.daily]}`, r.chill && 'Chill mode', !counts && 'Stars count once you reach this culture'].filter(Boolean).join('  ·  ');
     if (mode) label(this, WIDTH / 2, 150, mode, 18);
     stars(this, WIDTH / 2, 185, r.stars, 44);
 

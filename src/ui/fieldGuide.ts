@@ -4,6 +4,7 @@ import { CULTURES, type Culture } from '../data/cultures';
 import { TWISTS } from '../data/twists';
 import { keyLabel, loadBindings } from '../systems/controls';
 import { damageTexture, toolTexture } from './art';
+import { freshKeys } from './keys';
 import { FONT_DISPLAY, HEIGHT, INK, INK_CSS, WIDTH, button, card, label } from './theme';
 
 
@@ -64,9 +65,9 @@ export function showFieldGuide(scene: Phaser.Scene, culture: Culture, actionLabe
     c.destroy();
     onClose();
   };
-  const onKey = (e: KeyboardEvent) => {
+  const onKey = freshKeys((e) => {
     if (!e.repeat && ['Space', 'Enter', 'Escape'].includes(e.code)) close();
-  };
+  });
   const onPad = (_pad: Phaser.Input.Gamepad.Gamepad, b: Phaser.Input.Gamepad.Button) => {
     if ([0, 1, 9].includes(b.index)) close();
   };
