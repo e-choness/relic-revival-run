@@ -156,32 +156,6 @@ See [the researched museum/music plan](art/museum-music-plan.md) and
 script uses Playwright and OfflineAudioContext to save museum screenshots, a full-cycle
 stereo WAV of every culture (plus calm and danger mixes), and peak/RMS checks under ignored `docs/` output.
 
-## The original (2023)
-
-The Unity jam project has been removed from this branch. It is preserved in the git history: the last commit that contains it under `legacy/` is `41a4a45` (`git checkout 41a4a45 -- legacy` restores it).
-
-**Making of:** [Sound](https://www.youtube.com/watch?v=6v6Oa1RjByw) · [Music](https://www.youtube.com/watch?v=gu-DScXpfLM)
-
-<details>
-<summary><b>Studio Jojo devlog</b> (seven parts)</summary>
-
-
-- [Studio Jojo DevLog (Part I) — Mini Game Work Jam: Against the Illicit Traffic of Cultural Property](https://medium.com/@echoness/studio-jojo-dev-log-part-i-mini-game-work-jam-against-the-illicit-traffic-of-cultural-property-9635821233bb)
-
-- [Studio Jojo Devlog (Part 2) — Coming Up With Cool Game Design](https://medium.com/@echoness/studio-jojo-devlog-part-2-coming-up-cool-game-design-6fda70498ea1)
-
-- [Studio Jojo Devlog (Part 3) — An Overall Study of The Delicate Work of Art Restorers](https://medium.com/@echoness/studio-jojo-devlog-part-3-an-overall-study-of-the-delicate-work-of-art-restorers-3ef56625a53b)
-
-- [Studio Jojo Devlog (Part 4) — Game Design Details Revealed!](https://medium.com/@echoness/studio-jojo-devlog-part-4-game-design-details-revealed-65f03787b111)
-
-- [Studio Jojo Devlog (Part 5) — Level Design, Soundtrack and Character Arts](https://medium.com/@echoness/studio-jojo-devlog-part-5-level-design-soundtrack-and-character-arts-fe7b35ac9750)
-
-- [Studio Jojo Devlog (Part 6) — Gameplay Implementation and the Unitization of Unity’s Updated Input System](https://medium.com/@echoness/studio-jojo-devlog-part-6-gameplay-implementation-and-the-unitization-of-unitys-updated-input-d4ee3413b6ac)
-  
-- [Studio Jojo Devlog (Part 7) — Relic Revival Run : From Prototype to Reality](https://medium.com/@echoness/studio-jojo-part-7-relic-revival-run-from-prototype-to-reality-67323875aba3)
-
-</details>
-
 ## Credits
 
 <p>
