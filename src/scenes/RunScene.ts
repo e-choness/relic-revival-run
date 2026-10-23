@@ -3,12 +3,13 @@ import { AudioDirector } from '../audio/AudioDirector';
 import { rng as seededRng, seedFrom } from '../audio/music';
 import { DAMAGES, TOOLS, toolsFor, type DamageId, type ToolId } from '../data/conservation';
 import { CULTURES, type Culture } from '../data/cultures';
-import { actionFor, loadBindings, type Action } from '../systems/controls';
-import { difficultyFor, type Difficulty } from '../systems/difficulty';
+import { actionFor, keyLabel, loadBindings, type Action } from '../systems/controls';
+import { difficultyFor, spacingBeats, type Difficulty } from '../systems/difficulty';
 import { PatternSpawner, type SpawnEvent } from '../systems/patterns';
 import { RunState } from '../systems/runState';
 import { loadSave } from '../systems/save';
-import { DAMAGE_SIZE, damageTexture, drawArtifact, toolTexture } from '../ui/art';
+import { DAMAGE_SIZE, damageTexture, toolTexture } from '../ui/art';
+import { addArtifact, loadArtifact } from '../ui/artifacts';
 import { addLandscape, advanceLandscape, loadLandscape } from '../ui/landscape';
 import { addAvatar, type AvatarView } from '../ui/avatar';
 import { showControlsMenu } from '../ui/controlsMenu';
@@ -71,6 +72,9 @@ export interface RunResult {
   failed: boolean;
   seen: DamageId[];
   chill: boolean;
+  wrongTools: number;
+  missed: number;
+  integrity: number;
   /** Set for the daily challenge. */
   daily?: string;
 }
@@ -121,6 +125,7 @@ export class RunScene extends Phaser.Scene {
 
   // Rhythm
   private spawner!: PatternSpawner;
+  private pendingEvent!: SpawnEvent;
   private beatDur = 0.6;
   private localBeat = 0;
   private nextSpawnBeat = -1;
@@ -139,7 +144,7 @@ export class RunScene extends Phaser.Scene {
   private haze?: Phaser.GameObjects.Rectangle;
 
   // Finale
-  private finale?: { steps: FinaleStep[]; at: number; left: number; layer: Phaser.GameObjects.Container; grime: Phaser.GameObjects.Graphics; rows: Phaser.GameObjects.Text[]; timer: Phaser.GameObjects.Graphics };
+  private finale?: { steps: FinaleStep[]; at: number; left: number; ready: boolean; start: Phaser.GameObjects.Container; layer: Phaser.GameObjects.Container; grime: Phaser.GameObjects.Graphics; rows: Phaser.GameObjects.Text[]; timer: Phaser.GameObjects.Graphics };
   private finaleDone = false;
 
   // HUD
@@ -149,6 +154,10 @@ export class RunScene extends Phaser.Scene {
   private comboText!: Phaser.GameObjects.Text;
   private timeBar!: Phaser.GameObjects.Graphics;
   private integrityBar!: Phaser.GameObjects.Graphics;
+  private progressText!: Phaser.GameObjects.Text;
+  private conditionText!: Phaser.GameObjects.Text;
+  private restorationText!: Phaser.GameObjects.Text;
+  private nextText!: Phaser.GameObjects.Text;
   private grime!: Phaser.GameObjects.RenderTexture;
   private artifactPos = { x: 0, y: 0 };
   private artifactCracks!: Phaser.GameObjects.Graphics;
@@ -180,6 +189,7 @@ export class RunScene extends Phaser.Scene {
     this.elapsed = this.uvCooldown = this.cameraCooldown = this.extraJumps = this.localBeat = 0;
     this.paused = this.ended = this.briefing = this.subMenu = this.finaleDone = this.lastCallRestored = false;
     this.pauseLayer = this.finale = this.dark = this.haze = undefined;
+    this.pauseNav = undefined;
     this.darkAlpha = DARKNESS;
     this.seen = new Set();
     this.regrowQueue = [];
@@ -192,10 +202,12 @@ export class RunScene extends Phaser.Scene {
     const seed = this.daily?.seed ?? seedFrom(`${this.culture.id}-${Date.now()}`);
     this.rand = seededRng(seed ^ 0x5bd1e995);
     this.spawner = new PatternSpawner({ damages: this.culture.damages, lanes: this.diff.lanes, level: this.index, rng: seededRng(seed), pairs: twist === 'pairs' });
+    this.pendingEvent = this.spawner.next();
   }
 
   preload() {
     loadLandscape(this, this.culture.id);
+    loadArtifact(this, this.culture.id);
   }
 
   create() {
@@ -211,6 +223,15 @@ export class RunScene extends Phaser.Scene {
     this.createTwist();
     this.createHud();
     this.bindInput();
+    const autoPause = () => {
+      if (!this.paused && !this.briefing && !this.ended) this.togglePause();
+    };
+    this.game.events.on(Phaser.Core.Events.BLUR, autoPause);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.game.events.off(Phaser.Core.Events.BLUR, autoPause);
+      this.audio.duck(false);
+      this.audio.setTempoScale(1);
+    });
     this.briefing = true;
     this.physics.pause();
     showFieldGuide(this, this.culture, 'Start run', () => {
@@ -257,7 +278,10 @@ export class RunScene extends Phaser.Scene {
   private jump() {
     if (this.paused || this.briefing || this.ended) return;
     // In the finale the jump key applies the selected tool.
-    if (this.finale) return this.applyFinale(this.tools[this.toolIndex]);
+    if (this.finale) {
+      if (!this.finale.ready) return this.beginFinale();
+      return this.applyFinale(this.tools[this.toolIndex]);
+    }
     const body = this.player.body;
     if (body.blocked.down) {
       body.setVelocityY(JUMP_V);
@@ -321,7 +345,7 @@ export class RunScene extends Phaser.Scene {
 
   private onTouch(spot: Spot) {
     const info = spot.getData('info') as SpotInfo;
-    if (info.done || (info.hidden && spot.alpha < 1)) return; // can't treat what you haven't found
+    if (this.paused || this.briefing || this.ended || info.done || (info.hidden && spot.alpha < 1)) return;
     info.done = true;
     info.badge?.destroy();
     info.ring?.destroy();
@@ -386,8 +410,10 @@ export class RunScene extends Phaser.Scene {
     if (this.paused || this.briefing || this.ended || this.finale || this.uvCooldown > 0) return;
     this.uvCooldown = UV_COOLDOWN;
     this.audio.sfx('uv');
-    const flash = this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, 0x8e44ff, 0).setDepth(8);
-    this.tweens.add({ targets: flash, fillAlpha: 0.3, duration: 150, yoyo: true, onComplete: () => flash.destroy() });
+    if (!REDUCED_MOTION) {
+      const flash = this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, 0x8e44ff, 0).setDepth(8);
+      this.tweens.add({ targets: flash, fillAlpha: 0.3, duration: 150, yoyo: true, onComplete: () => flash.destroy() });
+    }
     // In the tomb the UV lamp briefly lights the whole chamber.
     if (this.dark) {
       this.tweens.killTweensOf(this);
@@ -409,7 +435,7 @@ export class RunScene extends Phaser.Scene {
     if (!REDUCED_MOTION) this.cameras.main.flash(120, 255, 255, 240);
     for (const s of this.activeSpots()) {
       const info = s.getData('info') as SpotInfo;
-      if (info.kind !== 'damage' || info.done || info.documented || s.x > WIDTH || s.alpha < 1) continue;
+      if (info.kind !== 'damage' || info.done || info.documented || s.x > WIDTH || s.x < PLAYER_X - 30 || s.alpha < 1) continue;
       info.documented = true;
       info.badge = this.add.image(s.x + 30, s.y - 30, toolTexture('camera')).setDisplaySize(30, 30).setDepth(6);
     }
@@ -465,8 +491,8 @@ export class RunScene extends Phaser.Scene {
     this.drawTimeBar();
     this.drawToolHint();
     this.drawGlow();
-    this.uvButton.setAlpha(this.uvCooldown > 0 ? 0.45 : 1);
-    this.cameraButton.setAlpha(this.cameraCooldown > 0 ? 0.45 : 1);
+    this.updateUtility(this.uvButton, this.uvCooldown, 'uv', 'Reveal');
+    this.updateUtility(this.cameraButton, this.cameraCooldown, 'camera', 'Photo');
 
     if (this.state.failed) return this.finish();
     if (!running && this.spots.countActive() === 0) {
@@ -494,9 +520,12 @@ export class RunScene extends Phaser.Scene {
   private spawnOnBeat(beat: number) {
     if (this.nextSpawnBeat < 0 || beat - this.nextSpawnBeat > 2) this.nextSpawnBeat = Math.ceil(beat);
     while (beat >= this.nextSpawnBeat) {
-      const ev = this.spawner.next();
+      const ev = this.pendingEvent;
       this.spawnSpot('damage', ev.damage, ev.lane, this.nextSpawnBeat, beat, { answer: !!ev.answer });
-      this.nextSpawnBeat += Math.max(0.5, Math.round(ev.gap * this.slotBeats * 2) / 2);
+      this.pendingEvent = this.spawner.next();
+      // Reserve landing time even at the crescendo's fastest tempo.
+      const fastestBeat = (60 / this.culture.sound.tempo) / (this.culture.twist === 'crescendo' ? 1.3 : 1);
+      this.nextSpawnBeat += spacingBeats(ev.lane, this.pendingEvent.lane, ev.gap, this.slotBeats, fastestBeat, this.culture.twist === 'thinAir');
     }
     for (const r of [...this.regrowQueue]) {
       if (beat < r.beat) continue;
@@ -512,7 +541,7 @@ export class RunScene extends Phaser.Scene {
     const newBeat = whole !== this.lastWholeBeat;
     this.lastWholeBeat = whole;
 
-    if (twist === 'tiles' && newBeat && whole % 6 === 3 && this.rand() < 0.7)
+    if (this.elapsed < this.diff.duration && twist === 'tiles' && newBeat && whole % 6 === 3 && this.rand() < 0.7)
       this.spawnSpot('tile', this.culture.damages[0], Math.floor(this.rand() * this.diff.lanes), whole, beat);
 
     if ((twist === 'wind' || twist === 'sandstorm') && newBeat && whole % 8 === 4) this.gust();
@@ -538,7 +567,7 @@ export class RunScene extends Phaser.Scene {
     const dir = this.rand() < 0.5 ? -1 : 1;
     for (const s of this.activeSpots()) {
       const info = s.getData('info') as SpotInfo;
-      if (info.done || s.x < PLAYER_X + 160) continue;
+      if (info.done || s.x < PLAYER_X + this.speed * 1.5) continue;
       const lane = Phaser.Math.Clamp(info.lane - dir, 0, this.diff.lanes - 1);
       if (lane === info.lane) continue;
       // Higher lane index = higher on screen.
@@ -576,6 +605,9 @@ export class RunScene extends Phaser.Scene {
       failed: this.state.failed,
       seen: [...this.seen],
       chill: this.chill,
+      wrongTools: this.state.wrongTools,
+      missed: this.state.missed,
+      integrity: this.state.integrity,
       daily: this.daily?.date,
     };
     this.time.delayedCall(700, () => this.scene.start('Results', result));
@@ -586,34 +618,45 @@ export class RunScene extends Phaser.Scene {
   /** Run up to the artifact itself, then treat its worst damage in sequence against the clock. */
   private startFinale() {
     this.player.body.setVelocity(0, 0);
+    this.physics.pause();
     const count = 3 + Math.floor(this.index / 4);
-    const time = Math.max(1.6, 3.2 - this.index * 0.12);
+    const time = Math.max(2.5, 4 - this.index * 0.12);
     const steps: FinaleStep[] = [];
     for (let i = 0; i < count; i++) {
       const options = this.culture.damages.filter((d) => d !== steps[i - 1]?.damage);
       steps.push({ damage: options[Math.floor(this.rand() * options.length)], time });
     }
     const layer = this.add.container(0, 0).setDepth(15);
-    layer.add(this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, INK, 0.45));
+    layer.add(this.add.rectangle(WIDTH / 2, 280, WIDTH, 560, INK, 0.45).setInteractive());
     layer.add(card(this, WIDTH / 2, 300, 820, 420));
     layer.add(label(this, WIDTH / 2, 130, 'Final restoration', 38, { fontFamily: FONT_DISPLAY }));
-    layer.add(label(this, WIDTH / 2, 172, `Treat each damage in turn: press its tool's number or tap the tool (Q/E then Jump works too).`, 17));
-    const art = this.add.graphics().setPosition(WIDTH / 2 - 380, 205);
-    drawArtifact(art, this.culture, 330, 200);
+    layer.add(label(this, WIDTH / 2, 172, 'Take a breath. Then tap a tool or press its number to treat each damage in order.', 19));
+    const art = addArtifact(this, this.culture, WIDTH / 2 - 380, 205, 330, 200);
     const grime = this.add.graphics().setPosition(WIDTH / 2 - 380, 205);
     grime.fillStyle(0x6b5434, 0.8).fillRect(0, 0, 330, 200);
     layer.add([art, grime]);
     const rows = steps.map((s, i) => {
-      layer.add(this.add.image(WIDTH / 2 + 10, 230 + i * 48, damageTexture(s.damage)).setDisplaySize(40, 40));
-      const t = label(this, WIDTH / 2 + 42, 230 + i * 48, DAMAGES[s.damage].name, 22).setOrigin(0, 0.5);
+      layer.add(this.add.image(WIDTH / 2 + 10, 230 + i * 42, damageTexture(s.damage)).setDisplaySize(36, 36));
+      const t = label(this, WIDTH / 2 + 42, 230 + i * 42, DAMAGES[s.damage].name, 22).setOrigin(0, 0.5);
       layer.add(t);
       return t;
     });
     const timer = this.add.graphics();
     layer.add(timer);
-    this.finale = { steps, at: 0, left: time, layer, grime, rows, timer };
+    const start = button(this, WIDTH / 2, 477, 'Begin final care', () => this.beginFinale(), 300);
+    layer.add(start);
+    this.finale = { steps, at: 0, left: time, ready: false, start, layer, grime, rows, timer };
+    this.nextText.setText('Final care · press Jump or Begin when ready');
+    this.hintRing.clear();
     this.audio.setIntensity(4);
     this.highlightFinale();
+  }
+
+  private beginFinale() {
+    if (!this.finale || this.finale.ready || this.paused || this.ended) return;
+    this.finale.ready = true;
+    this.finale.start.setVisible(false).disableInteractive();
+    this.nextText.setText('Final care · select a tool to apply it');
   }
 
   private highlightFinale() {
@@ -624,6 +667,7 @@ export class RunScene extends Phaser.Scene {
   private updateFinale(dt: number) {
     const f = this.finale!;
     this.animatePlayer(dt);
+    if (!f.ready) return;
     f.left -= dt;
     const step = f.steps[f.at];
     f.timer.clear().fillStyle(INK, 1).fillRoundedRect(WIDTH / 2 - 380, 430, 760, 16, 8);
@@ -634,10 +678,10 @@ export class RunScene extends Phaser.Scene {
   /** Apply a tool to the current finale step (null = ran out of time). */
   private applyFinale(tool: ToolId | null) {
     const f = this.finale;
-    if (!f || this.paused) return;
+    if (!f || !f.ready || this.paused || this.ended) return;
     const step = f.steps[f.at];
     const right = tool !== null && DAMAGES[step.damage].treatedBy === tool;
-    const y = 230 + f.at * 48;
+    const y = 230 + f.at * 42;
     if (right) {
       const points = 120 + 40 * f.at + Math.round(60 * (f.left / step.time));
       this.state.bonus(points);
@@ -672,20 +716,27 @@ export class RunScene extends Phaser.Scene {
   // ---------- HUD ----------
 
   private createHud() {
-    label(this, 24, 34, this.culture.name, 40, { fontFamily: FONT_DISPLAY, color: PAPER_CSS, stroke: '#2b1d2e', strokeThickness: 8 }).setOrigin(0, 0.5).setDepth(10);
+    this.add.graphics().fillStyle(INK, 0.88).fillRoundedRect(12, 12, 366, 145, 18).setDepth(9);
+    this.add.graphics().fillStyle(INK, 0.88).fillRoundedRect(492, 12, 296, 105, 18).setDepth(9);
+    this.add.rectangle(WIDTH / 2, HEIGHT - 47, WIDTH, 94, INK, 0.94).setDepth(9);
+    label(this, 28, 37, this.culture.name, 30, { fontFamily: FONT_DISPLAY, color: PAPER_CSS }).setOrigin(0, 0.5).setDepth(10);
+    this.progressText = label(this, 28, 91, '', 17, { color: PAPER_CSS }).setOrigin(0, 0.5).setDepth(10);
     this.timeBar = this.add.graphics().setDepth(10);
     this.integrityBar = this.add.graphics().setDepth(10);
-    label(this, 24, 110, this.chill ? 'Chill' : 'Condition', 20, { color: PAPER_CSS, stroke: '#2b1d2e', strokeThickness: 5 }).setOrigin(0, 0.5).setDepth(10);
-    this.scoreText = label(this, WIDTH / 2, 34, '0', 36, { fontFamily: FONT_DISPLAY, color: PAPER_CSS, stroke: '#2b1d2e', strokeThickness: 8 }).setDepth(10);
-    this.comboText = label(this, WIDTH / 2, 82, '', 24, { color: '#f2c14e', stroke: '#2b1d2e', strokeThickness: 6 }).setDepth(10);
-    if (this.daily) label(this, WIDTH / 2, 118, `Daily challenge · ${this.daily.date}`, 18, { color: PAPER_CSS, stroke: '#2b1d2e', strokeThickness: 5 }).setDepth(10);
+    this.conditionText = label(this, 28, 128, '', 18, { color: PAPER_CSS }).setOrigin(0, 0.5).setDepth(10);
+    label(this, WIDTH / 2, 27, this.daily ? 'DAILY SCORE' : 'SCORE', 14, { color: '#e5cfae', fontFamily: 'Arial, sans-serif', letterSpacing: 3 }).setDepth(10);
+    this.scoreText = label(this, WIDTH / 2, 58, '0', 32, { color: PAPER_CSS, fontFamily: 'Arial, sans-serif', fontStyle: 'bold' }).setDepth(10);
+    this.comboText = label(this, WIDTH / 2, 93, '', 20, { color: '#f2c14e' }).setDepth(10);
+    this.nextText = label(this, WIDTH / 2, 144, '', 21, { color: PAPER_CSS, stroke: '#2b1d2e', strokeThickness: 6 }).setDepth(10);
+    button(this, 899, 49, 'Pause', () => this.togglePause(), 142).setDepth(18);
+    button(this, 105, HEIGHT - 48, 'Jump', () => this.jump(), 156).setDepth(10);
+    label(this, 105, HEIGHT - 10, this.diff.lanes > 3 ? 'Tap twice: double jump' : 'Tap or press Jump', 15, { color: PAPER_CSS }).setDepth(10);
 
     // Artifact panel: every restore wipes a patch of grime away; mistakes crack it.
     const ax = WIDTH - ARTIFACT_W - 28, ay = 20;
     this.artifactPos = { x: ax, y: ay };
     card(this, ax + ARTIFACT_W / 2, ay + ARTIFACT_H / 2, ARTIFACT_W + 12, ARTIFACT_H + 12).setDepth(10);
-    const art = this.add.graphics().setPosition(ax, ay).setDepth(10);
-    drawArtifact(art, this.culture, ARTIFACT_W, ARTIFACT_H);
+    addArtifact(this, this.culture, ax, ay, ARTIFACT_W, ARTIFACT_H).setDepth(10);
     const g = this.make.graphics({}, false);
     const rng = new Phaser.Math.RandomDataGenerator([this.culture.id]);
     g.fillStyle(0x6b5434, 0.8).fillRect(0, 0, ARTIFACT_W, ARTIFACT_H);
@@ -694,14 +745,15 @@ export class RunScene extends Phaser.Scene {
     this.grime.draw(g);
     g.destroy();
     this.artifactCracks = this.add.graphics().setPosition(ax, ay).setDepth(10);
+    this.restorationText = label(this, ax + ARTIFACT_W / 2, 184, '', 18, { color: PAPER_CSS, stroke: '#2b1d2e', strokeThickness: 5 }).setDepth(10);
 
-    this.toolName = label(this, WIDTH / 2, HEIGHT - 142, '', 26, { color: PAPER_CSS, stroke: '#2b1d2e', strokeThickness: 6 }).setDepth(10);
+    this.toolName = label(this, WIDTH / 2, HEIGHT - 108, '', 20, { color: PAPER_CSS, stroke: '#2b1d2e', strokeThickness: 5 }).setDepth(10);
     const spacing = 92, start = WIDTH / 2 - ((this.tools.length - 1) * spacing) / 2;
     this.tools.forEach((tool, i) => {
       const c = this.add.container(start + i * spacing, HEIGHT - 52).setDepth(10);
       const bg = this.add.graphics();
       const icon = this.add.image(0, -2, toolTexture(tool)).setDisplaySize(58, 58);
-      const key = label(this, 30, 28, String(i + 1), 16);
+      const key = label(this, 26, 23, String(i + 1), 19, { fontFamily: 'Arial, sans-serif', fontStyle: 'bold' });
       c.add([bg, icon, key]).setSize(80, 80).setInteractive({ useHandCursor: true });
       c.on('pointerdown', (_p: unknown, _x: unknown, _y: unknown, e: Phaser.Types.Input.EventData) => {
         e.stopPropagation();
@@ -709,14 +761,14 @@ export class RunScene extends Phaser.Scene {
       });
       this.toolSlots.push(c);
       const treats = this.culture.damages.filter((d) => DAMAGES[d].treatedBy === tool);
-      treats.forEach((d, k) => this.add.image(c.x + (k - (treats.length - 1) / 2) * 26, HEIGHT - 106, damageTexture(d)).setDisplaySize(26, 26).setDepth(10));
+      treats.forEach((d, k) => this.add.image(c.x + (k - (treats.length - 1) / 2) * 26, HEIGHT - 100, damageTexture(d)).setDisplaySize(23, 23).setDepth(10));
     });
 
     this.uvButton = this.actionButton(WIDTH - 150, HEIGHT - 52, toolTexture('uvLamp'), 'U', () => this.useUV());
     this.cameraButton = this.actionButton(WIDTH - 60, HEIGHT - 52, toolTexture('camera'), 'C', () => this.useCamera());
     if (!this.culture.damages.some((d) => DAMAGES[d].hiddenUntilUV) && this.culture.twist !== 'darkness') this.uvButton.setVisible(false);
 
-    this.toast = label(this, WIDTH / 2, 170, '', 28, { color: PAPER_CSS, stroke: '#2b1d2e', strokeThickness: 7 }).setDepth(11).setAlpha(0);
+    this.toast = label(this, WIDTH / 2, 188, '', 25, { color: PAPER_CSS, stroke: '#2b1d2e', strokeThickness: 7, wordWrap: { width: 720 }, align: 'center' }).setDepth(11).setAlpha(0);
     this.hintRing = this.add.graphics().setDepth(11);
     this.glow = this.add.graphics().setDepth(9);
     this.sparks = this.add
@@ -726,6 +778,9 @@ export class RunScene extends Phaser.Scene {
       })
       .setDepth(12);
     this.selectTool(0);
+    this.updateUtility(this.uvButton, 0, 'uv', 'Reveal');
+    this.updateUtility(this.cameraButton, 0, 'camera', 'Photo');
+    this.drawTimeBar();
     this.refreshHud();
   }
 
@@ -739,7 +794,7 @@ export class RunScene extends Phaser.Scene {
   private drawGlow() {
     const g = this.glow.clear();
     if (this.state.combo < 8) return;
-    const pulse = 0.35 + 0.25 * Math.sin(this.time.now / 140);
+    const pulse = REDUCED_MOTION ? 0.35 : 0.35 + 0.25 * Math.sin(this.time.now / 140);
     const w = Math.min(18, 6 + (this.state.combo - 8));
     g.lineStyle(w, 0xf2c14e, pulse).strokeRect(w / 2, w / 2, WIDTH - w, HEIGHT - w);
   }
@@ -747,7 +802,10 @@ export class RunScene extends Phaser.Scene {
   private actionButton(x: number, y: number, tex: string, key: string, onClick: () => void) {
     const c = this.add.container(x, y).setDepth(10);
     const bg = card(this, 0, 0, 76, 76);
-    c.add([bg, this.add.image(0, -2, tex).setDisplaySize(56, 56), label(this, 26, 26, key, 16)]);
+    const status = label(this, 0, 45, '', 16, { color: PAPER_CSS });
+    const shortcut = label(this, 26, 26, key, 16);
+    c.add([bg, this.add.image(0, -2, tex).setDisplaySize(56, 56), shortcut, status]);
+    c.setData('status', status).setData('shortcut', shortcut);
     c.setSize(76, 76).setInteractive({ useHandCursor: true });
     c.on('pointerdown', (_p: unknown, _x: unknown, _y: unknown, e: Phaser.Types.Input.EventData) => {
       e.stopPropagation();
@@ -756,8 +814,16 @@ export class RunScene extends Phaser.Scene {
     return c;
   }
 
+  private updateUtility(c: Phaser.GameObjects.Container, cooldown: number, action: Action, name: string) {
+    (c.getAt(1) as Phaser.GameObjects.Image).setAlpha(cooldown > 0 ? 0.4 : 1);
+    (c.getData('status') as Phaser.GameObjects.Text).setText(cooldown > 0 ? `${cooldown.toFixed(1)}s` : `${name} · ready`);
+    const key = loadBindings()[action][0];
+    (c.getData('shortcut') as Phaser.GameObjects.Text).setText(key ? keyLabel(key) : '');
+  }
+
   /** Direct pick (number key / tap): in the finale this also applies the tool. */
   private pickTool(i: number) {
+    if (this.paused || this.briefing || this.ended || this.subMenu) return;
     if (this.finale && i === this.toolIndex) return this.applyFinale(this.tools[i]);
     this.selectTool(i);
     if (this.finale) this.applyFinale(this.tools[this.toolIndex]);
@@ -774,24 +840,38 @@ export class RunScene extends Phaser.Scene {
       bg.clear().fillStyle(INK, 0.9).fillRoundedRect(-36, -32, 76, 76, 16);
       bg.fillStyle(on ? hex(this.culture.palette.accent) : PAPER, 1).fillRoundedRect(-40, -38, 76, 76, 16);
       bg.lineStyle(4, INK, 1).strokeRoundedRect(-40, -38, 76, 76, 16);
-      this.tweens.add({ targets: c, y: HEIGHT - 52 - (on ? 12 : 0), scale: on ? 1.1 : 1, duration: 100 });
+      this.tweens.killTweensOf(c);
+      this.tweens.add({ targets: c, y: HEIGHT - 52 - (on ? 6 : 0), scale: on ? 1.06 : 1, duration: REDUCED_MOTION ? 0 : 100 });
     });
-    this.toolName.setText(TOOLS[this.tools[this.toolIndex]].name);
+    this.toolName.setText(`${this.toolIndex + 1} · ${TOOLS[this.tools[this.toolIndex]].name}`).setPosition(278, HEIGHT - 45).setOrigin(0.5).setWordWrapWidth(150).setFontSize(18);
   }
 
   /** Pulse the slot of the tool the next visible damage needs. */
   private drawToolHint() {
     const g = this.hintRing.clear();
-    if (!this.assist) return;
+    if (!this.assist) {
+      this.nextText.setText('Match the tool · jump to reach damage');
+      return;
+    }
     let next: Spot | undefined;
     for (const s of this.activeSpots()) {
       const info = s.getData('info') as SpotInfo;
-      if (info.kind !== 'damage' || info.done || s.alpha < 1 || s.x < PLAYER_X - 30 || s.x > PLAYER_X + HINT_RANGE) continue;
+      if (info.kind !== 'damage' || info.done || s.x < PLAYER_X - 30 || s.x > PLAYER_X + HINT_RANGE) continue;
       if (!next || s.x < next.x) next = s;
     }
-    if (!next) return;
-    const slot = this.toolSlots[this.tools.indexOf(DAMAGES[(next.getData('info') as SpotInfo).damage].treatedBy)];
-    const pulse = 0.75 + 0.25 * Math.sin(this.time.now / 110);
+    if (!next) {
+      this.nextText.setText(this.elapsed >= this.diff.duration ? 'Finish the remaining spots' : 'Look ahead · select a tool before contact');
+      return;
+    }
+    const info = next.getData('info') as SpotInfo;
+    if (info.hidden && next.alpha < 1) {
+      this.nextText.setText('Hidden damage ahead · use Reveal');
+      return;
+    }
+    const index = this.tools.indexOf(DAMAGES[info.damage].treatedBy);
+    const slot = this.toolSlots[index];
+    this.nextText.setText(`${DAMAGES[info.damage].name} → ${TOOLS[this.tools[index]].name} [${index + 1}]`);
+    const pulse = REDUCED_MOTION ? 1 : 0.75 + 0.25 * Math.sin(this.time.now / 110);
     // Ink under gold so the ring reads on every culture's palette.
     g.lineStyle(10, INK, pulse).strokeRoundedRect(slot.x - 52, slot.y - 50, 100, 100, 22);
     g.lineStyle(5, 0xf2c14e, pulse).strokeRoundedRect(slot.x - 52, slot.y - 50, 100, 100, 22);
@@ -806,11 +886,14 @@ export class RunScene extends Phaser.Scene {
   private refreshHud() {
     this.audio.setIntensity(this.state.combo);
     this.audio.setIntegrity(this.state.integrity);
-    this.scoreText.setText(String(this.state.score));
-    this.comboText.setText(this.state.combo > 1 ? `Combo ×${this.state.combo}` : '');
+    this.scoreText.setText(this.state.score.toLocaleString());
+    this.comboText.setText(this.state.combo > 1 ? `${this.state.combo} in a row · keep going!` : 'Match · jump · restore');
+    this.conditionText.setText(this.chill ? 'Chill · protected' : `Condition ${Math.ceil(this.state.integrity * 100)}%`);
+    const resolved = this.state.restored + this.state.wrongTools + this.state.missed;
+    this.restorationText.setText(resolved ? `${this.state.restored} restored · ${Math.round(this.state.accuracy * 100)}% accuracy` : 'Your restoration starts here');
     const g = this.integrityBar.clear();
-    g.fillStyle(INK, 1).fillRoundedRect(130, 98, 224, 24, 10);
-    g.fillStyle(this.state.integrity > 0.35 ? 0x2a9d8f : 0xc0392b, 1).fillRoundedRect(134, 102, 216 * this.state.integrity, 16, 7);
+    g.fillStyle(PAPER, 0.2).fillRoundedRect(182, 120, 174, 14, 7);
+    if (this.state.integrity > 0) g.fillStyle(this.state.integrity > 0.35 ? 0x65d4b6 : 0xf08a77, 1).fillRoundedRect(182, 120, 174 * this.state.integrity, 14, 7);
     // One crack per ~10% integrity lost.
     const cracks = Math.floor((1 - this.state.integrity) * 10);
     const c = this.artifactCracks.clear().lineStyle(3, INK, 1);
@@ -825,8 +908,9 @@ export class RunScene extends Phaser.Scene {
 
   private drawTimeBar() {
     const p = Math.min(1, this.elapsed / this.diff.duration);
-    this.timeBar.clear().fillStyle(INK, 1).fillRoundedRect(24, 66, 330, 18, 8);
-    this.timeBar.fillStyle(0xf2c14e, 1).fillRoundedRect(28, 70, 322 * p, 10, 5);
+    this.progressText.setText(p < 1 ? `${Math.ceil(this.diff.duration - this.elapsed)}s remaining · final care next` : 'Run complete · finish the remaining spots');
+    this.timeBar.clear().fillStyle(PAPER, 0.2).fillRoundedRect(28, 65, 328, 8, 4);
+    if (p > 0) this.timeBar.fillStyle(0xf2c14e, 1).fillRoundedRect(28, 65, 328 * p, 8, 4);
   }
 
   private toastText(msg: string, ms: number) {
@@ -845,7 +929,7 @@ export class RunScene extends Phaser.Scene {
   private bindInput() {
     const kb = this.input.keyboard!;
     kb.on('keydown', (e: KeyboardEvent) => {
-      if (this.briefing || this.subMenu) return;
+      if (this.briefing || this.subMenu || e.repeat) return;
       const actions: Record<Action, () => void> = {
         jump: () => this.jump(),
         prevTool: () => this.selectTool(this.toolIndex - 1),
@@ -869,7 +953,7 @@ export class RunScene extends Phaser.Scene {
     // Standard gamepad mapping. Tools on shoulders/D-pad and UV/camera on triggers, so they work
     // while the thumb stays on A (jump). X/Y kept as alternates; Start/Select pause.
     this.input.gamepad?.on('down', (_pad: Phaser.Input.Gamepad.Gamepad, b: Phaser.Input.Gamepad.Button) => {
-      if (this.briefing) return;
+      if (this.briefing || this.subMenu) return;
       const prev = () => this.selectTool(this.toolIndex - 1), next = () => this.selectTool(this.toolIndex + 1);
       const camera = () => this.useCamera(), uv = () => this.useUV(), pause = () => this.togglePause();
       ({ 0: () => this.jump(), 12: () => this.jump(), 2: camera, 6: camera, 3: uv, 7: uv, 4: prev, 14: prev, 5: next, 15: next, 8: pause, 9: pause } as Record<number, () => void>)[b.index]?.();
@@ -877,7 +961,7 @@ export class RunScene extends Phaser.Scene {
   }
 
   private togglePause() {
-    if (this.ended || this.briefing) return;
+    if (this.ended || this.briefing || this.subMenu) return;
     this.paused = !this.paused;
     if (this.paused) {
       this.hold();
@@ -886,7 +970,7 @@ export class RunScene extends Phaser.Scene {
       this.tweens.pauseAll();
       this.anims.pauseAll();
       const c = this.add.container(0, 0).setDepth(20);
-      c.add(this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, INK, 0.6));
+      c.add(this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, INK, 0.6).setInteractive());
       c.add(card(this, WIDTH / 2, HEIGHT / 2, 440, 650));
       c.add(label(this, WIDTH / 2, HEIGHT / 2 - 270, 'Paused', 44, { fontFamily: FONT_DISPLAY }));
       const resume = button(this, WIDTH / 2, HEIGHT / 2 - 190, 'Resume', () => this.togglePause(), 300);

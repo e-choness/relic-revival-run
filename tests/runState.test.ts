@@ -37,6 +37,20 @@ describe('RunState', () => {
   it('restoration is 0 before anything spawns (no divide by zero)', () => {
     expect(new RunState({ penalty: 0.1 }).restoration).toBe(0);
   });
+
+  it('reports accuracy independently of approaching spots and tracks mistakes', () => {
+    const s = new RunState({ penalty: 0.04 });
+    expect(s.accuracy).toBe(0);
+    for (let i = 0; i < 10; i++) s.spawn();
+    s.treat('grime', 'brush');
+    expect(s.accuracy).toBe(1);
+    expect(s.restoration).toBe(0.1);
+    s.treat('crack', 'brush');
+    s.miss();
+    expect(s.accuracy).toBeCloseTo(1 / 3);
+    expect(s.wrongTools).toBe(1);
+    expect(s.missed).toBe(1);
+  });
 });
 
 describe('RunState rules', () => {

@@ -1,17 +1,15 @@
-import { PATTERNS, SUSTAINED, degreeToMidi, midiToFreq, mix, nearestSample, phrase, seedFrom, type Note, type Perc, type PitchedSample, type SoundProfile, type Timbre } from './music';
+import { SUSTAINED, degreeToMidi, midiToFreq, nearestSample, rng, type Perc, type PitchedSample, type SoundProfile, type Timbre } from './music';
+import { arrangementMix, composeScore, scoreEvents, type Score } from './score';
 
 // Soundtrack and effects. Music is composed at runtime from each culture's scales and rhythms and played on
 // open (CC0) instrument samples (public/assets/audio, see CREDITS.md); synthesized voices are the fallback.
-// Music is a layered, beat-scheduled loop (bass, percussion, lead, drone, tension) whose mix follows play:
-// the combo builds percussion and melody density, low artifact integrity brings in a tense pulse.
+// Related phrases, voice-led accompaniment, and answering instruments follow the same beat clock as play.
+// Combo shapes the support layers; the melody stays intact and low condition adds a restrained pulse.
 
 export type Sfx = 'jump' | 'switch' | 'restore' | 'perfect' | 'wrong' | 'miss' | 'uv' | 'camera' | 'click' | 'win' | 'fail' | 'bonus';
 
 const LOOKAHEAD = 0.12;
 const TICK_MS = 25;
-const STEPS_PER_PHRASE = 16;
-/** Phrase order per 4-phrase cycle: statement, repeat, answer, return. */
-const FORM = [0, 0, 1, 2];
 const MUTE_KEY = 'relic-revival-run:muted';
 const AUDIO_DIR = 'assets/audio/';
 
@@ -20,7 +18,7 @@ interface Manifest {
   perc: Record<string, string>;
 }
 
-type Layer = 'bass' | 'perc' | 'lead' | 'drone' | 'tension';
+type Layer = 'bass' | 'perc' | 'lead' | 'response' | 'harmony' | 'drone' | 'tension';
 
 export class AudioDirector {
   private static instance?: AudioDirector;
@@ -38,7 +36,11 @@ export class AudioDirector {
 
   private profile?: SoundProfile;
   private profileKey?: string;
-  private phrases: Note[][] = [];
+  private score?: Score;
+  private track?: GainNode;
+  private trackNodes: AudioNode[] = [];
+  private roomImpulse?: AudioBuffer;
+  private barIntensity = 0;
   private step = 0;
   /** Audio-clock time of beat 0 of the current track. */
   private musicStart = 0;
@@ -60,21 +62,31 @@ export class AudioDirector {
     const Ctor = globalThis.AudioContext ?? (globalThis as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!Ctor) return;
     if (!this.ctx) {
-      const ctx = (this.ctx = new Ctor());
-      this.master = gain(ctx, this.muted ? 0 : 0.8, ctx.destination);
-      this.music = gain(ctx, 0.5, this.master);
-      this.sfxBus = gain(ctx, 0.8, this.master);
-      for (const l of ['bass', 'perc', 'lead', 'drone', 'tension'] as Layer[]) this.layers[l] = gain(ctx, 0, this.music);
-      this.noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
-      const data = this.noise.getChannelData(0);
-      for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+      this.initialize(new Ctor());
       // A profile requested before the first gesture starts now.
       if (this.profile) {
         this.loadSamples(this.profile);
         this.start();
       }
     }
-    if (this.ctx.state === 'suspended') void this.ctx.resume();
+    if (this.ctx!.state === 'suspended') void this.ctx!.resume();
+  }
+
+  private initialize(ctx: AudioContext) {
+    this.ctx = ctx;
+    this.master = gain(ctx, this.muted ? 0 : 0.8, ctx.destination);
+    const compressor = ctx.createDynamicsCompressor();
+    compressor.threshold.value = -14;
+    compressor.knee.value = 12;
+    compressor.ratio.value = 3;
+    compressor.attack.value = 0.006;
+    compressor.release.value = 0.18;
+    compressor.connect(this.master);
+    this.music = gain(ctx, 0.5, compressor);
+    this.sfxBus = gain(ctx, 0.65, compressor);
+    this.noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+    const data = this.noise.getChannelData(0), random = rng(1717);
+    for (let i = 0; i < data.length; i++) data[i] = random() * 2 - 1;
   }
 
   toggleMute() {
@@ -95,18 +107,28 @@ export class AudioDirector {
     this.profile = profile;
     this.profileKey = key;
     this.tempoScale = 1;
-    const seed = seedFrom(key);
-    this.phrases = [0, 1, 2].map((i) => phrase(seed + i * 7919, STEPS_PER_PHRASE, profile.scale.length + 2));
+    this.intensity = key === 'menu' ? 0.3 : 0;
+    this.integrity = 1;
+    this.score = composeScore(profile, key);
     if (this.ctx) {
       this.loadSamples(profile);
       this.start();
     }
   }
 
+  /** Exhibits demonstrate the whole arrangement, independently of the last run's condition. */
+  preview(profile: SoundProfile, key: string) {
+    this.play(profile, key);
+    this.intensity = 0.7;
+    this.integrity = 1;
+    this.duck(false);
+  }
+
   /** Fetch and decode the samples this profile uses (once each). */
   private loadSamples(p: SoundProfile) {
     const ctx = this.ctx;
     if (!ctx || !p.samples) return;
+    const companion = this.score?.arrangement.companion;
     this.manifest ??= fetch(`${AUDIO_DIR}manifest.json`)
       .then((r) => (r.ok ? (r.json() as Promise<Manifest>) : null))
       .catch(() => null);
@@ -114,7 +136,7 @@ export class AudioDirector {
       if (!m) return;
       this.manifestData = m;
       const { lead, low, high } = p.samples!;
-      const files = [...(m.melodic[lead] ?? []).map((x) => x.file), ...[low, high].flatMap((k) => (k && m.perc[k] ? [m.perc[k]] : []))];
+      const files = [...[lead, companion].flatMap(inst => inst ? (m.melodic[inst] ?? []).map(x => x.file) : []), ...[low, high].flatMap((k) => (k && m.perc[k] ? [m.perc[k]] : []))];
       for (const file of files) {
         if (this.requested.has(file)) continue;
         this.requested.add(file);
@@ -133,6 +155,15 @@ export class AudioDirector {
     const t = this.ctx?.currentTime ?? 0;
     for (const o of this.sustained) o.stop(t + 0.3);
     this.sustained = [];
+    if (this.track) {
+      const track = this.track;
+      const nodes = this.trackNodes;
+      track.gain.cancelScheduledValues(t);
+      track.gain.setTargetAtTime(0, t, 0.06);
+      setTimeout(() => nodes.forEach(node => node.disconnect()), 900);
+    }
+    this.track = undefined;
+    this.trackNodes = [];
     this.profileKey = undefined;
   }
 
@@ -225,15 +256,19 @@ export class AudioDirector {
 
   private start() {
     const ctx = this.ctx!, p = this.profile!;
+    this.createTrack();
     this.step = 0;
     this.nextTime = ctx.currentTime + 0.1;
     this.musicStart = this.nextTime;
+    this.barIntensity = this.intensity;
     if (p.drone > 0) {
       for (const [m, g] of [[p.root - 24, 1], [p.root - 17, 0.6]] as const) {
         const o = ctx.createOscillator();
         o.type = 'triangle';
         o.frequency.value = midiToFreq(m);
-        o.connect(gain(ctx, 0.12 * g, this.layers.drone));
+        const amp = gain(ctx, 0.09 * g, this.layers.drone);
+        o.connect(amp);
+        this.trackNodes.push(o, amp);
         o.start();
         this.sustained.push(o);
       }
@@ -248,11 +283,54 @@ export class AudioDirector {
     throb.start();
     lfo.start();
     this.sustained.push(throb, lfo);
+    this.trackNodes.push(throb, lfo, depth, amp);
     this.timer = setInterval(() => this.schedule(), TICK_MS);
+  }
+
+  private createTrack() {
+    const ctx = this.ctx!;
+    const track = this.track = gain(ctx, 0, this.music);
+    track.gain.setTargetAtTime(1, ctx.currentTime, 0.12);
+    this.trackNodes = [track];
+    if (!this.roomImpulse) {
+      const frames = Math.floor(ctx.sampleRate * 1.35);
+      this.roomImpulse = ctx.createBuffer(2, frames, ctx.sampleRate);
+      const random = rng(90210);
+      for (let channel = 0; channel < 2; channel++) {
+        const data = this.roomImpulse.getChannelData(channel);
+        for (let i = 0; i < frames; i++) {
+          const seconds = i / ctx.sampleRate;
+          data[i] = seconds < 0.022 ? 0 : (random() * 2 - 1) * Math.exp(-seconds * 5.5);
+        }
+      }
+    }
+    const room = ctx.createConvolver();
+    room.buffer = this.roomImpulse;
+    const highpass = ctx.createBiquadFilter(), lowpass = ctx.createBiquadFilter();
+    highpass.type = 'highpass'; highpass.frequency.value = 280;
+    lowpass.type = 'lowpass'; lowpass.frequency.value = 4200;
+    const wet = gain(ctx, this.score!.arrangement.room, track);
+    highpass.connect(lowpass).connect(room).connect(wet);
+    this.trackNodes.push(room, highpass, lowpass, wet);
+    const pan: Record<Layer, number> = { lead: -0.1, response: 0.28, harmony: -0.32, bass: 0, perc: 0.12, drone: 0.15, tension: 0 };
+    for (const layer of Object.keys(pan) as Layer[]) {
+      const bus = this.layers[layer] = gain(ctx, 0);
+      const stereo = ctx.createStereoPanner();
+      stereo.pan.value = pan[layer];
+      bus.connect(stereo).connect(track);
+      this.trackNodes.push(bus, stereo);
+      if (['lead', 'response', 'harmony', 'drone'].includes(layer)) stereo.connect(highpass);
+    }
   }
 
   private schedule() {
     const ctx = this.ctx!;
+    // Resume on the existing grid after a long stall; don't burst stale notes into the output.
+    if (this.nextTime < ctx.currentTime - 0.25) {
+      const skipped = Math.ceil((ctx.currentTime - this.nextTime) / this.stepDur);
+      this.step += skipped;
+      this.nextTime += skipped * this.stepDur;
+    }
     while (this.nextTime < ctx.currentTime + LOOKAHEAD) {
       this.playStep(this.step, this.nextTime);
       this.nextTime += this.stepDur;
@@ -262,34 +340,19 @@ export class AudioDirector {
 
   private playStep(step: number, t: number) {
     const p = this.profile!, ctx = this.ctx!;
-    const m = mix(this.intensity, this.integrity);
-    const set = (l: Layer, v: number) => this.layers[l].gain.setTargetAtTime(v, ctx.currentTime, 0.4);
-    set('bass', m.bass);
-    set('perc', m.perc);
-    set('lead', m.lead);
-    set('drone', p.drone);
-    set('tension', m.tension * 0.35);
-
-    const beat = step % 8;
-    if (beat === 0) this.voice('bass', midiToFreq(p.root - 12), t, this.stepDur * 3, this.layers.bass, 0.8);
-    if (beat === 4) this.voice('bass', midiToFreq(degreeToMidi(p, fifthDegree(p)) - 12), t, this.stepDur * 3, this.layers.bass, 0.6);
-
-    if (p.perc !== 'none') {
-      const pat = PATTERNS[p.perc];
-      if (pat.low[beat]) this.drum(p.perc, 'low', t, pat.low[beat] === 2 ? 1 : 0.55);
-      if (pat.high[beat]) this.drum(p.perc, 'high', t, pat.high[beat] === 2 ? 1 : 0.55);
-      // Fills at the end of each phrase once the player is on a streak.
-      if (this.intensity > 0.6 && step % STEPS_PER_PHRASE >= 14) this.drum(p.perc, 'high', t + this.stepDur / 2, 0.5);
-    }
-
-    const pos = step % STEPS_PER_PHRASE;
-    const ph = this.phrases[FORM[Math.floor(step / STEPS_PER_PHRASE) % FORM.length]];
-    let at = 0;
-    for (const n of ph) {
-      if (at === pos && n.degree !== null && Math.random() < m.density)
-        this.leadNote(degreeToMidi(p, n.degree), t, n.steps * this.stepDur * 0.95, this.layers.lead, 0.6);
-      at += n.steps;
-      if (at > pos) break;
+    if (step % 8 === 0) this.barIntensity = this.intensity;
+    const m = arrangementMix(this.barIntensity, this.integrity, step);
+    for (const [layer, value] of Object.entries(m))
+      this.layers[layer as Layer].gain.setTargetAtTime(value, Math.max(t, ctx.currentTime), 0.22);
+    this.layers.drone.gain.setTargetAtTime(p.drone * 0.65, Math.max(t, ctx.currentTime), 0.4);
+    for (const event of scoreEvents(this.score!, p, step, this.barIntensity)) {
+      const time = t + event.offset * this.stepDur, duration = event.duration * this.stepDur;
+      const out = this.layers[event.layer];
+      if (event.layer === 'perc') {
+        if (p.perc !== 'none') this.drum(p.perc, event.part!, time, event.velocity);
+      } else if (event.layer === 'lead') this.leadNote(event.midi!, time, duration, out, event.velocity);
+      else if (event.layer === 'response') this.leadNote(event.midi!, time, duration, out, event.velocity, this.score!.arrangement.companion);
+      else this.voice(event.layer === 'bass' ? 'bass' : event.duration > 3 ? 'wind' : 'pluck', midiToFreq(event.midi!), time, duration, out, event.velocity);
     }
   }
 
@@ -302,12 +365,12 @@ export class AudioDirector {
   // ---------- voices ----------
 
   /** A melody note on the culture's sampled instrument, or its synth stand-in until samples load. */
-  private leadNote(midi: number, t: number, dur: number, out: AudioNode, vel: number) {
-    const inst = this.profile?.samples?.lead;
+  private leadNote(midi: number, t: number, dur: number, out: AudioNode, vel: number, instrument?: string) {
+    const inst = instrument ?? this.profile?.samples?.lead;
     const loaded = inst ? (this.manifestData?.melodic[inst] ?? []).filter((x) => this.buffers.has(x.file)) : [];
     const hit = nearestSample(loaded, midi);
     if (hit && inst) return this.sample(this.buffers.get(hit.sample.file)!, t, hit.rate, vel, out, SUSTAINED.has(inst) ? dur : undefined);
-    this.voice(this.profile?.lead ?? 'mallet', midiToFreq(midi), t, dur, out, vel);
+    this.voice(instrument ? 'mallet' : this.profile?.lead ?? 'mallet', midiToFreq(midi), t, dur, out, vel);
   }
 
   /** Play a one-shot; held instruments are cut with a short release at `holdFor`. */
@@ -316,6 +379,7 @@ export class AudioDirector {
     src.buffer = buf;
     src.playbackRate.value = rate;
     src.connect(g);
+    src.onended = () => { src.disconnect(); g.disconnect(); };
     src.start(t);
     if (holdFor === undefined) return;
     const end = t + Math.max(0.12, holdFor);
@@ -461,13 +525,6 @@ function decay(param: AudioParam, t: number, level: number, end: number) {
   param.setValueAtTime(0, t);
   param.linearRampToValueAtTime(level, t + 0.005);
   param.exponentialRampToValueAtTime(0.0001, end);
-}
-
-/** Scale degree closest to a perfect fifth, for the bass line. */
-function fifthDegree(p: SoundProfile) {
-  let best = 0;
-  p.scale.forEach((s, i) => Math.abs(s - 7) < Math.abs(p.scale[best] - 7) && (best = i));
-  return best;
 }
 
 function readMuted() {

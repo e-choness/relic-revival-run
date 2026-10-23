@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { AudioDirector } from '../audio/AudioDirector';
 
-// Procedural "ink on paper" look echoing the jam's hand-drawn art; to be replaced by a designed UI later.
+// Warm paper and ink frame the illustrated landscapes and restorers.
 export const FONT_DISPLAY = 'Borel, cursive';
 export const FONT_BODY = '"Edu SA Beginner", cursive';
 export const INK = 0x2b1d2e;
@@ -45,10 +45,15 @@ export function button(scene: Phaser.Scene, x: number, y: number, text: string, 
   const c = scene.add.container(x, y);
   const bg = card(scene, 0, 0, w, h, fill, 22);
   const t = label(scene, 0, 0, text, 30);
+  if (t.width > w - 30) t.setFontSize(Math.max(18, Math.floor(30 * (w - 30) / t.width)));
   c.add([bg, t]);
   c.setSize(w, h).setInteractive({ useHandCursor: true });
-  c.on('pointerover', () => scene.tweens.add({ targets: c, scale: 1.06, duration: 90 }));
-  c.on('pointerout', () => scene.tweens.add({ targets: c, scale: 1, duration: 90 }));
+  const hover = (scale: number) => {
+    scene.tweens.killTweensOf(c);
+    scene.tweens.add({ targets: c, scale, duration: REDUCED_MOTION ? 0 : 90 });
+  };
+  c.on('pointerover', () => hover(REDUCED_MOTION ? 1 : 1.03));
+  c.on('pointerout', () => hover(1));
   const activate = () => {
     AudioDirector.get().sfx('click');
     onClick();

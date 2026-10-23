@@ -32,6 +32,8 @@ export class RunState {
   restored = 0;
   documented = 0;
   perfects = 0;
+  wrongTools = 0;
+  missed = 0;
   combo = 0;
   bestCombo = 0;
   score = 0;
@@ -47,6 +49,7 @@ export class RunState {
   treat(damage: DamageId, tool: ToolId | UtilityToolId, opts: TreatOptions = {}): Outcome {
     const stakes = opts.fragile ? FRAGILE_MULTIPLIER : 1;
     if (!isCorrectTool(damage, tool)) {
+      this.wrongTools++;
       this.hurt(this.rules.penalty * stakes);
       return 'wrongTool';
     }
@@ -68,6 +71,7 @@ export class RunState {
 
   /** Damage scrolled past untreated: it keeps deteriorating, but less than a wrong treatment. */
   miss(fragile = false) {
+    this.missed++;
     this.hurt((this.rules.penalty / 2) * (fragile ? FRAGILE_MULTIPLIER : 1));
   }
 
@@ -83,6 +87,12 @@ export class RunState {
 
   get restoration(): number {
     return this.spawned ? this.restored / this.spawned : 0;
+  }
+
+  /** Accuracy only counts spots already reached, not those still approaching. */
+  get accuracy(): number {
+    const resolved = this.restored + this.wrongTools + this.missed;
+    return resolved ? this.restored / resolved : 0;
   }
 
   get failed(): boolean {

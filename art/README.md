@@ -1,5 +1,31 @@
 # Visual refresh — working artwork
 
+## Museum collection
+
+All twelve exhibits now have original artifact illustrations. Full-resolution generated
+masters live in `art/artifacts/`; optimized WebP copies live in
+`public/assets/artifacts/`. The exact prompt for every image is recorded in
+`art/artifacts/art-direction.json`. These were generated with the built-in
+`image_gen` tool, not the API/CLI. They are interpretive game illustrations, not
+documentary photographs or archaeological reconstructions; manuscript marks are
+decorative and are not presented as transcribed historical text.
+
+Research references, the pre-implementation plan, and acceptance criteria are in
+`art/museum-music-plan.md`. The Cambodia illustration uses a floral sandstone
+architectural lintel after figurative image generation failed. All other paired
+artifact subjects follow their level labels.
+
+`src/ui/artifacts.ts` loads and fits the same image in museum cards, detailed
+exhibits, run HUDs, finales, and results. Museum wear is deliberately subtle:
+unrestored exhibits remain visible, with progress stated separately. Procedural
+drawings remain an image-load fallback.
+
+Export runtime files with `docker compose run --rm app node scripts/optimize-artifacts.mjs`.
+The twelve runtime images total about 2.2 MB; full-size masters remain available
+for future artwork revisions.
+
+## Cast and landscapes
+
 This pass retains the game's animal-conservator cast and editable cut-out workflow.
 Character source documents still carry `placeholder: true`; they remain working
 bases for the owner's drawings. Existing owner-drawn documents are never regenerated.

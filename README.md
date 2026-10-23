@@ -16,7 +16,10 @@ This is a **remake** by Echo Yin of the 2023 game-jam original by **Studio Jojo*
   - **Artifacts and damage:** each culture has its own artifact and damage types drawn from real conservation problems (salt efflorescence, bronze disease, foxing, insect infestation, and more).
 - **Tools that match real practice.** Poultices draw out salts, an anoxic bag treats insects, a solvent gel removes old repairs. A UV lamp reveals hidden damage, and a camera documents it before treatment.
 - **The game teaches its rules.** A field guide before every run, a tool-bar legend, tool hints, and feedback on every mistake.
-- **Reactive music** built on each culture's scales and rhythms. It grows with your combo and turns tense as the artifact suffers.
+- **Readable run feedback.** Time remaining, condition, treatment accuracy, next-tool hints, utility cooldowns, and touch controls for jumping and pausing. Losing focus pauses the run.
+- **Room to learn.** Runs last 55–75 seconds, with extra spacing for lane changes. Final care waits until you are ready; restore 60% / 80% / 95% while preserving condition to earn 1 / 2 / 3 stars.
+- **Reactive music** with recurring themes, related answers, resolving phrases, moving bass, quiet harmonic support, and stereo room ambience. Accompaniment grows with your combo while the melody stays complete; low condition adds tension.
+- **An illustrated museum.** Twelve artifact illustrations show the objects you are restoring, with enlarged exhibits, conservation notes, and full-arrangement soundtrack previews.
 - **Controls for every player:** keyboard, mouse, touch and gamepad; remappable keys; menus you can navigate without a mouse; reduced-motion support.
 
 ## Development
@@ -32,9 +35,25 @@ docker compose run --rm win                        # Windows portable + installe
 
 The avatar workshop, a dev-only tool for drawing the cut-out characters, runs at http://localhost:5173/tools/workshop/.
 
+`scripts/review-gameplay.cjs` runs a Playwright smoke test against the dev server, covering touch controls, pause menus, focus loss, the end-of-run transition, and final care. Set `PLAYWRIGHT_MODULE` to the installed Playwright module, `GAME_URL` to the dev server, and `REVIEW_OUT` to the screenshot directory. Balance regression tests in `tests/difficulty.test.ts` cover every culture's pacing and survival at 80% accuracy.
+
 The animated cast and all twelve illustrated backgrounds can be reviewed at
 http://localhost:5173/tools/art-preview/. See [the art notes](art/README.md) for
 editable sources, generated concept provenance, and export instructions.
+
+The development [music room](http://localhost:5173/tools/music-preview/) lets you
+compare all twelve scores at different combo and condition settings.
+The generator in `src/audio/score.ts` develops a seeded two-bar motif into an
+eight-bar statement, variation, answer, and resolving return. Culture-specific
+arrangements choose tonal movement, open intervals, or a drone foundation;
+existing CC0 samples are combined with synthesized accompaniment. These are
+original game arrangements using instrument substitutes, not reconstructions of
+traditional performances.
+
+See [the researched museum/music plan](art/museum-music-plan.md) and
+`scripts/review-museum-music.cjs` for the visual and audio review workflow. The
+script uses Playwright and OfflineAudioContext to save museum screenshots, six
+stereo WAV excerpts, and peak/RMS measurements under ignored `docs/` output.
 
 ## The original (2023)
 

@@ -21,7 +21,7 @@ export interface Culture {
   damages: DamageId[];
   /** Instruments / idioms the soundtrack stems should use. */
   music: string[];
-  /** Placeholder synth soundtrack: scale, tempo, instrument family (see src/audio/music.ts). */
+  /** Scale, tempo, and sampled/synthesized voices; arrangement lives in audio/score.ts. */
   sound: SoundProfile;
   palette: { sky: string; ground: string; accent: string };
   /** In the released game; unreleased cultures show as "Coming soon". */

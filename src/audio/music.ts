@@ -1,4 +1,4 @@
-// Pure music logic for the PLACEHOLDER synthesized soundtrack: scales, patterns and generative phrases.
+// Pure musical primitives. score.ts develops these into related phrases and layered arrangements.
 // No Web Audio here so it can be unit tested; AudioDirector turns these into sound.
 
 /** Instrument family the lead voice imitates. */
