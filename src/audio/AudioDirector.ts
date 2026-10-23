@@ -1,4 +1,5 @@
 import { SUSTAINED, degreeToMidi, midiToFreq, nearestSample, rng, type Perc, type PitchedSample, type SoundProfile, type Timbre } from './music';
+import { loadVolume, saveVolume, type Volume } from '../systems/settings';
 import { arrangementMix, composeScore, scoreEvents, type Score } from './score';
 
 // Soundtrack and effects. Music is composed at runtime from each culture's scales and rhythms and played on
@@ -11,6 +12,9 @@ export type Sfx = 'jump' | 'switch' | 'restore' | 'perfect' | 'wrong' | 'miss' |
 const LOOKAHEAD = 0.12;
 const TICK_MS = 25;
 const MUTE_KEY = 'relic-revival-run:muted';
+/** Bus levels at 100% volume. */
+const MUSIC_LEVEL = 0.5;
+const SFX_LEVEL = 0.65;
 const AUDIO_DIR = 'assets/audio/';
 
 interface Manifest {
@@ -27,6 +31,8 @@ export class AudioDirector {
   }
 
   muted = readMuted();
+  private ducked = false;
+  private volumes: Record<Volume, number> = { music: loadVolume('music'), sfx: loadVolume('sfx') };
   private ctx?: AudioContext;
   private master!: GainNode;
   private music!: GainNode;
@@ -82,8 +88,8 @@ export class AudioDirector {
     compressor.attack.value = 0.006;
     compressor.release.value = 0.18;
     compressor.connect(this.master);
-    this.music = gain(ctx, 0.5, compressor);
-    this.sfxBus = gain(ctx, 0.65, compressor);
+    this.music = gain(ctx, this.musicLevel(), compressor);
+    this.sfxBus = gain(ctx, SFX_LEVEL * this.volumes.sfx, compressor);
     this.noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
     const data = this.noise.getChannelData(0), random = rng(1717);
     for (let i = 0; i < data.length; i++) data[i] = random() * 2 - 1;
@@ -98,6 +104,18 @@ export class AudioDirector {
     }
     if (this.ctx) this.master.gain.setTargetAtTime(this.muted ? 0 : 0.8, this.ctx.currentTime, 0.05);
     return this.muted;
+  }
+
+  volume(v: Volume): number {
+    return this.volumes[v];
+  }
+
+  /** Set and remember the music or effects volume (0–1). */
+  setVolume(v: Volume, value: number) {
+    this.volumes[v] = saveVolume(v, value);
+    if (!this.ctx) return;
+    if (v === 'music') this.music.gain.setTargetAtTime(this.musicLevel(), this.ctx.currentTime, 0.05);
+    else this.sfxBus.gain.setTargetAtTime(SFX_LEVEL * this.volumes.sfx, this.ctx.currentTime, 0.05);
   }
 
   /** Switch soundtrack; a no-op if this profile is already playing. */
@@ -179,7 +197,12 @@ export class AudioDirector {
 
   /** Quieter music while paused. */
   duck(on: boolean) {
-    if (this.ctx) this.music.gain.setTargetAtTime(on ? 0.15 : 0.5, this.ctx.currentTime, 0.1);
+    this.ducked = on;
+    if (this.ctx) this.music.gain.setTargetAtTime(this.musicLevel(), this.ctx.currentTime, 0.1);
+  }
+
+  private musicLevel() {
+    return (this.ducked ? 0.15 : MUSIC_LEVEL) * this.volumes.music;
   }
 
   /** Quarter-note beats elapsed on the audio clock, so gameplay lines up with what is heard; null without music. */

@@ -8,11 +8,12 @@ import { difficultyFor, spacingBeats, type Difficulty } from '../systems/difficu
 import { PatternSpawner, type SpawnEvent } from '../systems/patterns';
 import { RunState } from '../systems/runState';
 import { loadSave } from '../systems/save';
+import { loadAssist } from '../systems/settings';
 import { DAMAGE_SIZE, damageTexture, toolTexture } from '../ui/art';
 import { addArtifact, loadArtifact } from '../ui/artifacts';
 import { addLandscape, advanceLandscape, loadLandscape } from '../ui/landscape';
 import { addAvatar, type AvatarView } from '../ui/avatar';
-import { showControlsMenu } from '../ui/controlsMenu';
+import { showOptionsMenu } from '../ui/optionsMenu';
 import { showFieldGuide } from '../ui/fieldGuide';
 import { MenuNav, focusButton } from '../ui/menuNav';
 import { FONT_DISPLAY, HEIGHT, INK, PAPER, PAPER_CSS, REDUCED_MOTION, WIDTH, button, card, hex, label } from '../ui/theme';
@@ -29,7 +30,6 @@ const ARTIFACT_H = 140;
 const AVATAR_HEIGHT = 150;
 /** How far ahead (px) the tool hint looks for the next damage. */
 const HINT_RANGE = 560;
-const ASSIST_KEY = 'relic-revival-run:assist';
 const PLAYER_HITBOX = { w: 64, h: 120 };
 const SPOT_DISPLAY = DAMAGE_SIZE * 0.9;
 /** Where a ground-lane spot first touches the player: spots are timed to arrive here on a beat. */
@@ -113,7 +113,7 @@ export class RunScene extends Phaser.Scene {
   /** A pause sub-menu (field guide, controls) owns the keyboard. */
   private subMenu = false;
   /** Pulse the slot of the tool needed for the next damage (pause menu toggle, remembered). */
-  private assist = readAssist();
+  private assist = loadAssist();
   private hintRing!: Phaser.GameObjects.Graphics;
   private ended = false;
   private seen = new Set<DamageId>();
@@ -180,6 +180,7 @@ export class RunScene extends Phaser.Scene {
     this.culture = CULTURES[this.index];
     this.diff = difficultyFor(this.index);
     this.chill = loadSave().chill;
+    this.assist = loadAssist();
     const twist = this.culture.twist;
     this.state = new RunState({ penalty: this.diff.mistakePenalty, chill: this.chill, perfectMultiplier: twist === 'precision' ? 3 : undefined });
     this.tools = toolsFor(this.culture.damages);
@@ -231,6 +232,8 @@ export class RunScene extends Phaser.Scene {
       this.game.events.off(Phaser.Core.Events.BLUR, autoPause);
       this.audio.duck(false);
       this.audio.setTempoScale(1);
+      // The animation manager is game-wide: leaving from the pause menu must not keep it paused.
+      this.anims.resumeAll();
     });
     this.briefing = true;
     this.physics.pause();
@@ -971,10 +974,8 @@ export class RunScene extends Phaser.Scene {
       this.anims.pauseAll();
       const c = this.add.container(0, 0).setDepth(20);
       c.add(this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, INK, 0.6).setInteractive());
-      c.add(card(this, WIDTH / 2, HEIGHT / 2, 440, 650));
-      c.add(label(this, WIDTH / 2, HEIGHT / 2 - 270, 'Paused', 44, { fontFamily: FONT_DISPLAY }));
-      const resume = button(this, WIDTH / 2, HEIGHT / 2 - 190, 'Resume', () => this.togglePause(), 300);
-      c.add(resume);
+      c.add(card(this, WIDTH / 2, HEIGHT / 2, 440, 560));
+      c.add(label(this, WIDTH / 2, HEIGHT / 2 - 225, 'Paused', 44, { fontFamily: FONT_DISPLAY }));
       const subMenu = (open: (done: () => void) => void) => {
         c.setVisible(false);
         this.subMenu = true;
@@ -986,27 +987,19 @@ export class RunScene extends Phaser.Scene {
           this.time.delayedCall(0, () => this.pauseNav?.setEnabled(true));
         });
       };
-      const guide = button(this, WIDTH / 2, HEIGHT / 2 - 107, 'Field guide', () => subMenu((done) => showFieldGuide(this, this.culture, 'Back', done)), 300);
-      const controls = button(this, WIDTH / 2, HEIGHT / 2 - 24, 'Controls', () => subMenu((done) => showControlsMenu(this, done)), 300);
-      c.add([guide, controls]);
-      const hintLabel = () => `Tool hints: ${this.assist ? 'on' : 'off'}`;
-      const hints = button(this, WIDTH / 2, HEIGHT / 2 + 59, hintLabel(), () => {
-        this.assist = !this.assist;
-        writeAssist(this.assist);
-        (hints.getAt(1) as Phaser.GameObjects.Text).setText(hintLabel());
-      }, 300);
-      c.add(hints);
-      const soundLabel = () => `Sound: ${this.audio.muted ? 'off' : 'on'} (M)`;
-      const sound = button(this, WIDTH / 2, HEIGHT / 2 + 142, soundLabel(), () => {
-        this.audio.toggleMute();
-        (sound.getAt(1) as Phaser.GameObjects.Text).setText(soundLabel());
-      }, 300);
-      c.add(sound);
-      const map = button(this, WIDTH / 2, HEIGHT / 2 + 225, 'World map', () => this.scene.start('WorldMap'), 300);
-      c.add(map);
+      const at = (i: number) => HEIGHT / 2 - 145 + i * 83;
+      const resume = button(this, WIDTH / 2, at(0), 'Resume', () => this.togglePause(), 300);
+      const restart = button(this, WIDTH / 2, at(1), 'Restart', () => this.scene.restart({ index: this.index, daily: this.daily }), 300);
+      const guide = button(this, WIDTH / 2, at(2), 'Field guide', () => subMenu((done) => showFieldGuide(this, this.culture, 'Back', done)), 300);
+      const options = button(this, WIDTH / 2, at(3), 'Options', () => subMenu((done) => showOptionsMenu(this, { inRun: true }, () => {
+        this.assist = loadAssist();
+        done();
+      })), 300);
+      const map = button(this, WIDTH / 2, at(4), 'World map', () => this.scene.start('WorldMap'), 300);
+      c.add([resume, restart, guide, options, map]);
       this.pauseLayer = c;
       // Esc is the pause key itself, so only gamepad B means "back" here.
-      this.pauseNav = new MenuNav(this, [resume, guide, controls, hints, sound, map].map(focusButton), { back: () => this.togglePause(), escape: false, depth: 25 });
+      this.pauseNav = new MenuNav(this, [resume, restart, guide, options, map].map(focusButton), { back: () => this.togglePause(), escape: false, depth: 25 });
     } else {
       if (!this.finale) this.physics.resume();
       this.audio.duck(false);
@@ -1016,21 +1009,5 @@ export class RunScene extends Phaser.Scene {
       this.pauseNav?.destroy();
       this.pauseNav = undefined;
     }
-  }
-}
-
-function readAssist() {
-  try {
-    return localStorage.getItem(ASSIST_KEY) !== '0';
-  } catch {
-    return true;
-  }
-}
-
-function writeAssist(on: boolean) {
-  try {
-    localStorage.setItem(ASSIST_KEY, on ? '1' : '0');
-  } catch {
-    /* ignore */
   }
 }

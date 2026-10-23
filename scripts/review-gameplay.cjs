@@ -112,8 +112,30 @@ const out = process.env.REVIEW_OUT || '/work/docs/gameplay-review';
     await page.waitForFunction(() => !!window.game.scene.getScene('Run').finale);
     await press('Begin final care');
     await page.screenshot({ path: `${out}/mali-finale.png` });
+    // Pause menu: options overlay, then restart into a fresh briefing.
+    await page.mouse.click(899, 49);
+    await press('Options');
+    await page.screenshot({ path: `${out}/pause-options.png` });
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(100);
+    assert.equal(await page.evaluate(() => window.game.scene.getScene('Run').subMenu), false);
+    await press('Restart');
+    await page.waitForFunction(() => window.game.scene.getScene('Run').briefing);
+    // The ending: the completed collection, then the credits roll, skipped to the end.
+    await page.evaluate(() => {
+      window.game.scene.getScenes(true).forEach(scene => window.game.scene.stop(scene.scene.key));
+      window.game.scene.start('Credits', { ending: true });
+    });
+    await page.waitForFunction(() => window.game.scene.isActive('Credits'));
+    await page.waitForTimeout(6000);
+    await page.screenshot({ path: `${out}/ending.png` });
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(300);
+    await page.keyboard.press('Enter');
+    await page.waitForFunction(() => window.game.scene.getScene('Credits').finished);
+    await page.screenshot({ path: `${out}/credits.png` });
     assert.deepEqual(errors, []);
-    console.log('PASS: pointer controls, cooldowns, pause/submenus, focus loss, finite bonus spawns, finale readiness/resume/completion, scene restart; no browser errors.');
+    console.log('PASS: pointer controls, cooldowns, pause/submenus, focus loss, finite bonus spawns, finale readiness/resume/completion, results, options, restart, ending and credits; no browser errors.');
   } finally {
     await browser.close();
   }

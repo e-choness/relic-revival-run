@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { CULTURES } from '../data/cultures';
 import { keysLabel, loadBindings } from '../systems/controls';
+import { curatorTitle, isComplete, loadSave, totalStars } from '../systems/save';
+import { showOptionsMenu } from '../ui/optionsMenu';
 import { addLandscape, advanceLandscape, type LandscapeLayer } from '../ui/landscape';
 import { AudioDirector } from '../audio/AudioDirector';
 import { MENU_PROFILE } from '../audio/music';
@@ -29,9 +31,24 @@ export class TitleScene extends Phaser.Scene {
     // The whole restorer team runs past, one per culture.
     this.parade = CULTURES.map((c, i) => ({ view: addAvatar(this, c, 0, 560, 120, 'run'), x: -120 - i * PARADE_GAP }));
 
+    const save = loadSave();
+    const total = totalStars(save);
+    if (total > 0) {
+      const restored = CULTURES.filter((c) => (save.stars[c.id] ?? 0) > 0).length;
+      label(this, WIDTH / 2, 292, `${curatorTitle(total).title} · ${total}/${CULTURES.length * 3} stars · ${restored}/${CULTURES.length} relics restored`, 22, { color: '#f2c14e', stroke: '#2b1d2e', strokeThickness: 6 });
+    }
+
     const keys = loadBindings();
-    const play = button(this, WIDTH / 2, 380, 'Play', () => this.scene.start('WorldMap'), 260);
-    new MenuNav(this, [focusButton(play)]);
+    const play = button(this, WIDTH / 2, 352, total > 0 ? 'Continue' : 'Play', () => this.scene.start('WorldMap'), 260).setDepth(10);
+    const museum = button(this, WIDTH / 2 - 230, 430, 'Museum', () => this.scene.start('Museum'), 200).setDepth(10);
+    let nav: MenuNav | undefined;
+    const options = button(this, WIDTH / 2, 430, 'Options', () => {
+      nav?.setEnabled(false);
+      // Restart afterwards: a reset or rebinding changes what this screen shows.
+      showOptionsMenu(this, { inRun: false }, () => this.scene.restart());
+    }, 200).setDepth(10);
+    const credits = button(this, WIDTH / 2 + 230, 430, 'Credits', () => this.scene.start('Credits', { ending: isComplete(save) }), 200).setDepth(10);
+    nav = new MenuNav(this, [play, museum, options, credits].map(focusButton));
     label(this, WIDTH / 2, 650, `Jump: ${keysLabel(keys, 'jump')} / tap   ·   Tools: 1–8, ${keysLabel(keys, 'prevTool')}/${keysLabel(keys, 'nextTool')}, wheel   ·   UV: ${keysLabel(keys, 'uv')}   ·   Camera: ${keysLabel(keys, 'camera')}   ·   Mute: M`, 22, { color: PAPER_CSS });
   }
 

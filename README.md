@@ -19,8 +19,11 @@ This is a **remake** by Echo Yin of the 2023 game-jam original by **Studio Jojo*
 - **Readable run feedback.** Time remaining, condition, treatment accuracy, next-tool hints, utility cooldowns, and touch controls for jumping and pausing. Losing focus pauses the run.
 - **Room to learn.** Runs last 55–75 seconds, with extra spacing for lane changes. Final care waits until you are ready; restore 60% / 80% / 95% while preserving condition to earn 1 / 2 / 3 stars.
 - **Reactive music** with recurring themes, related answers, resolving phrases, moving bass, quiet harmonic support, and stereo room ambience. Accompaniment grows with your combo while the melody stays complete; low condition adds tension.
+- **A story with an ending.** A short prologue sets out why the restorers are running. Restore all twelve relics to complete the collection: the ending gathers every artifact and closes with the game's message about looted and trafficked heritage, followed by the credits (replayable from the title screen).
+- **Progress worth chasing.** Best stars, restoration and score per culture; curator ranks; "new best" and "culture unlocked" news on the results card.
 - **An illustrated museum.** Twelve artifact illustrations show the objects you are restoring, with enlarged exhibits, conservation notes, and full-arrangement soundtrack previews.
 - **Controls for every player:** keyboard, mouse, touch and gamepad; remappable keys; menus you can navigate without a mouse; reduced-motion support.
+- **Options** from the title and pause menus: music and effects volume, sound on/off, tool hints, chill mode, controls, and a two-step progress reset. The pause menu can also restart a run.
 
 ## Development
 
@@ -35,7 +38,7 @@ docker compose run --rm win                        # Windows portable + installe
 
 The avatar workshop, a dev-only tool for drawing the cut-out characters, runs at http://localhost:5173/tools/workshop/.
 
-`scripts/review-gameplay.cjs` runs a Playwright smoke test against the dev server, covering touch controls, pause menus, focus loss, the end-of-run transition, and final care. Set `PLAYWRIGHT_MODULE` to the installed Playwright module, `GAME_URL` to the dev server, and `REVIEW_OUT` to the screenshot directory. Balance regression tests in `tests/difficulty.test.ts` cover every culture's pacing and survival at 80% accuracy.
+`scripts/review-gameplay.cjs` runs a Playwright smoke test against the dev server, covering touch controls, pause menus, options, restart, focus loss, the end-of-run transition, final care, results, and the ending and credits. Set `PLAYWRIGHT_MODULE` to the installed Playwright module, `GAME_URL` to the dev server, and `REVIEW_OUT` to the screenshot directory. Balance regression tests in `tests/difficulty.test.ts` cover every culture's pacing and survival at 80% accuracy.
 
 The animated cast and all twelve illustrated backgrounds can be reviewed at
 http://localhost:5173/tools/art-preview/. See [the art notes](art/README.md) for

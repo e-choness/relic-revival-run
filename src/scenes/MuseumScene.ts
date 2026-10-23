@@ -74,7 +74,7 @@ export class MuseumScene extends Phaser.Scene {
     const art = addArtifact(this, c, 110, 175, 480, 320);
     const grime = this.add.rectangle(350, 335, 480, 320, 0x6b5434, 0.14 * (1 - (save.best[c.id] ?? 0)));
     layer.add([art, grime]);
-    layer.add(label(this, 350, 520, (save.best[c.id] ?? 0) > 0 ? `Best restoration · ${Math.round(save.best[c.id] * 100)}%` : 'Awaiting your first restoration', 23));
+    layer.add(label(this, 350, 520, (save.best[c.id] ?? 0) > 0 ? `Best restoration · ${Math.round(save.best[c.id] * 100)}%${save.scores[c.id] ? ` · score ${save.scores[c.id].toLocaleString()}` : ''}` : 'Awaiting your first restoration', 23));
     layer.add(label(this, 350, 557, `Restorer: ${c.avatar.animal}`, 20));
     layer.add(label(this, 350, 586, c.avatar.note, 17, { wordWrap: { width: 460 }, align: 'center' }));
     layer.add(label(this, 640, 176, 'Conservation notes', 24, { fontFamily: FONT_DISPLAY, fontSize: '22px' }).setOrigin(0, 0.5));

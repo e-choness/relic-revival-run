@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { DAMAGES } from '../data/conservation';
 import { CULTURES } from '../data/cultures';
-import { dailyFor, isUnlocked, loadSave, recordDaily, recordRun } from '../systems/save';
+import { dailyFor, isComplete, isUnlocked, loadSave, recordDaily, recordRun } from '../systems/save';
 import { addArtifact, loadArtifact } from '../ui/artifacts';
 import { addAvatar, type AvatarView } from '../ui/avatar';
 import { MenuNav, focusButton } from '../ui/menuNav';
@@ -11,19 +11,25 @@ import type { RunResult } from './RunScene';
 /** Museum-card style summary: how well the relic was restored and what the player learned. */
 export class ResultsScene extends Phaser.Scene {
   private avatar?: AvatarView;
+  private result!: RunResult;
 
   constructor() {
     super('Results');
   }
 
-  preload(r: RunResult) {
-    loadArtifact(this, CULTURES[r.index].id);
+  // Phaser passes scene data to init and create, but not to preload.
+  init(r: RunResult) {
+    this.result = r;
+  }
+
+  preload() {
+    loadArtifact(this, CULTURES[this.result.index].id);
   }
 
   create(r: RunResult) {
     const culture = CULTURES[r.index];
     const before = loadSave();
-    let save = recordRun(before, culture.id, r.stars, r.restoration, r.seen);
+    let save = recordRun(before, culture.id, r.stars, r.restoration, r.seen, r.score);
     if (r.daily) save = recordDaily(save, r.daily, r.score);
     const newFacts = save.learned.length - before.learned.length;
     this.add.graphics().fillGradientStyle(hex(culture.palette.ground), hex(culture.palette.ground), 0x1d1424, 0x1d1424, 1).fillRect(0, 0, WIDTH, HEIGHT);
@@ -50,7 +56,14 @@ export class ResultsScene extends Phaser.Scene {
     ];
     stats.forEach((s, i) => label(this, 560, 245 + i * 33, s, 24).setOrigin(0, 0.5));
     label(this, 560, 420, 'Conservation notes', 24, { fontFamily: FONT_DISPLAY, fontSize: '22px' }).setOrigin(0, 0.5);
-    if (newFacts > 0) label(this, WIDTH / 2, 216, `+${newFacts} new ${newFacts === 1 ? 'fact' : 'facts'} in the museum`, 17, { color: '#c4622d' });
+    const next = CULTURES[r.index + 1];
+    const unlocked = next && !isUnlocked(before, r.index + 1) && isUnlocked(save, r.index + 1);
+    const news = [
+      !!before.scores[culture.id] && r.score > before.scores[culture.id] && 'New best score!',
+      unlocked && `${next.name} unlocked!`,
+      newFacts > 0 && `+${newFacts} new ${newFacts === 1 ? 'fact' : 'facts'} in the museum`,
+    ].filter(Boolean).join('  ·  ');
+    if (news) label(this, WIDTH / 2, 216, news, 17, { color: '#c4622d' });
     r.seen.slice(0, 2).forEach((d, i) =>
       label(this, 560, 462 + i * 46, `• ${DAMAGES[d].fact}`, 18, { color: INK_CSS, wordWrap: { width: 400 } }).setOrigin(0, 0.5),
     );
@@ -71,7 +84,9 @@ export class ResultsScene extends Phaser.Scene {
       button(this, WIDTH / 2 - 280, y, 'Retry', () => this.scene.start('Run', { index: r.index, daily: r.daily ? { date: r.daily, ...dailyFor(r.daily) } : undefined })),
       button(this, WIDTH / 2, y, 'World map', () => this.scene.start('WorldMap')),
     ];
-    if (!r.daily && isUnlocked(save, r.index + 1)) buttons.push(button(this, WIDTH / 2 + 280, y, 'Next culture', () => this.scene.start('Run', { index: r.index + 1 })));
+    // The last relic restored: the ending plays (once; the title's Credits replays it).
+    if (isComplete(save) && !save.seenEnding) buttons.push(button(this, WIDTH / 2 + 280, y, 'Collection complete!', () => this.scene.start('Credits', { ending: true }), 300, 0xf2c14e));
+    else if (!r.daily && isUnlocked(save, r.index + 1)) buttons.push(button(this, WIDTH / 2 + 280, y, 'Next culture', () => this.scene.start('Run', { index: r.index + 1 })));
     new MenuNav(this, buttons.map(focusButton), { back: () => this.scene.start('WorldMap'), start: r.stars > 0 ? buttons.length - 1 : 0 });
   }
 

@@ -12,10 +12,15 @@ export interface SaveData {
   daily: Record<string, number>;
   /** Chill mode: mistakes never damage the artifact. */
   chill: boolean;
+  /** Best score per culture id. */
+  scores: Record<string, number>;
+  /** One-time story beats already shown: the prologue and the ending. */
+  seenIntro: boolean;
+  seenEnding: boolean;
 }
 
 const KEY = 'relic-revival-run:save:v1';
-const EMPTY: SaveData = { stars: {}, best: {}, learned: [], daily: {}, chill: false };
+const EMPTY: SaveData = { stars: {}, best: {}, learned: [], daily: {}, chill: false, scores: {}, seenIntro: false, seenEnding: false };
 
 // Storage can be unavailable (private mode, blocked site data); the game still runs, just without persistence.
 export function loadSave(): SaveData {
@@ -41,14 +46,24 @@ export function recordStars(save: SaveData, cultureId: string, stars: number): S
   return persist({ ...save, stars: { ...save.stars, [cultureId]: Math.max(save.stars[cultureId] ?? 0, stars) } });
 }
 
-/** Records a finished run: best stars and restoration, plus newly learned damage types. */
-export function recordRun(save: SaveData, cultureId: string, stars: number, restoration: number, seen: DamageId[]): SaveData {
+/** Records a finished run: best stars, restoration and score, plus newly learned damage types. */
+export function recordRun(save: SaveData, cultureId: string, stars: number, restoration: number, seen: DamageId[], score = 0): SaveData {
   return persist({
     ...save,
     stars: { ...save.stars, [cultureId]: Math.max(save.stars[cultureId] ?? 0, stars) },
     best: { ...save.best, [cultureId]: Math.max(save.best[cultureId] ?? 0, restoration) },
+    scores: { ...save.scores, [cultureId]: Math.max(save.scores[cultureId] ?? 0, score) },
     learned: [...new Set([...save.learned, ...seen])],
   });
+}
+
+export function markSeen(save: SaveData, beat: 'intro' | 'ending'): SaveData {
+  return persist({ ...save, ...(beat === 'intro' ? { seenIntro: true } : { seenEnding: true }) });
+}
+
+/** Wipe all progress (stars, scores, museum facts, story beats). Settings and key bindings are kept. */
+export function resetSave(): SaveData {
+  return persist(structuredClone(EMPTY));
 }
 
 export function recordDaily(save: SaveData, date: string, score: number): SaveData {
@@ -65,6 +80,9 @@ export function isUnlocked(save: Pick<SaveData, 'stars'>, index: number): boolea
   if (!culture?.released) return false;
   return index === 0 || (save.stars[CULTURES[index - 1].id] ?? 0) > 0;
 }
+
+/** Every released culture has at least one star: the collection is complete and the ending plays. */
+export const isComplete = (save: Pick<SaveData, 'stars'>) => CULTURES.every((c) => !c.released || (save.stars[c.id] ?? 0) > 0);
 
 export const totalStars = (save: Pick<SaveData, 'stars'>) => Object.values(save.stars).reduce((a, b) => a + b, 0);
 

@@ -1,11 +1,16 @@
 import Phaser from 'phaser';
 import { CULTURES } from '../data/cultures';
-import { dailyFor, isUnlocked, loadSave, setChill, todayKey } from '../systems/save';
+import { curatorTitle, dailyFor, isUnlocked, loadSave, markSeen, setChill, todayKey, totalStars } from '../systems/save';
 import { AudioDirector } from '../audio/AudioDirector';
 import { MENU_PROFILE } from '../audio/music';
 import { addAvatar, type AvatarView } from '../ui/avatar';
 import { MenuNav, focusButton, type Focusable } from '../ui/menuNav';
 import { FONT_DISPLAY, HEIGHT, INK, PAPER_CSS, WIDTH, button, card, hex, label, stars } from '../ui/theme';
+
+const PROLOGUE =
+  'Across the world, treasures are fading: dust and soot, salts and insects, careless old repairs. ' +
+  'Some have been stolen and sold far from home. You lead a team of animal restorers. Run through twelve ' +
+  'cultures, choose the right tool for each kind of damage, and bring every relic back to life for the museum.';
 
 export class WorldMapScene extends Phaser.Scene {
   private avatars: AvatarView[] = [];
@@ -21,7 +26,9 @@ export class WorldMapScene extends Phaser.Scene {
     // Dev/testing: ?all opens every culture, including unreleased ones.
     const unlockAll = new URLSearchParams(location.search).has('all');
     this.add.graphics().fillGradientStyle(0x3b2a4a, 0x3b2a4a, 0x1d1424, 0x1d1424, 1).fillRect(0, 0, WIDTH, HEIGHT);
-    label(this, WIDTH / 2, 56, 'Choose a culture', 48, { fontFamily: FONT_DISPLAY, color: PAPER_CSS });
+    label(this, WIDTH / 2, 40, 'Choose a culture', 44, { fontFamily: FONT_DISPLAY, color: PAPER_CSS });
+    const total = totalStars(save);
+    label(this, WIDTH / 2, 80, `${curatorTitle(total).title} · ${total}/${CULTURES.length * 3} stars`, 19, { color: '#f2c14e' });
 
     const cw = 270, ch = 150;
     const focus: Focusable[] = [];
@@ -61,7 +68,27 @@ export class WorldMapScene extends Phaser.Scene {
       setChill(loadSave(), chill);
       (chillBtn.getAt(1) as Phaser.GameObjects.Text).setText(chillLabel());
     }, 330);
-    new MenuNav(this, [...focus, ...[back, museum, dailyBtn, chillBtn].map(focusButton)], { back: () => this.scene.start('Title'), start: Math.max(0, focus.length - 1) });
+    const nav = new MenuNav(this, [...focus, ...[back, museum, dailyBtn, chillBtn].map(focusButton)], { back: () => this.scene.start('Title'), start: Math.max(0, focus.length - 1) });
+    if (!save.seenIntro) this.prologue(nav);
+  }
+
+  /** First visit only: why the restorers are running. */
+  private prologue(nav: MenuNav) {
+    nav.setEnabled(false);
+    const c = this.add.container(0, 0).setDepth(30);
+    c.add(this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, INK, 0.7).setInteractive());
+    c.add(card(this, WIDTH / 2, HEIGHT / 2, 860, 400));
+    c.add(label(this, WIDTH / 2, HEIGHT / 2 - 145, 'A collection in need', 40, { fontFamily: FONT_DISPLAY }));
+    c.add(label(this, WIDTH / 2, HEIGHT / 2 - 20, PROLOGUE, 23, { wordWrap: { width: 760 }, align: 'center', lineSpacing: 4 }));
+    const close = () => {
+      markSeen(loadSave(), 'intro');
+      inner.destroy();
+      c.destroy();
+      this.time.delayedCall(0, () => nav.setEnabled(true));
+    };
+    const go = button(this, WIDTH / 2, HEIGHT / 2 + 130, "Let's go", close, 260);
+    c.add(go);
+    const inner = new MenuNav(this, [focusButton(go)], { back: close, depth: 40 });
   }
 
   update(_t: number, deltaMs: number) {
