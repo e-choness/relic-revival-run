@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <base href="/">
+  <title>Relic Revival Run · Music room</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#201c29;color:#fff6e6;font:18px/1.6 system-ui,sans-serif}main{max-width:920px;margin:auto;padding:48px 24px}h1{font-size:42px;line-height:1.1}p{color:#d7c8b7}.panel{background:#342b3d;padding:24px;border-radius:18px;margin:24px 0}.controls{display:flex;gap:16px;align-items:center;flex-wrap:wrap}button,select,a{font:inherit;padding:10px 18px;border-radius:10px;border:1px solid #998373;background:#fff6e6;color:#2b1d2e}button,a{cursor:pointer}label{display:block;margin:16px 0}input{accent-color:#e9b847;width:220px;vertical-align:middle}#status{color:#f2c14e}img{width:100%;max-height:350px;object-fit:contain;background:#fff6e6;border-radius:12px}small{display:block;color:#c9b6a6}a{display:inline-block;text-decoration:none}
+  </style>
+</head>
+<body><main>
+  <small>RELIC REVIVAL RUN · DEVELOPMENT LISTENING ROOM</small>
+  <h1>A theme with room to grow</h1>
+  <p>Hear the motif repeat, answer, and resolve. Change combo and condition to compare the accompaniment. Support layers respond at the next bar; the melody stays complete.</p>
+  <div class="panel"><div class="controls"><select id="culture" aria-label="Culture"></select><button id="play">Play</button><button id="stop">Stop</button><button id="mute">Mute</button></div>
+    <label>Combo <input id="combo" type="range" min="0" max="8" value="6"> <output id="combo-value">6</output></label>
+    <label>Condition <input id="condition" type="range" min="0" max="100" value="100"> <output id="condition-value">100%</output></label>
+    <p id="status" aria-live="polite">Choose an exhibit and press Play.</p><small id="voices"></small>
+  </div>
+  <img id="artifact" alt="">
+  <p>Original game arrangements use the existing CC0 instrument library and synthesized accompaniment. Sample substitutes are listed above; these scores are not reconstructions of traditional performances.</p>
+  <a href="/?all">Return to the game</a>
+</main><script type="module" src="/tools/music-preview/main.ts"></script></body>
+</html>

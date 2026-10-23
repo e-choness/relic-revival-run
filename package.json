@@ -1,0 +1,50 @@
+{
+  "name": "relic-revival-run",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Relic Revival Run — restore cultural heritage on the run.",
+  "author": "Studio Jojo",
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "engines": {
+    "node": "^22.12.0 || >=24.0.0"
+  },
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build",
+    "test": "vitest run",
+    "package:itch": "npm run build && node scripts/zip-itch.mjs",
+    "package:win": "npm run build && electron-builder --win portable nsis",
+    "placeholders": "tsx tools/placeholders/generate.ts"
+  },
+  "devDependencies": {
+    "electron": "^45.0.0",
+    "electron-builder": "^26.15.3",
+    "perfect-freehand": "^1.2.3",
+    "phaser": "^3.90.0",
+    "svg-path-properties": "^2.2.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
+  },
+  "build": {
+    "appId": "fun.studiojojo.relicrevivalrun",
+    "productName": "Relic Revival Run",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "win": {
+      "target": [
+        "portable",
+        "nsis"
+      ],
+      "icon": "build/icon.png"
+    }
+  }
+}

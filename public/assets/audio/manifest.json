@@ -1,0 +1,457 @@
+{
+  "source": "https://github.com/sgossner/VCSL",
+  "license": "CC0-1.0",
+  "melodic": {
+    "marimba": [
+      {
+        "midi": 53,
+        "file": "marimba/53.mp3"
+      },
+      {
+        "midi": 60,
+        "file": "marimba/60.mp3"
+      },
+      {
+        "midi": 67,
+        "file": "marimba/67.mp3"
+      },
+      {
+        "midi": 71,
+        "file": "marimba/71.mp3"
+      },
+      {
+        "midi": 77,
+        "file": "marimba/77.mp3"
+      },
+      {
+        "midi": 84,
+        "file": "marimba/84.mp3"
+      }
+    ],
+    "strumstick": [
+      {
+        "midi": 50,
+        "file": "strumstick/50.mp3"
+      },
+      {
+        "midi": 54,
+        "file": "strumstick/54.mp3"
+      },
+      {
+        "midi": 59,
+        "file": "strumstick/59.mp3"
+      },
+      {
+        "midi": 64,
+        "file": "strumstick/64.mp3"
+      },
+      {
+        "midi": 69,
+        "file": "strumstick/69.mp3"
+      }
+    ],
+    "danTranh": [
+      {
+        "midi": 51,
+        "file": "danTranh/51.mp3"
+      },
+      {
+        "midi": 56,
+        "file": "danTranh/56.mp3"
+      },
+      {
+        "midi": 61,
+        "file": "danTranh/61.mp3"
+      },
+      {
+        "midi": 66,
+        "file": "danTranh/66.mp3"
+      },
+      {
+        "midi": 71,
+        "file": "danTranh/71.mp3"
+      }
+    ],
+    "altoRecorder": [
+      {
+        "midi": 53,
+        "file": "altoRecorder/53.mp3"
+      },
+      {
+        "midi": 58,
+        "file": "altoRecorder/58.mp3"
+      },
+      {
+        "midi": 62,
+        "file": "altoRecorder/62.mp3"
+      },
+      {
+        "midi": 66,
+        "file": "altoRecorder/66.mp3"
+      },
+      {
+        "midi": 70,
+        "file": "altoRecorder/70.mp3"
+      },
+      {
+        "midi": 74,
+        "file": "altoRecorder/74.mp3"
+      }
+    ],
+    "sopranoRecorder": [
+      {
+        "midi": 60,
+        "file": "sopranoRecorder/60.mp3"
+      },
+      {
+        "midi": 64,
+        "file": "sopranoRecorder/64.mp3"
+      },
+      {
+        "midi": 68,
+        "file": "sopranoRecorder/68.mp3"
+      },
+      {
+        "midi": 72,
+        "file": "sopranoRecorder/72.mp3"
+      },
+      {
+        "midi": 76,
+        "file": "sopranoRecorder/76.mp3"
+      },
+      {
+        "midi": 82,
+        "file": "sopranoRecorder/82.mp3"
+      }
+    ],
+    "tenorRecorder": [
+      {
+        "midi": 50,
+        "file": "tenorRecorder/50.mp3"
+      },
+      {
+        "midi": 54,
+        "file": "tenorRecorder/54.mp3"
+      },
+      {
+        "midi": 58,
+        "file": "tenorRecorder/58.mp3"
+      },
+      {
+        "midi": 62,
+        "file": "tenorRecorder/62.mp3"
+      },
+      {
+        "midi": 66,
+        "file": "tenorRecorder/66.mp3"
+      },
+      {
+        "midi": 71,
+        "file": "tenorRecorder/71.mp3"
+      }
+    ],
+    "bowedPsaltery": [
+      {
+        "midi": 58,
+        "file": "bowedPsaltery/58.mp3"
+      },
+      {
+        "midi": 62,
+        "file": "bowedPsaltery/62.mp3"
+      },
+      {
+        "midi": 66,
+        "file": "bowedPsaltery/66.mp3"
+      },
+      {
+        "midi": 70,
+        "file": "bowedPsaltery/70.mp3"
+      },
+      {
+        "midi": 74,
+        "file": "bowedPsaltery/74.mp3"
+      },
+      {
+        "midi": 78,
+        "file": "bowedPsaltery/78.mp3"
+      }
+    ],
+    "kalimba": [
+      {
+        "midi": 51,
+        "file": "kalimba/51.mp3"
+      },
+      {
+        "midi": 55,
+        "file": "kalimba/55.mp3"
+      },
+      {
+        "midi": 61,
+        "file": "kalimba/61.mp3"
+      },
+      {
+        "midi": 65,
+        "file": "kalimba/65.mp3"
+      },
+      {
+        "midi": 70,
+        "file": "kalimba/70.mp3"
+      },
+      {
+        "midi": 76,
+        "file": "kalimba/76.mp3"
+      },
+      {
+        "midi": 80,
+        "file": "kalimba/80.mp3"
+      },
+      {
+        "midi": 85,
+        "file": "kalimba/85.mp3"
+      }
+    ],
+    "xylophone": [
+      {
+        "midi": 55,
+        "file": "xylophone/55.mp3"
+      },
+      {
+        "midi": 60,
+        "file": "xylophone/60.mp3"
+      },
+      {
+        "midi": 67,
+        "file": "xylophone/67.mp3"
+      },
+      {
+        "midi": 72,
+        "file": "xylophone/72.mp3"
+      },
+      {
+        "midi": 79,
+        "file": "xylophone/79.mp3"
+      },
+      {
+        "midi": 84,
+        "file": "xylophone/84.mp3"
+      }
+    ],
+    "balafon": [
+      {
+        "midi": 49,
+        "file": "balafon/49.mp3"
+      },
+      {
+        "midi": 53,
+        "file": "balafon/53.mp3"
+      },
+      {
+        "midi": 60,
+        "file": "balafon/60.mp3"
+      },
+      {
+        "midi": 65,
+        "file": "balafon/65.mp3"
+      },
+      {
+        "midi": 72,
+        "file": "balafon/72.mp3"
+      },
+      {
+        "midi": 77,
+        "file": "balafon/77.mp3"
+      }
+    ],
+    "ocarina": [
+      {
+        "midi": 57,
+        "file": "ocarina/57.mp3"
+      },
+      {
+        "midi": 61,
+        "file": "ocarina/61.mp3"
+      },
+      {
+        "midi": 66,
+        "file": "ocarina/66.mp3"
+      },
+      {
+        "midi": 70,
+        "file": "ocarina/70.mp3"
+      }
+    ],
+    "folkHarp": [
+      {
+        "midi": 50,
+        "file": "folkHarp/50.mp3"
+      },
+      {
+        "midi": 54,
+        "file": "folkHarp/54.mp3"
+      },
+      {
+        "midi": 58,
+        "file": "folkHarp/58.mp3"
+      },
+      {
+        "midi": 62,
+        "file": "folkHarp/62.mp3"
+      },
+      {
+        "midi": 66,
+        "file": "folkHarp/66.mp3"
+      },
+      {
+        "midi": 70,
+        "file": "folkHarp/70.mp3"
+      },
+      {
+        "midi": 74,
+        "file": "folkHarp/74.mp3"
+      },
+      {
+        "midi": 78,
+        "file": "folkHarp/78.mp3"
+      }
+    ],
+    "vibraphone": [
+      {
+        "midi": 52,
+        "file": "vibraphone/52.mp3"
+      },
+      {
+        "midi": 59,
+        "file": "vibraphone/59.mp3"
+      },
+      {
+        "midi": 65,
+        "file": "vibraphone/65.mp3"
+      },
+      {
+        "midi": 69,
+        "file": "vibraphone/69.mp3"
+      },
+      {
+        "midi": 76,
+        "file": "vibraphone/76.mp3"
+      }
+    ]
+  },
+  "perc": {
+    "slitLow": "slitLow.mp3",
+    "slitHigh": "slitHigh.mp3",
+    "shaker": "shaker.mp3",
+    "gong": "gong.mp3",
+    "woodblock": "woodblock.mp3",
+    "darbukaLow": "darbukaLow.mp3",
+    "darbukaHigh": "darbukaHigh.mp3",
+    "frameDrum": "frameDrum.mp3",
+    "tambourine": "tambourine.mp3",
+    "cajonLow": "cajonLow.mp3",
+    "cajonHigh": "cajonHigh.mp3",
+    "bassDrum": "bassDrum.mp3",
+    "congaLow": "congaLow.mp3",
+    "congaHigh": "congaHigh.mp3",
+    "bongo": "bongo.mp3",
+    "agogoLow": "agogoLow.mp3",
+    "agogoHigh": "agogoHigh.mp3",
+    "fingerCymbals": "fingerCymbals.mp3"
+  },
+  "trim": {
+    "marimba/53.mp3": -2.3,
+    "marimba/60.mp3": 0.8,
+    "marimba/67.mp3": 1.7,
+    "marimba/71.mp3": 1.3,
+    "marimba/77.mp3": 4,
+    "marimba/84.mp3": 4,
+    "strumstick/50.mp3": 1.6,
+    "strumstick/54.mp3": -0.9,
+    "strumstick/59.mp3": 2.3,
+    "strumstick/64.mp3": -0.7,
+    "strumstick/69.mp3": 4,
+    "danTranh/51.mp3": 2.2,
+    "danTranh/56.mp3": 4,
+    "danTranh/61.mp3": 3.4,
+    "danTranh/66.mp3": 4,
+    "danTranh/71.mp3": 4,
+    "altoRecorder/53.mp3": -5.4,
+    "altoRecorder/58.mp3": -5.5,
+    "altoRecorder/62.mp3": -7.3,
+    "altoRecorder/66.mp3": -5.5,
+    "altoRecorder/70.mp3": -7.3,
+    "altoRecorder/74.mp3": -6,
+    "sopranoRecorder/60.mp3": -7.4,
+    "sopranoRecorder/64.mp3": -7.8,
+    "sopranoRecorder/68.mp3": -5.6,
+    "sopranoRecorder/72.mp3": -6,
+    "sopranoRecorder/76.mp3": -5,
+    "sopranoRecorder/82.mp3": -0.9,
+    "tenorRecorder/50.mp3": 0.4,
+    "tenorRecorder/54.mp3": -1.5,
+    "tenorRecorder/58.mp3": -4.5,
+    "tenorRecorder/62.mp3": -1.9,
+    "tenorRecorder/66.mp3": -2.6,
+    "tenorRecorder/71.mp3": -4,
+    "bowedPsaltery/58.mp3": 0,
+    "bowedPsaltery/62.mp3": -2.8,
+    "bowedPsaltery/66.mp3": -0.5,
+    "bowedPsaltery/70.mp3": -0.7,
+    "bowedPsaltery/74.mp3": -2.6,
+    "bowedPsaltery/78.mp3": -1.4,
+    "kalimba/51.mp3": 0.1,
+    "kalimba/55.mp3": -1.3,
+    "kalimba/61.mp3": 4,
+    "kalimba/65.mp3": 4,
+    "kalimba/70.mp3": 4,
+    "kalimba/76.mp3": 4,
+    "kalimba/80.mp3": 4,
+    "kalimba/85.mp3": 4,
+    "xylophone/55.mp3": 4,
+    "xylophone/60.mp3": 4,
+    "xylophone/67.mp3": 3.2,
+    "xylophone/72.mp3": -1.4,
+    "xylophone/79.mp3": 4,
+    "xylophone/84.mp3": 3.4,
+    "balafon/49.mp3": 4,
+    "balafon/53.mp3": 4,
+    "balafon/60.mp3": 4,
+    "balafon/65.mp3": 4,
+    "balafon/72.mp3": 3.5,
+    "balafon/77.mp3": 3.8,
+    "ocarina/57.mp3": -9.3,
+    "ocarina/61.mp3": -10,
+    "ocarina/66.mp3": -9.9,
+    "ocarina/70.mp3": -9.4,
+    "folkHarp/50.mp3": -3.5,
+    "folkHarp/54.mp3": 1,
+    "folkHarp/58.mp3": 1.6,
+    "folkHarp/62.mp3": 2.4,
+    "folkHarp/66.mp3": 3.6,
+    "folkHarp/70.mp3": 4,
+    "folkHarp/74.mp3": 4,
+    "folkHarp/78.mp3": 2.7,
+    "vibraphone/52.mp3": -7.9,
+    "vibraphone/59.mp3": -8.5,
+    "vibraphone/65.mp3": -5.9,
+    "vibraphone/69.mp3": -6.6,
+    "vibraphone/76.mp3": -5.3,
+    "slitLow.mp3": 4,
+    "slitHigh.mp3": 3.3,
+    "shaker.mp3": 2.3,
+    "gong.mp3": -3.4,
+    "woodblock.mp3": 4,
+    "darbukaLow.mp3": 1,
+    "darbukaHigh.mp3": 4,
+    "frameDrum.mp3": 1.3,
+    "tambourine.mp3": 4,
+    "cajonLow.mp3": 4,
+    "cajonHigh.mp3": 4,
+    "bassDrum.mp3": 4,
+    "congaLow.mp3": 3.3,
+    "congaHigh.mp3": 0.8,
+    "bongo.mp3": 4,
+    "agogoLow.mp3": 4,
+    "agogoHigh.mp3": 4,
+    "fingerCymbals.mp3": 4
+  }
+}
