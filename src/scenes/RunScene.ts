@@ -652,7 +652,7 @@ export class RunScene extends Phaser.Scene {
     layer.add(this.add.rectangle(WIDTH / 2, 280, WIDTH, 560, INK, 0.45).setInteractive());
     layer.add(card(this, WIDTH / 2, 300, 820, 420));
     layer.add(label(this, WIDTH / 2, 130, 'Final restoration', 38, { fontFamily: FONT_DISPLAY }));
-    layer.add(label(this, WIDTH / 2, 172, 'Take a breath. Then tap a tool or press its number to treat each damage in order.', 19));
+    layer.add(label(this, WIDTH / 2, 172, 'Treat each damage in order: tap a tool or press its number, or have it ready as the bar runs out.', 19));
     const art = addArtifact(this, this.culture, WIDTH / 2 - 380, 205, 330, 200);
     const grime = this.add.graphics().setPosition(WIDTH / 2 - 380, 205);
     grime.fillStyle(0x6b5434, 0.8).fillRect(0, 0, 330, 200);
@@ -694,18 +694,19 @@ export class RunScene extends Phaser.Scene {
     const step = f.steps[f.at];
     f.timer.clear().fillStyle(INK, 1).fillRoundedRect(WIDTH / 2 - 380, 430, 760, 16, 8);
     f.timer.fillStyle(f.left / step.time > 0.3 ? 0x2a9d8f : 0xc0392b, 1).fillRoundedRect(WIDTH / 2 - 376, 434, 752 * Math.max(0, f.left / step.time), 8, 4);
-    if (f.left <= 0) this.applyFinale(null);
+    // Time up works like contact in the run: the selected tool is applied, without the speed bonus.
+    if (f.left <= 0) this.applyFinale(this.tools[this.toolIndex]);
   }
 
-  /** Apply a tool to the current finale step (null = ran out of time). */
-  private applyFinale(tool: ToolId | null) {
+  /** Apply a tool to the current finale step. */
+  private applyFinale(tool: ToolId) {
     const f = this.finale;
     if (!f || !f.ready || this.paused || this.ended) return;
     const step = f.steps[f.at];
-    const right = tool !== null && DAMAGES[step.damage].treatedBy === tool;
+    const right = DAMAGES[step.damage].treatedBy === tool;
     const y = 230 + f.at * 42;
     if (right) {
-      const points = 120 + 40 * f.at + Math.round(60 * (f.left / step.time));
+      const points = 120 + 40 * f.at + Math.round(60 * Math.max(0, f.left / step.time));
       this.state.bonus(points);
       this.audio.sfx('restore', f.at + 2);
       this.sparks.explode(20, WIDTH / 2 + 10, y);
@@ -714,7 +715,7 @@ export class RunScene extends Phaser.Scene {
     } else {
       this.state.setback(this.diff.mistakePenalty);
       this.audio.sfx('wrong');
-      this.floatText(WIDTH / 2 + 260, y, tool === null ? 'Too slow!' : 'Wrong tool!', '#c0392b');
+      this.floatText(WIDTH / 2 + 260, y, 'Wrong tool!', '#c0392b');
       this.flashSlot(this.tools.indexOf(DAMAGES[step.damage].treatedBy));
     }
     this.refreshHud();
