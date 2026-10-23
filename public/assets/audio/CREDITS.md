@@ -2,8 +2,8 @@
 
 All instrument samples are from the **Versilian Community Sample Library (VCSL)** by Versilian Studios LLC,
 https://github.com/sgossner/VCSL, released under **CC0 1.0** (public domain dedication).
-They were trimmed, faded, loudness-normalised and converted to mono MP3 by `scripts/fetch-audio.mjs`.
-The music itself is composed at runtime by the game from each culture's scales and rhythms (`src/audio/`).
+They were trimmed, faded, peak-normalised (to -3 dBFS) and converted to mono MP3 by `scripts/fetch-audio.mjs`.
+The music is written for each culture in `src/audio/styles.ts` and played on these samples at runtime.
 
 | File | VCSL source |
 |---|---|
@@ -61,6 +61,16 @@ The music itself is composed at runtime by the game from each culture's scales a
 | xylophone/72.mp3 | Idiophones/Struck Idiophones/Xylophone/Medium Mallets/Xylo_Medium_C5_pp_01_far.wav |
 | xylophone/79.mp3 | Idiophones/Struck Idiophones/Xylophone/Medium Mallets/Xylo_Medium_G5_pp_01_far.wav |
 | xylophone/84.mp3 | Idiophones/Struck Idiophones/Xylophone/Medium Mallets/Xylo_Medium_C6_pp_01_far.wav |
+| balafon/49.mp3 | Idiophones/Struck Idiophones/Balafon/Traditional Mallet/EthnicXylo_tradM_C#3_vl2_rr1_Mid.wav |
+| balafon/53.mp3 | Idiophones/Struck Idiophones/Balafon/Traditional Mallet/EthnicXylo_tradM_F3_vl2_rr1_Mid.wav |
+| balafon/60.mp3 | Idiophones/Struck Idiophones/Balafon/Traditional Mallet/EthnicXylo_tradM_C4_vl2_rr1_Mid.wav |
+| balafon/65.mp3 | Idiophones/Struck Idiophones/Balafon/Traditional Mallet/EthnicXylo_tradM_F4_vl2_rr1_Mid.wav |
+| balafon/72.mp3 | Idiophones/Struck Idiophones/Balafon/Traditional Mallet/EthnicXylo_tradM_C5_vl2_rr1_Mid.wav |
+| balafon/77.mp3 | Idiophones/Struck Idiophones/Balafon/Traditional Mallet/EthnicXylo_tradM_F5_vl2_rr1_Mid.wav |
+| ocarina/57.mp3 | Aerophones/Edge-blown Aerophones/Ocarina, Typical/Sustains/Sus/StdOcarina_Sus_A3.wav |
+| ocarina/61.mp3 | Aerophones/Edge-blown Aerophones/Ocarina, Typical/Sustains/Sus/StdOcarina_Sus_C#4.wav |
+| ocarina/66.mp3 | Aerophones/Edge-blown Aerophones/Ocarina, Typical/Sustains/Sus/StdOcarina_Sus_F#4.wav |
+| ocarina/70.mp3 | Aerophones/Edge-blown Aerophones/Ocarina, Typical/Sustains/Sus/StdOcarina_Sus_A#4.wav |
 | folkHarp/50.mp3 | Chordophones/Composite Chordophones/Folk Harp/EWHarp_Normal_D3_v2_RR1.wav |
 | folkHarp/54.mp3 | Chordophones/Composite Chordophones/Folk Harp/EWHarp_Normal_F#3_v2_RR1.wav |
 | folkHarp/58.mp3 | Chordophones/Composite Chordophones/Folk Harp/EWHarp_Normal_A#3_v2_RR1.wav |
