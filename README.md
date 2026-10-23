@@ -130,6 +130,8 @@ docker compose run --rm app npm run package:itch   # release/relic-revival-run-w
 docker compose run --rm win                        # Windows portable + installer in release/
 ```
 
+Releases publish automatically: pushing a `v*` tag on a commit that is on `main` (for example `git tag v0.2.0 && git push origin v0.2.0`) runs `.github/workflows/itch.yml`, which tests, builds and uploads the web game to [itch.io](https://echoness.itch.io/relic-revival-run-remake) with butler. It needs a `BUTLER_API_KEY` repository secret.
+
 The [media kit](media/README.md) is generated from the game: `node scripts/media-kit.cjs` redraws the banners, logos, store art and character renders, and captures fresh screenshots and gameplay video (see the kit's README).
 
 The avatar workshop, a dev-only tool for drawing the cut-out characters, runs at http://localhost:5173/tools/workshop/.
