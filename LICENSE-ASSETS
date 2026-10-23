@@ -9,8 +9,8 @@ build/icon.png, and the art and music the game generates.
 
 It does NOT cover:
 - Code, which is licensed under PolyForm Noncommercial 1.0.0 (see LICENSE).
-- legacy/: the original 2023 Unity jam project by Studio Jojo, released under MIT.
-  It is kept for reference only and will be removed; none of its assets are used by the remake.
+- The original 2023 Unity jam project by Studio Jojo (formerly legacy/, now only in the
+  git history), released under MIT. None of its assets are used by the remake.
 - Third-party material, which keeps its own license:
   - public/assets/fonts (Borel and Edu SA Beginner): SIL Open Font License 1.1.
   - public/assets/audio: open audio clips, each under the license listed in

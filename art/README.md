@@ -54,7 +54,7 @@ bases for the owner's drawings. Existing owner-drawn documents are never regener
 - **Provenance:** backgrounds use the built-in `image_gen` tool, not the API/CLI.
   Exact prompts and master/runtime filenames are recorded in
   `art/backgrounds/parallax-art-direction.json` (v3), with the first-pass prompts
-  retained in `public/assets/backgrounds/art-direction.json` (v2). These are generated concept
+  retained in `art/backgrounds/art-direction-v2.json` (v2; only the PNG masters are kept, as the game uses v3). These are generated concept
   placeholders, not human-drawn final art or archaeological reconstructions.
 
 ## Review and maintain

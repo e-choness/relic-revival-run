@@ -60,7 +60,7 @@ stereo WAV excerpts, and peak/RMS measurements under ignored `docs/` output.
 
 ## The original (2023)
 
-The Unity jam project is kept in `legacy/` for reference only, and will be removed.
+The Unity jam project has been removed from this branch. It is preserved in the git history: the last commit that contains it under `legacy/` is `41a4a45` (`git checkout 41a4a45 -- legacy` restores it).
 
 ### Making of
 

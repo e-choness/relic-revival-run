@@ -42,10 +42,6 @@ function persist(save: SaveData): SaveData {
   return save;
 }
 
-export function recordStars(save: SaveData, cultureId: string, stars: number): SaveData {
-  return persist({ ...save, stars: { ...save.stars, [cultureId]: Math.max(save.stars[cultureId] ?? 0, stars) } });
-}
-
 /** Records a finished run: best stars, restoration and score, plus newly learned damage types. */
 export function recordRun(save: SaveData, cultureId: string, stars: number, restoration: number, seen: DamageId[], score = 0): SaveData {
   return persist({

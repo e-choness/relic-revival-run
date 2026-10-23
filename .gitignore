@@ -5,12 +5,6 @@ release/
 .vite/
 coverage/
 .DS_Store
-# legacy Unity generated folders
-/legacy/[Ll]ibrary/
-/legacy/[Tt]emp/
-/legacy/[Oo]bj/
-/legacy/[Ll]ogs/
-/legacy/[Bb]uild*/
 CLAUDE.md
 .claude/
 docs/
