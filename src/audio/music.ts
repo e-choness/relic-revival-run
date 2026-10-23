@@ -1,4 +1,4 @@
-// Pure musical primitives. score.ts develops these into related phrases and layered arrangements.
+// Pure musical primitives. The arrangements live in styles.ts; score.ts turns them into events.
 // No Web Audio here so it can be unit tested; AudioDirector turns these into sound.
 
 /** Instrument family the lead voice imitates. */
@@ -61,59 +61,6 @@ export function seedFrom(text: string): number {
   let h = 2166136261;
   for (const ch of text) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
   return h >>> 0;
-}
-
-/** One step of a phrase: a scale degree or a rest, with a length in steps. */
-export interface Note {
-  degree: number | null;
-  steps: number;
-}
-
-/**
- * Generative phrase of `steps` eighth-notes: a stepwise random walk that mostly moves by
- * neighbouring degrees, leans back toward the tonic, and ends on a stable degree.
- */
-export function phrase(seed: number, steps = 16, range = 7): Note[] {
-  const r = rng(seed);
-  const out: Note[] = [];
-  let degree = 0, used = 0;
-  while (used < steps) {
-    const len = Math.min(steps - used, r() < 0.65 ? 1 : r() < 0.8 ? 2 : 3);
-    if (r() < 0.18 && used > 0) out.push({ degree: null, steps: len });
-    else {
-      const leap = r() < 0.75 ? (r() < 0.5 ? -1 : 1) : Math.round((r() - 0.5) * 6);
-      degree = Math.max(-2, Math.min(range, degree + leap - (degree > 4 && r() < 0.4 ? 1 : 0)));
-      out.push({ degree, steps: len });
-    }
-    used += len;
-  }
-  const last = out[out.length - 1];
-  if (last.degree !== null) last.degree = r() < 0.5 ? 0 : 4;
-  return out;
-}
-
-/** 8-step percussion patterns: 2 = accent, 1 = soft hit, 0 = rest. */
-export const PATTERNS: Record<Exclude<Perc, 'none'>, { low: number[]; high: number[] }> = {
-  hand: { low: [2, 0, 0, 1, 0, 0, 2, 0], high: [0, 1, 1, 0, 1, 1, 0, 1] },
-  frame: { low: [2, 0, 0, 0, 1, 0, 0, 0], high: [0, 1, 0, 1, 0, 1, 1, 1] },
-  taiko: { low: [2, 0, 0, 0, 2, 0, 1, 0], high: [0, 0, 1, 0, 0, 0, 0, 1] },
-  gong: { low: [2, 0, 0, 0, 0, 0, 0, 0], high: [0, 0, 1, 0, 1, 0, 1, 0] },
-};
-
-/**
- * Layer mix from play state: calm music that builds with the combo and turns tense as the artifact suffers.
- * intensity 0–1 (combo), integrity 0–1 (artifact condition).
- */
-export function mix(intensity: number, integrity: number) {
-  const i = Math.max(0, Math.min(1, intensity));
-  return {
-    bass: 0.55,
-    perc: 0.2 + 0.8 * i,
-    lead: 0.35 + 0.65 * i,
-    /** Probability each lead note actually plays: sparse when calm, full when on a streak. */
-    density: 0.45 + 0.55 * i,
-    tension: integrity < 0.4 ? (0.4 - integrity) / 0.4 : 0,
-  };
 }
 
 /** Menus: a gentle music-box loop. */

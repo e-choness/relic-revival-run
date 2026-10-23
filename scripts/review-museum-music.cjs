@@ -58,7 +58,7 @@ const out = process.env.REVIEW_OUT || '/work/docs/museum-music-review';
       await page.mouse.click(480, 645);
       await page.waitForTimeout(300);
       assert.equal(await page.evaluate(() => window.audio.integrity), 1);
-      assert.equal(await page.evaluate(() => window.audio.intensity), 0.7);
+      assert.equal(await page.evaluate(() => window.audio.intensity), 0.9);
       assert.equal(await page.evaluate(() => window.audio.profileKey), id);
       await page.keyboard.press('Escape');
       await page.waitForTimeout(100);
@@ -71,21 +71,26 @@ const out = process.env.REVIEW_OUT || '/work/docs/museum-music-review';
     // Use the actual renderer with an OfflineAudioContext so sample peaks and clips are reproducible.
     // The dev harness intentionally accesses TS-private methods; no review API is shipped in the game.
     const metrics = [];
-    for (const [id, intensity, integrity] of [['portugal', 0.7, 1], ['china', 0.7, 1], ['iran', 0.7, 1], ['mali', 0, 1], ['mali', 1, 1], ['mali', 1, 0.15]]) {
+    // Every culture's full arrangement for one whole cycle (A A B A), plus one culture calm and in danger.
+    const cultures = await page.evaluate(async () => (await import('/src/data/cultures.ts')).CULTURES.map(c => c.id));
+    const renders = [...cultures.map(id => [id, 0.9, 1]), ['mali', 0, 1], ['mali', 0.9, 0.15]];
+    for (const [id, intensity, integrity] of renders) {
       const rendered = await page.evaluate(async ({ id, intensity, integrity }) => {
         const { AudioDirector } = await import('/src/audio/AudioDirector.ts');
         const { CULTURES } = await import('/src/data/cultures.ts');
+        const { instrumentsOf } = await import('/src/audio/score.ts');
         const c = CULTURES.find(c => c.id === id);
-        const rate = 22050, seconds = 64 * 30 / c.sound.tempo + 2;
-        const ctx = new OfflineAudioContext(2, Math.ceil(seconds * rate), rate);
         const d = new AudioDirector();
         d.muted = false;
         d.play(c.sound, c.id);
+        const steps = d.score.cycle, stepDuration = d.stepDur;
+        const rate = 22050, seconds = steps * stepDuration + 2.5;
+        const ctx = new OfflineAudioContext(2, Math.ceil(seconds * rate), rate);
         d.initialize(ctx);
         const manifest = await fetch('/assets/audio/manifest.json').then(r => r.json());
         d.manifestData = manifest;
-        const files = [...[c.sound.samples.lead, d.score.arrangement.companion].flatMap(inst => manifest.melodic[inst].map(s => s.file)),
-          ...[c.sound.samples.low, c.sound.samples.high].filter(Boolean).map(inst => manifest.perc[inst])];
+        const used = instrumentsOf(d.score);
+        const files = [...used.melodic.flatMap(inst => manifest.melodic[inst].map(s => s.file)), ...used.perc.map(key => manifest.perc[key])];
         await Promise.all([...new Set(files)].map(async file => {
           const bytes = await fetch(`/assets/audio/${file}`).then(r => r.arrayBuffer());
           d.buffers.set(file, await ctx.decodeAudioData(bytes));
@@ -93,8 +98,7 @@ const out = process.env.REVIEW_OUT || '/work/docs/museum-music-review';
         d.intensity = intensity; d.integrity = integrity;
         d.start();
         clearInterval(d.timer); d.timer = undefined;
-        const stepDuration = 30 / c.sound.tempo;
-        for (let step = 0; step < 64; step++) d.playStep(step, 0.1 + step * stepDuration);
+        for (let step = 0; step < steps; step++) d.playStep(step, 0.1 + step * stepDuration);
         for (const node of d.sustained) node.stop(seconds - 0.2);
         const buffer = await ctx.startRendering();
         const left = buffer.getChannelData(0), right = buffer.getChannelData(1);

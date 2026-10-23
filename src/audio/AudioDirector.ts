@@ -1,6 +1,6 @@
 import { SUSTAINED, degreeToMidi, midiToFreq, nearestSample, rng, type Perc, type PitchedSample, type SoundProfile, type Timbre } from './music';
 import { loadVolume, saveVolume, type Volume } from '../systems/settings';
-import { arrangementMix, composeScore, scoreEvents, type Score } from './score';
+import { arrangementMix, composeScore, instrumentsOf, scoreEvents, type Ornament, type Score } from './score';
 
 // Soundtrack and effects. Music is composed at runtime from each culture's scales and rhythms and played on
 // open (CC0) instrument samples (public/assets/audio, see CREDITS.md); synthesized voices are the fallback.
@@ -20,6 +20,8 @@ const AUDIO_DIR = 'assets/audio/';
 interface Manifest {
   melodic: Record<string, PitchedSample[]>;
   perc: Record<string, string>;
+  /** Per-clip level trim in dB (scripts/fetch-audio.mjs), so equal velocities sound equally loud. */
+  trim?: Record<string, number>;
 }
 
 type Layer = 'bass' | 'perc' | 'lead' | 'response' | 'harmony' | 'drone' | 'tension';
@@ -137,7 +139,7 @@ export class AudioDirector {
   /** Exhibits demonstrate the whole arrangement, independently of the last run's condition. */
   preview(profile: SoundProfile, key: string) {
     this.play(profile, key);
-    this.intensity = 0.7;
+    this.intensity = 0.9;
     this.integrity = 1;
     this.duck(false);
   }
@@ -145,16 +147,16 @@ export class AudioDirector {
   /** Fetch and decode the samples this profile uses (once each). */
   private loadSamples(p: SoundProfile) {
     const ctx = this.ctx;
-    if (!ctx || !p.samples) return;
-    const companion = this.score?.arrangement.companion;
+    if (!ctx) return;
+    const used = this.score ? instrumentsOf(this.score) : { melodic: [], perc: [] };
     this.manifest ??= fetch(`${AUDIO_DIR}manifest.json`)
       .then((r) => (r.ok ? (r.json() as Promise<Manifest>) : null))
       .catch(() => null);
     void this.manifest.then((m) => {
       if (!m) return;
       this.manifestData = m;
-      const { lead, low, high } = p.samples!;
-      const files = [...[lead, companion].flatMap(inst => inst ? (m.melodic[inst] ?? []).map(x => x.file) : []), ...[low, high].flatMap((k) => (k && m.perc[k] ? [m.perc[k]] : []))];
+      const melodic = [...used.melodic, p.samples?.lead].filter((x): x is string => !!x);
+      const files = [...melodic.flatMap((inst) => (m.melodic[inst] ?? []).map((x) => x.file)), ...used.perc.flatMap((k) => (m.perc[k] ? [m.perc[k]] : []))];
       for (const file of files) {
         if (this.requested.has(file)) continue;
         this.requested.add(file);
@@ -206,12 +208,13 @@ export class AudioDirector {
   }
 
   /**
-   * Quarter-note beats elapsed on the audio clock, so gameplay lines up with what is heard. Null without
-   * music, and while the context is suspended or interrupted: its clock stands still then, and play must not.
+   * Beats elapsed on the audio clock (quarter notes; dotted quarters in 6/8 and 12/8), so gameplay lines
+   * up with what is heard. Null without music, and while the context is suspended or interrupted: its
+   * clock stands still then, and play must not.
    */
   beatPosition(): { beat: number; dur: number } | null {
     if (!this.ctx || !this.timer || !this.profile || this.ctx.state !== 'running') return null;
-    const dur = this.stepDur * 2;
+    const dur = this.stepDur * this.stepsPerBeat;
     return { beat: (this.ctx.currentTime - this.musicStart) / dur, dur };
   }
 
@@ -219,7 +222,7 @@ export class AudioDirector {
   setTempoScale(scale: number) {
     const pos = this.beatPosition();
     this.tempoScale = scale;
-    if (pos && this.ctx) this.musicStart = this.ctx.currentTime - pos.beat * this.stepDur * 2;
+    if (pos && this.ctx) this.musicStart = this.ctx.currentTime - pos.beat * this.stepDur * this.stepsPerBeat;
   }
 
   /** `level`: for restore, the combo (the figure climbs the scale as it grows). */
@@ -276,8 +279,14 @@ export class AudioDirector {
 
   // ---------- scheduler ----------
 
+  /** Steps per beat: sixteenths in simple meters, eighths in compound ones. */
+  private get stepsPerBeat() {
+    return this.score?.style.meter.sub ?? 4;
+  }
+
+  /** Tempo counts beats per minute. */
   private get stepDur() {
-    return 60 / ((this.profile?.tempo ?? 90) * this.tempoScale) / 2;
+    return 60 / ((this.profile?.tempo ?? 90) * this.tempoScale) / this.stepsPerBeat;
   }
 
   private start() {
@@ -316,7 +325,7 @@ export class AudioDirector {
   private createTrack() {
     const ctx = this.ctx!;
     const track = this.track = gain(ctx, 0, this.music);
-    track.gain.setTargetAtTime(1, ctx.currentTime, 0.12);
+    track.gain.setTargetAtTime(this.score?.style.level ?? 1, ctx.currentTime, 0.12);
     this.trackNodes = [track];
     if (!this.roomImpulse) {
       const frames = Math.floor(ctx.sampleRate * 1.35);
@@ -335,7 +344,7 @@ export class AudioDirector {
     const highpass = ctx.createBiquadFilter(), lowpass = ctx.createBiquadFilter();
     highpass.type = 'highpass'; highpass.frequency.value = 280;
     lowpass.type = 'lowpass'; lowpass.frequency.value = 4200;
-    const wet = gain(ctx, this.score!.arrangement.room, track);
+    const wet = gain(ctx, this.score!.style.room, track);
     highpass.connect(lowpass).connect(room).connect(wet);
     this.trackNodes.push(room, highpass, lowpass, wet);
     const pan: Record<Layer, number> = { lead: -0.1, response: 0.28, harmony: -0.32, bass: 0, perc: 0.12, drone: 0.15, tension: 0 };
@@ -366,7 +375,8 @@ export class AudioDirector {
 
   private playStep(step: number, t: number) {
     const p = this.profile!, ctx = this.ctx!;
-    if (step % 8 === 0) this.barIntensity = this.intensity;
+    // Players change what they play at the bar line, not mid-phrase.
+    if (step % this.score!.barSteps === 0) this.barIntensity = this.intensity;
     const m = arrangementMix(this.barIntensity, this.integrity, step);
     for (const [layer, value] of Object.entries(m))
       this.layers[layer as Layer].gain.setTargetAtTime(value, Math.max(t, ctx.currentTime), 0.22);
@@ -374,11 +384,9 @@ export class AudioDirector {
     for (const event of scoreEvents(this.score!, p, step, this.barIntensity)) {
       const time = t + event.offset * this.stepDur, duration = event.duration * this.stepDur;
       const out = this.layers[event.layer];
-      if (event.layer === 'perc') {
-        if (p.perc !== 'none') this.drum(p.perc, event.part!, time, event.velocity);
-      } else if (event.layer === 'lead') this.leadNote(event.midi!, time, duration, out, event.velocity);
-      else if (event.layer === 'response') this.leadNote(event.midi!, time, duration, out, event.velocity, this.score!.arrangement.companion);
-      else this.voice(event.layer === 'bass' ? 'bass' : event.duration > 3 ? 'wind' : 'pluck', midiToFreq(event.midi!), time, duration, out, event.velocity);
+      if (event.layer === 'perc') this.drum(event.instrument!, event.part!, time, event.velocity, event.bend);
+      else if (event.layer === 'bass') this.voice('bass', midiToFreq(event.midi!), time, duration, out, event.velocity);
+      else this.played(event.instrument!, event.midi!, time, duration, out, event.velocity, event.ornament, event.from);
     }
   }
 
@@ -390,20 +398,51 @@ export class AudioDirector {
 
   // ---------- voices ----------
 
-  /** A melody note on the culture's sampled instrument, or its synth stand-in until samples load. */
-  private leadNote(midi: number, t: number, dur: number, out: AudioNode, vel: number, instrument?: string) {
+  /**
+   * A note as a player would play it: rolled (marimba, santur), with a grace note from above (fado,
+   * lyra, quena, balafon), or sliding up into it (guzheng, koto, ney, bansuri).
+   */
+  private played(inst: string, midi: number, t: number, dur: number, out: AudioNode, vel: number, ornament?: Ornament, from?: number) {
+    const sustained = SUSTAINED.has(inst);
+    if (ornament === 'roll' && !sustained) {
+      // Even tremolo strokes, the first one strongest, fading slightly through the note.
+      const stroke = Math.max(0.075, Math.min(0.11, this.stepDur / 2));
+      const count = Math.max(2, Math.floor(dur / stroke));
+      for (let i = 0; i < count; i++) this.leadNote(midi, t + i * stroke, stroke * 1.6, out, vel * (i === 0 ? 1 : 0.62 - 0.12 * (i / count)), inst);
+      return;
+    }
+    if (ornament === 'grace' && from !== undefined) {
+      const grace = Math.min(0.06, dur * 0.25);
+      this.leadNote(from, t, grace * 1.4, out, vel * 0.55, inst);
+      return this.leadNote(midi, t + grace, dur - grace, out, vel, inst);
+    }
+    this.leadNote(midi, t, dur, out, vel, inst, ornament === 'slide' ? from : undefined);
+  }
+
+  /** A clip's level trim as a gain factor. */
+  private trim(file: string) {
+    return Math.pow(10, (this.manifestData?.trim?.[file] ?? 0) / 20);
+  }
+
+  /** A melody note on a sampled instrument, or its synth stand-in until samples load. `glideFrom` slides up into it. */
+  private leadNote(midi: number, t: number, dur: number, out: AudioNode, vel: number, instrument?: string, glideFrom?: number) {
     const inst = instrument ?? this.profile?.samples?.lead;
     const loaded = inst ? (this.manifestData?.melodic[inst] ?? []).filter((x) => this.buffers.has(x.file)) : [];
     const hit = nearestSample(loaded, midi);
-    if (hit && inst) return this.sample(this.buffers.get(hit.sample.file)!, t, hit.rate, vel, out, SUSTAINED.has(inst) ? dur : undefined);
-    this.voice(instrument ? 'mallet' : this.profile?.lead ?? 'mallet', midiToFreq(midi), t, dur, out, vel);
+    const fromRate = hit && glideFrom !== undefined ? hit.rate * Math.pow(2, (glideFrom - midi) / 12) : undefined;
+    if (hit && inst) return this.sample(this.buffers.get(hit.sample.file)!, t, hit.rate, vel * this.trim(hit.sample.file), out, SUSTAINED.has(inst) ? dur : undefined, fromRate);
+    this.voice(instrument === this.profile?.samples?.lead ? this.profile?.lead ?? 'mallet' : 'mallet', midiToFreq(midi), t, dur, out, vel);
   }
 
-  /** Play a one-shot; held instruments are cut with a short release at `holdFor`. */
-  private sample(buf: AudioBuffer, t: number, rate: number, vel: number, out: AudioNode, holdFor?: number) {
+  /** Play a one-shot; held instruments are cut with a short release at `holdFor`. `fromRate` glides into `rate`. */
+  private sample(buf: AudioBuffer, t: number, rate: number, vel: number, out: AudioNode, holdFor?: number, fromRate?: number) {
     const ctx = this.ctx!, src = ctx.createBufferSource(), g = gain(ctx, vel, out);
     src.buffer = buf;
-    src.playbackRate.value = rate;
+    if (fromRate === undefined) src.playbackRate.value = rate;
+    else {
+      src.playbackRate.setValueAtTime(fromRate, t);
+      src.playbackRate.linearRampToValueAtTime(rate, t + Math.min(0.14, (holdFor ?? 0.4) * 0.3));
+    }
     src.connect(g);
     src.onended = () => { src.disconnect(); g.disconnect(); };
     src.start(t);
@@ -485,11 +524,13 @@ export class AudioDirector {
     }
   }
 
-  private drum(kind: Exclude<Perc, 'none'>, part: 'low' | 'high', t: number, vel: number) {
+  /** A percussion stroke on its sample; `bend` makes a talking-drum stroke fall in pitch. Synth drums stand in until it loads. */
+  private drum(key: string, part: 'low' | 'high', t: number, vel: number, bend?: number) {
     const out = this.layers.perc;
-    const key = part === 'low' ? this.profile?.samples?.low : this.profile?.samples?.high;
-    const buf = key ? this.buffers.get(this.manifestData?.perc[key] ?? '') : undefined;
-    if (buf) return this.sample(buf, t, 1, vel * 0.85, out);
+    const file = this.manifestData?.perc[key] ?? '';
+    const buf = this.buffers.get(file);
+    if (buf) return this.sample(buf, t, 1, vel * 0.85 * this.trim(file), out, undefined, bend ? Math.pow(2, bend / 12) : undefined);
+    const kind: Exclude<Perc, 'none'> = !this.profile || this.profile.perc === 'none' ? 'hand' : this.profile.perc;
     if (part === 'low') {
       if (kind === 'gong') return [1, 2.4, 3.9].forEach((r, i) => this.ring(220 * r, t, 1.2 / (i + 1), vel * 0.25 / (i + 1), out));
       const [from, to, len, level] = kind === 'taiko' ? [95, 42, 0.8, 1] : kind === 'hand' ? [180, 70, 0.3, 0.8] : [130, 60, 0.22, 0.6];

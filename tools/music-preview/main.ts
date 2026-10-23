@@ -1,5 +1,5 @@
 import { AudioDirector } from '../../src/audio/AudioDirector';
-import { ARRANGEMENTS } from '../../src/audio/score';
+import { STYLES } from '../../src/audio/styles';
 import { CULTURES } from '../../src/data/cultures';
 
 const select = document.querySelector<HTMLSelectElement>('#culture')!;
@@ -21,7 +21,10 @@ const show = () => {
   const image = document.querySelector<HTMLImageElement>('#artifact')!;
   image.src = `/assets/artifacts/${c.id}-v1.webp`;
   image.alt = c.artifact;
-  document.querySelector('#voices')!.textContent = `Lead sample: ${c.sound.samples?.lead} · Answer: ${ARRANGEMENTS[c.id].companion} · ${ARRANGEMENTS[c.id].harmony} accompaniment · ${c.sound.tempo} BPM`;
+  const style = STYLES[c.id];
+  const meter = style.meter.sub === 3 ? `${style.meter.beats * 3}/8` : `${style.meter.beats}/4`;
+  const voices = [style.lead.instrument, style.comp?.instrument, ...style.counters.map((v) => `${v.instrument} (${v.mode})`)].filter(Boolean).join(', ');
+  document.querySelector('#voices')!.textContent = `${meter} at ${c.sound.tempo} beats/min · ${voices} · drums: ${style.perc.map((v) => v.sample).join(', ') || 'none'}`;
 };
 const play = () => {
   audio.unlock();
@@ -29,7 +32,7 @@ const play = () => {
   audio.preview(c.sound, c.id);
   updateMix();
   playing = true;
-  status.textContent = `Playing ${c.name} · an eight-bar theme with evolving support`;
+  status.textContent = `Playing ${c.name} · the full form A A B A; raise the combo to bring in more players`;
 };
 document.querySelector('#play')!.addEventListener('click', play);
 document.querySelector('#stop')!.addEventListener('click', () => { audio.stop(); playing = false; status.textContent = 'Stopped'; });

@@ -73,7 +73,7 @@ This is a **remake** by Echo Yin of the 2023 game-jam original by **Studio Jojo*
 - **The game teaches its rules.** A field guide before every run, a tool-bar legend, tool hints, and feedback on every mistake.
 - **A field-journal HUD that leaves the art visible.** Small paper slips at the screen edges carry time, condition, score and the artifact (a taped polaroid that clears as you restore it); a tag above the restorer names the next damage and its tool; a compact tool belt replaces the old full-width bar. Losing focus pauses the run.
 - **Room to learn.** Runs last 55–75 seconds, with extra spacing for lane changes. Final care waits until you are ready; restore 60% / 80% / 95% while preserving condition to earn 1 / 2 / 3 stars.
-- **Reactive music** with recurring themes, related answers, resolving phrases, moving bass, quiet harmonic support, and stereo room ambience. Accompaniment grows with your combo while the melody stays complete; low condition adds tension.
+- **A soundtrack written for each culture.** Every culture plays in its own tradition's meter, rhythm cycle and ensemble roles: a Mexican son in 6/8 against 3/4, fado's sung line and guitarra replies, Egyptian maqsum, Greek syrtos, huayno, teental with a tihai, a Persian reng, Nigerian call and response over the standard bell, Khmer pinpeat, the Mande kora's kumbengo, and more. Original themes, idiomatic ornaments and a player's timing. It stays reactive: the tune is always complete, and accompaniment, counter-voices and drums join as your combo grows; low condition adds tension. See [the soundtrack research](art/soundtrack-research.md).
 - **A story with an ending.** A short prologue sets out why the restorers are running. Restore all twelve relics to complete the collection: the ending gathers every artifact and closes with the game's message about looted and trafficked heritage, followed by the credits (replayable from the title screen).
 - **Progress worth chasing.** Best stars, restoration and score per culture; curator ranks; "new best" and "culture unlocked" news on the results card.
 - **An illustrated museum.** Twelve artifact illustrations show the objects you are restoring, with enlarged exhibits, conservation notes, and full-arrangement soundtrack previews.
@@ -142,17 +142,19 @@ editable sources, generated concept provenance, and export instructions.
 
 The development [music room](http://localhost:5173/tools/music-preview/) lets you
 compare all twelve scores at different combo and condition settings.
-The generator in `src/audio/score.ts` develops a seeded two-bar motif into an
-eight-bar statement, variation, answer, and resolving return. Culture-specific
-arrangements choose tonal movement, open intervals, or a drone foundation;
-existing CC0 samples are combined with synthesized accompaniment. These are
-original game arrangements using instrument substitutes, not reconstructions of
-traditional performances.
+Each culture's arrangement is written as data in `src/audio/styles.ts`: meter, A and B themes,
+harmony, bass and accompaniment patterns, counter-voices and drum cycles, with the energy level at
+which each part joins. `src/audio/score.ts` turns that into timed events (form A, A, B, A; ornaments;
+swing and small human timing), and `AudioDirector` plays them on CC0 samples. These are original game
+arrangements on substitute instruments, not reconstructions of traditional performances; the
+research, sources and open questions are in [art/soundtrack-research.md](art/soundtrack-research.md).
+`scripts/fetch-audio.mjs` fetches and peak-normalises the samples (`node scripts/fetch-audio.mjs balafon`
+adds or refreshes a single instrument).
 
 See [the researched museum/music plan](art/museum-music-plan.md) and
 `scripts/review-museum-music.cjs` for the visual and audio review workflow. The
-script uses Playwright and OfflineAudioContext to save museum screenshots, six
-stereo WAV excerpts, and peak/RMS measurements under ignored `docs/` output.
+script uses Playwright and OfflineAudioContext to save museum screenshots, a full-cycle
+stereo WAV of every culture (plus calm and danger mixes), and peak/RMS checks under ignored `docs/` output.
 
 ## The original (2023)
 
