@@ -1,0 +1,114 @@
+name: Publish to hopinto.fun
+
+# Pushing a version tag (e.g. `git tag v0.2.0 && git push origin v0.2.0`) on a
+# commit that is on main builds the web game and uploads it to
+# https://hopinto.fun/g/7068ee90-c375-4f47-9619-396449e53933 as a new build.
+#
+# The first publication is a one-off manual run (Actions → Publish to hopinto.fun →
+# Run workflow, with "first_publication" ticked). Only that run uses the owner's
+# publishing grant (title/description and listing request); tag pushes never do.
+#
+# Secrets: HOPINTO_PRODUCTION_AGENT_KEY (the game's agent key) and, until the
+# first publication has completed, HOPINTO_PUBLISHING_GRANT_JSON (the grant receipt).
+# Store details, play guidance and release context live in .github/hopinto/,
+# outside the build; edit release-context.json before tagging a release.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      first_publication:
+        description: 'First publication: use the one-time publishing grant'
+        type: boolean
+        default: false
+
+# Publishing is serialized per game; overlapping runs fail on the server.
+concurrency:
+  group: hopinto-publish
+  cancel-in-progress: false
+
+env:
+  HOPINTO_API: https://hopinto.fun
+  HOPINTO_GAME_ID: 7068ee90-c375-4f47-9619-396449e53933
+  HOPINTO_TITLE: Relic Revival Run
+  # Pinned digest of https://hopinto.fun/hopinto-publish.mjs (helper 0.3.0).
+  # When hopinto.fun ships a new helper, review it and update this digest.
+  HOPINTO_HELPER_SHA256: e519957b288124897723b2b34a80a534442fed467fa4ec0e26eaea8e1f0ef2cf
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history, to check the commit is on main
+
+      - name: Check the commit is on main
+        run: |
+          git fetch origin main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::${GITHUB_REF_NAME} points at ${GITHUB_SHA}, which is not on main. Not publishing."
+            exit 1
+          fi
+
+      # The publishing helper needs Node 24.20 or later.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          cache: npm
+      # Electron's binary is only needed for desktop packaging, not for the web build.
+      - run: npm ci
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+      - run: npm test
+      - run: npm run build # tsc --noEmit, then vite build into dist/
+      # hopinto.fun accepts only web asset types, so the audio credits ship as .txt.
+      - name: Add the cover and adapt the build for hopinto.fun
+        run: |
+          cp media/store/hopinto-cover-960x540.webp dist/cover.webp
+          mv dist/assets/audio/CREDITS.md dist/assets/audio/CREDITS.txt
+
+      - name: Download and verify the publishing helper
+        run: |
+          mkdir -p "$RUNNER_TEMP/hopinto-helper"
+          cd "$RUNNER_TEMP/hopinto-helper"
+          curl -fsSL -o hopinto-publish.mjs "$HOPINTO_API/hopinto-publish.mjs"
+          echo "$HOPINTO_HELPER_SHA256  hopinto-publish.mjs" | sha256sum -c -
+
+      - name: Publish
+        env:
+          HOPINTO_PRODUCTION_AGENT_KEY: ${{ secrets.HOPINTO_PRODUCTION_AGENT_KEY }}
+          GRANT_JSON: ${{ inputs.first_publication && secrets.HOPINTO_PUBLISHING_GRANT_JSON || '' }}
+          FIRST_PUBLICATION: ${{ inputs.first_publication && 'true' || 'false' }}
+        run: |
+          if [ -z "$HOPINTO_PRODUCTION_AGENT_KEY" ]; then
+            echo "::error::The HOPINTO_PRODUCTION_AGENT_KEY repository secret is not set."
+            exit 1
+          fi
+          # A fresh private state directory per run, outside the checkout and the build.
+          state="$RUNNER_TEMP/hopinto-state"
+          rm -rf "$state" && mkdir -m 700 "$state"
+          setup=()
+          if [ "$FIRST_PUBLICATION" = true ]; then
+            if [ -z "$GRANT_JSON" ]; then
+              echo "::error::First publication needs the HOPINTO_PUBLISHING_GRANT_JSON repository secret."
+              exit 1
+            fi
+            grant="$RUNNER_TEMP/hopinto-grant.json"
+            (umask 077 && printf '%s' "$GRANT_JSON" > "$grant")
+            setup=(--publishing-grant "$grant" --title "$HOPINTO_TITLE")
+          fi
+          if [ "$GITHUB_REF_TYPE" = tag ]; then label="$GITHUB_REF_NAME"; else label="main-${GITHUB_SHA::7}"; fi
+          node "$RUNNER_TEMP/hopinto-helper/hopinto-publish.mjs" \
+            --api "$HOPINTO_API" \
+            --dir "$GITHUB_WORKSPACE/dist" \
+            --state "$state" \
+            --game-id "$HOPINTO_GAME_ID" \
+            "${setup[@]}" \
+            --devices desktop \
+            --cover-image cover.webp \
+            --build-label "$label" \
+            --game-details "$GITHUB_WORKSPACE/.github/hopinto/game-details.json" \
+            --play-guidance "$GITHUB_WORKSPACE/.github/hopinto/play-guidance.json" \
+            --release-context-file "$GITHUB_WORKSPACE/.github/hopinto/release-context.json"

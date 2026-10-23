@@ -1,0 +1,5 @@
+{
+  "howToPlay": "Pick a culture on the world map and start a run. Damage spots arrive on the beat: select the matching conservation tool before each spot reaches your restorer, then treat it on the beat. Use the UV lamp to reveal hidden damage and photograph it before treating it. Keep the artifact's condition high to earn stars, finish with the final restoration, and see your work in the museum. The field guide explains every kind of damage and its treatment. Keys can be remapped in the controls menu; a gamepad also works.",
+  "playableInputs": ["keyboard", "keyboard-mouse", "gamepad"],
+  "gameLanguages": { "kind": "languages", "codes": ["en"] }
+}
